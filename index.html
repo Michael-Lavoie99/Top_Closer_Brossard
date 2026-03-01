@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr-CA">
 <head>
   <meta charset="UTF-8" />
@@ -15,11 +15,8 @@
       --brand-2: #8f0013;
       --line: #f2c7cf;
       --soft: #fff2f4;
-      --ok: #0f7d3e;
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       min-height: 100vh;
@@ -27,7 +24,6 @@
       color: var(--ink);
       background: radial-gradient(circle at 10% 0%, var(--bg-2), var(--bg-1) 45%);
     }
-
     .shell {
       max-width: 1240px;
       margin: 0 auto;
@@ -36,34 +32,20 @@
       gap: 1rem;
       grid-template-columns: 360px 1fr;
     }
-
-    .panel,
-    .chat-shell {
+    .panel, .chat-shell {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 14px;
       box-shadow: 0 8px 22px rgba(74, 6, 18, 0.1);
     }
-
     .panel {
       padding: 1rem;
       align-self: start;
       position: sticky;
       top: 1rem;
     }
-
-    h1 {
-      margin: 0;
-      font-size: 1.15rem;
-    }
-
-    .subtitle {
-      margin: .35rem 0 .95rem;
-      font-size: .92rem;
-      color: var(--muted);
-      line-height: 1.35;
-    }
-
+    h1 { margin: 0; font-size: 1.15rem; }
+    .subtitle { margin: .35rem 0 .95rem; font-size: .92rem; color: var(--muted); line-height: 1.35; }
     .badge-brand {
       display: inline-block;
       margin-top: .45rem;
@@ -75,17 +57,8 @@
       color: var(--brand-2);
       background: #fff1f4;
     }
-
-    label {
-      display: block;
-      margin: .8rem 0 .35rem;
-      font-size: .84rem;
-      font-weight: 700;
-    }
-
-    select,
-    textarea,
-    input {
+    label { display: block; margin: .8rem 0 .35rem; font-size: .84rem; font-weight: 700; }
+    select, textarea {
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -94,7 +67,6 @@
       background: #fff;
       color: var(--ink);
     }
-
     button {
       margin-top: .85rem;
       border: 0;
@@ -106,18 +78,8 @@
       color: #fff;
       background: linear-gradient(125deg, var(--brand), var(--brand-2));
     }
-
-    button.alt {
-      background: #fff2f4;
-      color: var(--brand-2);
-      border: 1px solid #efb8c2;
-    }
-
-    button:disabled {
-      opacity: .55;
-      cursor: not-allowed;
-    }
-
+    button.alt { background: #fff2f4; color: var(--brand-2); border: 1px solid #efb8c2; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
     .meta {
       margin-top: .8rem;
       padding: .65rem;
@@ -127,8 +89,8 @@
       font-size: .82rem;
       white-space: pre-wrap;
       color: #5d3942;
+      line-height: 1.35;
     }
-
     .gallery-wrap {
       display: grid;
       gap: .75rem;
@@ -137,7 +99,6 @@
       overflow: auto;
       padding-right: .1rem;
     }
-
     .client-card {
       border: 1px solid #efc4cc;
       border-radius: 12px;
@@ -145,32 +106,20 @@
       background: #fff;
       cursor: pointer;
       transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      text-align: left;
     }
-
     .client-card:hover {
       transform: translateY(-1px);
       box-shadow: 0 8px 16px rgba(104, 10, 28, 0.1);
       border-color: #e49eab;
     }
-
     .client-card.active {
       border-color: var(--brand);
       box-shadow: 0 0 0 2px #ffd8df inset;
       background: #fff6f7;
     }
-
-    .client-top {
-      display: flex;
-      justify-content: space-between;
-      gap: .55rem;
-      align-items: start;
-    }
-
-    .client-name {
-      margin: 0;
-      font-size: .98rem;
-    }
-
+    .client-top { display: flex; justify-content: space-between; gap: .55rem; align-items: start; }
+    .client-name { margin: 0; font-size: .98rem; }
     .chip {
       font-size: .72rem;
       font-weight: 700;
@@ -181,20 +130,8 @@
       padding: .18rem .48rem;
       white-space: nowrap;
     }
-
-    .client-meta {
-      margin: .45rem 0 0;
-      color: #6e4b53;
-      font-size: .8rem;
-      line-height: 1.34;
-    }
-
-    .chat-shell {
-      display: grid;
-      grid-template-rows: auto auto 1fr auto;
-      min-height: calc(100vh - 2rem);
-    }
-
+    .client-meta { margin: .45rem 0 0; color: #6e4b53; font-size: .8rem; line-height: 1.34; }
+    .chat-shell { display: grid; grid-template-rows: auto auto 1fr auto; min-height: calc(100vh - 2rem); }
     .chat-head {
       padding: .82rem .95rem;
       border-bottom: 1px solid var(--line);
@@ -203,7 +140,6 @@
       gap: .7rem;
       align-items: center;
     }
-
     .status {
       font-size: .75rem;
       font-weight: 700;
@@ -213,7 +149,6 @@
       padding: .28rem .5rem;
       background: #fff0f3;
     }
-
     .selected-client {
       margin: 0;
       padding: .65rem .95rem;
@@ -222,8 +157,8 @@
       font-size: .86rem;
       color: #6f424b;
       line-height: 1.35;
+      white-space: pre-wrap;
     }
-
     .chat {
       padding: .95rem;
       display: grid;
@@ -232,7 +167,6 @@
       overflow: auto;
       max-height: calc(100vh - 270px);
     }
-
     .msg {
       max-width: 86%;
       padding: .68rem .78rem;
@@ -241,80 +175,23 @@
       white-space: pre-wrap;
       line-height: 1.4;
     }
-
-    .msg.coach {
-      justify-self: start;
-      background: #fff4f6;
-      border-color: #efc1c9;
-    }
-
-    .msg.rep {
-      justify-self: end;
-      background: #eef8f1;
-      border-color: #bfe2ca;
-    }
-
-    .composer-wrap {
-      border-top: 1px solid var(--line);
-      padding: .72rem;
-    }
-
-    .hint {
-      margin-bottom: .45rem;
-      font-size: .79rem;
-      color: #6b4a51;
-    }
-
-    .composer {
-      display: grid;
-      gap: .5rem;
-      grid-template-columns: 1fr auto auto;
-      align-items: end;
-    }
-
-    .composer textarea {
-      min-height: 76px;
-      max-height: 190px;
-      resize: vertical;
-    }
-
-    .send {
-      width: auto;
-      min-width: 118px;
-      height: 42px;
-      margin: 0;
-    }
-
-    .hidden {
-      display: none;
-    }
-
+    .msg.coach { justify-self: start; background: #fff4f6; border-color: #efc1c9; }
+    .msg.rep { justify-self: end; background: #eef8f1; border-color: #bfe2ca; }
+    .composer-wrap { border-top: 1px solid var(--line); padding: .72rem; }
+    .hint { margin-bottom: .45rem; font-size: .79rem; color: #6b4a51; }
+    .composer { display: grid; gap: .5rem; grid-template-columns: 1fr auto auto; align-items: end; }
+    .composer textarea { min-height: 76px; max-height: 190px; resize: vertical; }
+    .send { width: auto; min-width: 118px; height: 42px; margin: 0; }
+    .hidden { display: none; }
     @media (max-width: 1050px) {
-      .shell {
-        grid-template-columns: 1fr;
-      }
-
-      .panel {
-        position: static;
-      }
-
-      .chat-shell {
-        min-height: 70vh;
-      }
-
-      .chat {
-        max-height: 56vh;
-      }
+      .shell { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .chat-shell { min-height: 70vh; }
+      .chat { max-height: 56vh; }
     }
-
     @media (max-width: 760px) {
-      .composer {
-        grid-template-columns: 1fr;
-      }
-
-      .send {
-        width: 100%;
-      }
+      .composer { grid-template-columns: 1fr; }
+      .send { width: 100%; }
     }
   </style>
 </head>
@@ -322,49 +199,50 @@
   <div class="shell">
     <aside class="panel">
       <h1>CoachVente Honda Brossard</h1>
-      <p class="subtitle">SÃ©lectionne un client dans la galerie. Le profil choisi influence le comportement du client et les stratÃ©gies de vente attendues.</p>
+      <p class="subtitle">Selectionne un client dans la galerie. Le profil choisi influence le comportement du client et la strategie de vente attendue.</p>
       <span class="badge-brand">Accent Honda Rouge</span>
 
-      <label for="level">Niveau du reprÃ©sentant</label>
+      <label for="level">Niveau du representant</label>
       <select id="level">
-        <option value="DÃ©butant">DÃ©butant</option>
-        <option value="IntermÃ©diaire" selected>IntermÃ©diaire</option>
-        <option value="AvancÃ©">AvancÃ©</option>
+        <option value="Debutant">Debutant</option>
+        <option value="Intermediaire" selected>Intermediaire</option>
+        <option value="Avance">Avance</option>
       </select>
 
       <label for="goal">Objectif de la session</label>
       <select id="goal">
-        <option value="Structure complÃ¨te" selected>Structure complÃ¨te</option>
-        <option value="DÃ©couverte">DÃ©couverte</option>
+        <option value="Structure complete" selected>Structure complete</option>
+        <option value="Decouverte">Decouverte</option>
         <option value="Objections">Objections</option>
         <option value="Closing">Closing</option>
         <option value="Gestion du prix">Gestion du prix</option>
         <option value="Financement/Location">Financement/Location</option>
       </select>
 
-      <div class="meta" id="metaBox">Mode: PrÃ©paration\nAction: Choisis un client pour ouvrir le chat.</div>
+      <div class="meta" id="metaBox">Mode: Preparation
+Action: Choisis un client pour ouvrir le chat.</div>
 
       <label>Galerie des clients</label>
       <div id="gallery" class="gallery-wrap"></div>
 
       <button id="reloadClientsBtn" class="alt">Recharger la galerie</button>
-      <button id="resetBtn" class="alt">RÃ©initialiser la session</button>
+      <button id="resetBtn" class="alt">Reinitialiser la session</button>
     </aside>
 
     <section id="chatShell" class="chat-shell hidden">
       <div class="chat-head">
         <strong id="sessionTitle">Session inactive</strong>
-        <span id="modeBadge" class="status">PrÃ©paration</span>
+        <span id="modeBadge" class="status">Preparation</span>
       </div>
 
-      <p id="selectedClientBox" class="selected-client">Aucun client sÃ©lectionnÃ©.</p>
+      <p id="selectedClientBox" class="selected-client">Aucun client selectionne.</p>
 
       <div id="chat" class="chat"></div>
 
       <div class="composer-wrap">
-        <div class="hint">EntrÃ©e = envoyer. Shift+EntrÃ©e = nouvelle ligne. Le bouton Terminer la simulation lance l'Ã©valuation.</div>
+        <div class="hint">Entree = envoyer. Shift+Entree = nouvelle ligne. Le bouton Terminer la simulation lance l'evaluation.</div>
         <div class="composer">
-          <textarea id="userInput" placeholder="Ã‰cris ici ta rÃ©plique de reprÃ©sentant..."></textarea>
+          <textarea id="userInput" placeholder="Ecris ici ta replique de representant..."></textarea>
           <button id="sendBtn" class="send">Envoyer</button>
           <button id="endBtn" class="send alt">Terminer la simulation</button>
         </div>
@@ -373,6 +251,12 @@
   </div>
 
   <script>
+    const FALLBACK_CLIENTS_BROWSER = [
+      { id: 1, name: "Famille pragmatique", segment: "Famille", difficulty: "Intermediaire", persona: "Couple avec un enfant, veut un VUS polyvalent sans depasser le budget mensuel.", needs: "Espace, securite, fiabilite, paiement stable.", objections: "Paiement trop eleve, peur des frais caches.", budget_range: "550-700 CAD/mois", urgency: "30 jours", trade_in: "Hyundai Elantra 2018", financing_preference: "Hesite entre achat et location", sales_strategy: "Decouverte structuree + comparaison claire de 2 options max + cadrage des couts totaux." },
+      { id: 2, name: "Navetteur analytique", segment: "Solo", difficulty: "Intermediaire", persona: "Professionnel qui roule beaucoup et compare 2-3 marques de maniere rationnelle.", needs: "Consommation, cout total, transparence.", objections: "Sceptique sur les frais concession.", budget_range: "450-600 CAD/mois", urgency: "2-6 semaines", trade_in: "Aucun", financing_preference: "Financement", sales_strategy: "Utiliser des chiffres simples, preuves concretes et reponses factuelles sans pression." },
+      { id: 3, name: "Client presse", segment: "Urgence", difficulty: "Debutant", persona: "Besoin d'un vehicule tres vite, peu de temps pour magasiner.", needs: "Disponibilite rapide, processus efficace.", objections: "Peur de perdre du temps.", budget_range: "600-850 CAD/mois", urgency: "Cette semaine", trade_in: "SUV 2017", financing_preference: "Ouvert", sales_strategy: "Diriger la vente par etapes courtes, confirmer rapidement la prochaine action." }
+    ];
+
     const chatShell = document.getElementById("chatShell");
     const chat = document.getElementById("chat");
     const gallery = document.getElementById("gallery");
@@ -390,8 +274,8 @@
       active: false,
       busy: false,
       mode: "preparation",
-      level: "IntermÃ©diaire",
-      goal: "Structure complÃ¨te",
+      level: "Intermediaire",
+      goal: "Structure complete",
       clients: [],
       selectedClient: null,
       conversation: []
@@ -399,31 +283,24 @@
 
     function setMode(mode) {
       state.mode = mode;
-      const labels = {
-        preparation: "PrÃ©paration",
-        simulation: "Mode Simulation",
-        evaluation: "Mode Ã‰valuation"
-      };
+      const labels = { preparation: "Preparation", simulation: "Mode Simulation", evaluation: "Mode Evaluation" };
       modeBadge.textContent = labels[mode] || mode;
     }
 
     function updateMeta(extra = "") {
       if (!state.selectedClient) {
-        metaBox.textContent = "Mode: PrÃ©paration\nAction: Choisis un client pour ouvrir le chat.";
+        metaBox.textContent = `Mode: Preparation\nAction: Choisis un client pour ouvrir le chat.${extra ? `\nInfo: ${extra}` : ""}`;
         return;
       }
-
-      const client = state.selectedClient;
-      const lines = [
-        `Mode: ${state.mode === "simulation" ? "Simulation" : state.mode === "evaluation" ? "Ã‰valuation" : "PrÃ©paration"}`,
-        `Client: ${client.name}`,
-        `Segment: ${client.segment} | DifficultÃ©: ${client.difficulty}`,
+      const c = state.selectedClient;
+      metaBox.textContent = [
+        `Mode: ${state.mode === "simulation" ? "Simulation" : state.mode === "evaluation" ? "Evaluation" : "Preparation"}`,
+        `Client: ${c.name}`,
+        `Segment: ${c.segment} | Difficulte: ${c.difficulty}`,
         `Objectif: ${state.goal}`,
-        `StratÃ©gie impactÃ©e: ${client.sales_strategy}`
-      ];
-
-      if (extra) lines.push(`Info: ${extra}`);
-      metaBox.textContent = lines.join("\n");
+        `Strategie impactee: ${c.sales_strategy}`,
+        extra ? `Info: ${extra}` : ""
+      ].filter(Boolean).join("\n");
     }
 
     function setBusy(isBusy) {
@@ -453,67 +330,42 @@
     }
 
     function normalizeText(input) {
-      return (input || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+      return (input || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
     function isClientReadyToBuy(text) {
       const t = normalizeText(text);
-      const negativePattern = /(pas|pas encore|pas pret|pas prete).{0,20}(acheter|achat|signer|depot|deposer)/;
-      if (negativePattern.test(t)) return false;
-
-      const positiveSignals = [
-        "je suis pret a acheter",
-        "je suis prete a acheter",
-        "je veux l acheter",
-        "je le prends",
-        "je la prends",
-        "on le prend",
-        "on la prend",
-        "on avance",
-        "on peut signer",
-        "faisons le depot",
-        "on fait le depot",
-        "ca me convient on y va",
-        "c est bon pour moi on y va",
-        "pret a acheter",
-        "prete a acheter"
-      ];
-
-      return positiveSignals.some((signal) => t.includes(signal));
+      if (/(pas|pas encore|pas pret|pas prete).{0,20}(acheter|achat|signer|depot|deposer)/.test(t)) return false;
+      return [
+        "je suis pret a acheter","je suis prete a acheter","je veux l acheter","je le prends","je la prends",
+        "on le prend","on la prend","on avance","on peut signer","faisons le depot","on fait le depot"
+      ].some((s) => t.includes(s));
     }
 
     async function loadClients() {
-      const response = await fetch("/api/clients", { method: "GET" });
-      if (!response.ok) throw new Error(`Erreur /api/clients (${response.status})`);
-      const data = await response.json();
-      if (!Array.isArray(data.clients) || data.clients.length === 0) {
-        throw new Error("Aucun client retournÃ© par l'API.");
+      try {
+        const response = await fetch("/api/clients", { method: "GET" });
+        if (!response.ok) throw new Error(`Erreur /api/clients (${response.status})`);
+        const data = await response.json();
+        if (!Array.isArray(data.clients) || data.clients.length === 0) throw new Error("Aucun client retourne.");
+        state.clients = data.clients;
+        renderGallery();
+        updateMeta(data.warning ? `Fallback serveur utilise: ${data.warning}` : "Profils charges depuis API.");
+      } catch (err) {
+        state.clients = FALLBACK_CLIENTS_BROWSER;
+        renderGallery();
+        updateMeta(`API indisponible, fallback navigateur utilise (${err.message}).`);
       }
-
-      state.clients = data.clients;
-      renderGallery();
-      updateMeta(data.warning ? `Fallback local utilisÃ© (${data.warning})` : "Profils chargÃ©s depuis Supabase/API.");
     }
 
     function makeCard(client, isRandom = false) {
       const card = document.createElement("button");
       card.type = "button";
       card.className = "client-card";
-      if (!isRandom && state.selectedClient && state.selectedClient.id === client.id) {
-        card.classList.add("active");
-      }
+      if (!isRandom && state.selectedClient && state.selectedClient.id === client.id) card.classList.add("active");
 
       if (isRandom) {
-        card.innerHTML = [
-          '<div class="client-top">',
-          '<h3 class="client-name">Client alÃ©atoire</h3>',
-          '<span class="chip">Surprise</span>',
-          '</div>',
-          '<p class="client-meta">Choisit un profil au hasard et l\'affiche au dÃ©but du chat avant la simulation.</p>'
-        ].join("");
+        card.innerHTML = '<div class="client-top"><h3 class="client-name">Client aleatoire</h3><span class="chip">Surprise</span></div><p class="client-meta">Choisit un profil au hasard et le presente au debut du chat.</p>';
         card.addEventListener("click", () => selectRandomClient());
         return card;
       }
@@ -525,9 +377,8 @@
         '</div>',
         `<p class="client-meta"><strong>Segment:</strong> ${client.segment}</p>`,
         `<p class="client-meta"><strong>Persona:</strong> ${client.persona}</p>`,
-        `<p class="client-meta"><strong>StratÃ©gie:</strong> ${client.sales_strategy}</p>`
+        `<p class="client-meta"><strong>Strategie:</strong> ${client.sales_strategy}</p>`
       ].join("");
-
       card.addEventListener("click", () => selectClient(client));
       return card;
     }
@@ -535,67 +386,45 @@
     function renderGallery() {
       gallery.innerHTML = "";
       gallery.appendChild(makeCard({}, true));
-      state.clients.forEach((client) => {
-        gallery.appendChild(makeCard(client));
-      });
+      state.clients.forEach((c) => gallery.appendChild(makeCard(c)));
     }
 
     async function requestCoachReply() {
       const payload = {
         conversation: state.conversation,
-        context: {
-          mode: state.mode,
-          level: state.level,
-          goal: state.goal,
-          client: state.selectedClient
-        }
+        context: { mode: state.mode, level: state.level, goal: state.goal, client: state.selectedClient }
       };
-
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         const details = data?.details ? `\n${data.details}` : "";
         throw new Error(`Erreur API (${response.status})${details}`);
       }
-
       const data = await response.json();
       return data.reply;
     }
 
     async function finishSimulation(options = {}) {
-      const {
-        reasonLabel = "manuelle",
-        markerMessage = "FIN SIMULATION",
-        alreadyBusy = false
-      } = options;
-
-      if (!state.active) {
-        addMessage("coach", "Aucune simulation active.");
-        return;
-      }
-
-      if (state.mode !== "simulation") {
-        addMessage("coach", "La simulation est dÃ©jÃ  terminÃ©e.");
-        return;
-      }
+      const { reasonLabel = "manuelle", markerMessage = "FIN SIMULATION", alreadyBusy = false } = options;
+      if (!state.active) return addMessage("coach", "Aucune simulation active.");
+      if (state.mode !== "simulation") return addMessage("coach", "La simulation est deja terminee.");
 
       setMode("evaluation");
-      updateMeta(`Simulation terminÃ©e (${reasonLabel}).`);
+      updateMeta(`Simulation terminee (${reasonLabel}).`);
       state.conversation.push({ role: "user", content: markerMessage });
-      addMessage("coach", `Simulation terminÃ©e (${reasonLabel}). GÃ©nÃ©ration de l'Ã©valuation...`);
+      addMessage("coach", `Simulation terminee (${reasonLabel}). Generation de l'evaluation...`);
 
       if (!alreadyBusy) setBusy(true);
       try {
         const reply = await requestCoachReply();
         addCoachMessage(reply);
-        sessionTitle.textContent = `Ã‰valuation - ${state.selectedClient.name}`;
+        sessionTitle.textContent = `Evaluation - ${state.selectedClient.name}`;
       } catch (err) {
-        addMessage("coach", `Je ne peux pas rÃ©pondre pour l'instant. VÃ©rifie OPENAI_API_KEY puis redÃ©ploie.\n\nDÃ©tail: ${err.message}`);
+        addMessage("coach", `Je ne peux pas repondre pour l'instant. Verifie OPENAI_API_KEY puis redeploie.\n\nDetail: ${err.message}`);
       } finally {
         if (!alreadyBusy) setBusy(false);
       }
@@ -603,21 +432,15 @@
 
     async function sendAndReply(repText) {
       addRepMessage(repText);
-
       setBusy(true);
       try {
         const reply = await requestCoachReply();
         addCoachMessage(reply);
-
         if (state.mode === "simulation" && isClientReadyToBuy(reply)) {
-          await finishSimulation({
-            reasonLabel: "automatique (client prÃªt Ã  acheter)",
-            markerMessage: "FIN SIMULATION (AUTO: client prÃªt Ã  acheter).",
-            alreadyBusy: true
-          });
+          await finishSimulation({ reasonLabel: "automatique (client pret a acheter)", markerMessage: "FIN SIMULATION (AUTO)", alreadyBusy: true });
         }
       } catch (err) {
-        addMessage("coach", `Je ne peux pas rÃ©pondre pour l'instant. VÃ©rifie OPENAI_API_KEY puis redÃ©ploie.\n\nDÃ©tail: ${err.message}`);
+        addMessage("coach", `Je ne peux pas repondre pour l'instant. Verifie OPENAI_API_KEY puis redeploie.\n\nDetail: ${err.message}`);
       } finally {
         setBusy(false);
       }
@@ -625,19 +448,18 @@
 
     function showClientSummary(client, origin) {
       selectedClientBox.textContent = [
-        `Client sÃ©lectionnÃ© (${origin}): ${client.name} [${client.segment} | ${client.difficulty}]`,
+        `Client selectionne (${origin}): ${client.name} [${client.segment} | ${client.difficulty}]`,
         `Persona: ${client.persona}`,
         `Besoins: ${client.needs}`,
         `Objections: ${client.objections}`,
         `Budget: ${client.budget_range} | Urgence: ${client.urgency}`,
         `Trade-in: ${client.trade_in} | Financement/Location: ${client.financing_preference}`,
-        `StratÃ©gie vendeur impactÃ©e: ${client.sales_strategy}`
+        `Strategie vendeur impactee: ${client.sales_strategy}`
       ].join("\n");
     }
 
     async function startSimulation() {
       if (state.busy || !state.selectedClient) return;
-
       state.active = true;
       state.mode = "simulation";
       state.conversation = [];
@@ -647,31 +469,28 @@
       chat.innerHTML = "";
       setMode("simulation");
       sessionTitle.textContent = `Session - ${state.selectedClient.name}`;
-      updateMeta("Simulation dÃ©marrÃ©e.");
+      updateMeta("Simulation demarree.");
 
-      addMessage(
-        "coach",
-        "Simulation lancÃ©e. Je suis le client selon le profil sÃ©lectionnÃ©. Termine avec le bouton quand tu veux l'Ã©valuation."
-      );
+      addMessage("coach", "Simulation lancee. Je suis le client selon le profil choisi. Termine avec le bouton quand tu veux l'evaluation.");
 
       state.conversation.push({
         role: "user",
         content: [
-          "DÃ©marre maintenant la simulation en mode client seulement.",
-          `Niveau reprÃ©sentant: ${state.level}.`,
+          "Demarre maintenant la simulation en mode client seulement.",
+          `Niveau representant: ${state.level}.`,
           `Objectif de session: ${state.goal}.`,
           `Client: ${state.selectedClient.name}.`,
           `Segment: ${state.selectedClient.segment}.`,
-          `DifficultÃ©: ${state.selectedClient.difficulty}.`,
+          `Difficulte: ${state.selectedClient.difficulty}.`,
           `Persona: ${state.selectedClient.persona}.`,
           `Besoins: ${state.selectedClient.needs}.`,
           `Objections: ${state.selectedClient.objections}.`,
           `Budget: ${state.selectedClient.budget_range}.`,
           `Urgence: ${state.selectedClient.urgency}.`,
           `Trade-in: ${state.selectedClient.trade_in}.`,
-          `PrÃ©fÃ©rence financement/location: ${state.selectedClient.financing_preference}.`,
-          `StratÃ©gie de vente attendue chez le vendeur: ${state.selectedClient.sales_strategy}.`,
-          "Commence immÃ©diatement avec la premiÃ¨re rÃ©plique client."
+          `Preference financement/location: ${state.selectedClient.financing_preference}.`,
+          `Strategie de vente attendue chez le vendeur: ${state.selectedClient.sales_strategy}.`,
+          "Commence immediatement avec la premiere replique client."
         ].join(" ")
       });
 
@@ -680,7 +499,7 @@
         const firstReply = await requestCoachReply();
         addCoachMessage(firstReply);
       } catch (err) {
-        addMessage("coach", `Impossible de dÃ©marrer la simulation. DÃ©tail: ${err.message}`);
+        addMessage("coach", `Impossible de demarrer la simulation. Detail: ${err.message}`);
       } finally {
         setBusy(false);
       }
@@ -688,9 +507,7 @@
       userInput.focus();
     }
 
-    function activateChat() {
-      chatShell.classList.remove("hidden");
-    }
+    function activateChat() { chatShell.classList.remove("hidden"); }
 
     async function selectClient(client, origin = "galerie") {
       if (state.busy) return;
@@ -704,8 +521,7 @@
     async function selectRandomClient() {
       if (!state.clients.length) return;
       const idx = Math.floor(Math.random() * state.clients.length);
-      const chosen = state.clients[idx];
-      await selectClient(chosen, "alÃ©atoire");
+      await selectClient(state.clients[idx], "aleatoire");
     }
 
     function resetSession() {
@@ -716,7 +532,7 @@
       chat.innerHTML = "";
       sessionTitle.textContent = "Session inactive";
       setMode("preparation");
-      updateMeta("Session rÃ©initialisÃ©e. Choisis un client.");
+      updateMeta("Session reinitialisee. Choisis un client.");
       userInput.value = "";
     }
 
@@ -731,10 +547,7 @@
       }
 
       if (text.toUpperCase() === "FIN SIMULATION") {
-        await finishSimulation({
-          reasonLabel: "manuelle",
-          markerMessage: "FIN SIMULATION"
-        });
+        await finishSimulation({ reasonLabel: "manuelle", markerMessage: "FIN SIMULATION" });
         return;
       }
 
@@ -743,26 +556,18 @@
 
     async function handleEndSimulation() {
       if (state.busy) return;
-      await finishSimulation({
-        reasonLabel: "manuelle (bouton)",
-        markerMessage: "FIN SIMULATION (dÃ©clenchÃ©e par bouton)."
-      });
+      await finishSimulation({ reasonLabel: "manuelle (bouton)", markerMessage: "FIN SIMULATION (bouton)" });
     }
 
     async function initialize() {
       resetSession();
-      try {
-        await loadClients();
-      } catch (err) {
-        updateMeta(`Erreur chargement clients: ${err.message}`);
-      }
+      await loadClients();
     }
 
     sendBtn.addEventListener("click", handleSend);
     endBtn.addEventListener("click", handleEndSimulation);
     resetBtn.addEventListener("click", resetSession);
     reloadClientsBtn.addEventListener("click", loadClients);
-
     userInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
