@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="fr-CA">
 <head>
   <meta charset="UTF-8" />
@@ -6,15 +6,16 @@
   <title>CoachVente Honda Brossard</title>
   <style>
     :root {
-      --bg-1: #f4f7fb;
-      --bg-2: #e9f4ff;
+      --bg-1: #fff6f7;
+      --bg-2: #ffe8ec;
       --card: #ffffff;
-      --ink: #152238;
-      --muted: #5c6b82;
-      --brand: #005bbb;
-      --brand-2: #003f84;
-      --line: #d6e0ed;
-      --ok: #0e7a3f;
+      --ink: #24171a;
+      --muted: #6f4f57;
+      --brand: #d0021b;
+      --brand-2: #8f0013;
+      --line: #f2c7cf;
+      --soft: #fff2f4;
+      --ok: #0f7d3e;
     }
 
     * { box-sizing: border-box; }
@@ -24,23 +25,24 @@
       min-height: 100vh;
       font-family: "Segoe UI", "Aptos", Arial, sans-serif;
       color: var(--ink);
-      background: radial-gradient(circle at 20% 0%, var(--bg-2), var(--bg-1) 42%);
+      background: radial-gradient(circle at 10% 0%, var(--bg-2), var(--bg-1) 45%);
     }
 
-    .layout {
-      max-width: 1100px;
+    .shell {
+      max-width: 1240px;
       margin: 0 auto;
       padding: 1rem;
       display: grid;
       gap: 1rem;
-      grid-template-columns: 330px 1fr;
+      grid-template-columns: 360px 1fr;
     }
 
-    .panel, .chat-shell {
+    .panel,
+    .chat-shell {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 14px;
-      box-shadow: 0 8px 24px rgba(15, 30, 56, 0.08);
+      box-shadow: 0 8px 22px rgba(74, 6, 18, 0.1);
     }
 
     .panel {
@@ -51,158 +53,244 @@
     }
 
     h1 {
-      margin: 0 0 .25rem;
+      margin: 0;
       font-size: 1.15rem;
     }
 
     .subtitle {
-      margin: 0 0 1rem;
-      color: var(--muted);
+      margin: .35rem 0 .95rem;
       font-size: .92rem;
-      line-height: 1.4;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .badge-brand {
+      display: inline-block;
+      margin-top: .45rem;
+      padding: .2rem .5rem;
+      border: 1px solid #efb8c2;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--brand-2);
+      background: #fff1f4;
     }
 
     label {
       display: block;
-      font-size: .85rem;
-      font-weight: 600;
       margin: .8rem 0 .35rem;
+      font-size: .84rem;
+      font-weight: 700;
     }
 
-    select, textarea, input {
+    select,
+    textarea,
+    input {
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: .65rem .75rem;
       font: inherit;
-      color: var(--ink);
       background: #fff;
-    }
-
-    .row {
-      display: grid;
-      gap: .6rem;
-      grid-template-columns: 1fr 1fr;
+      color: var(--ink);
     }
 
     button {
-      margin-top: .9rem;
-      width: 100%;
+      margin-top: .85rem;
       border: 0;
       border-radius: 10px;
-      padding: .75rem .95rem;
+      padding: .72rem .9rem;
       font: inherit;
       font-weight: 700;
       cursor: pointer;
-      color: white;
-      background: linear-gradient(120deg, var(--brand), var(--brand-2));
+      color: #fff;
+      background: linear-gradient(125deg, var(--brand), var(--brand-2));
     }
 
     button.alt {
-      background: #eef4ff;
+      background: #fff2f4;
       color: var(--brand-2);
-      border: 1px solid #c6d9fb;
+      border: 1px solid #efb8c2;
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
     }
 
     .meta {
-      margin-top: .85rem;
+      margin-top: .8rem;
       padding: .65rem;
       border-radius: 10px;
-      border: 1px dashed #bfd2ea;
-      font-size: .84rem;
-      color: #334767;
-      background: #f6faff;
-      line-height: 1.35;
+      background: var(--soft);
+      border: 1px dashed #efb8c2;
+      font-size: .82rem;
+      white-space: pre-wrap;
+      color: #5d3942;
+    }
+
+    .gallery-wrap {
+      display: grid;
+      gap: .75rem;
+      margin-top: .75rem;
+      max-height: 58vh;
+      overflow: auto;
+      padding-right: .1rem;
+    }
+
+    .client-card {
+      border: 1px solid #efc4cc;
+      border-radius: 12px;
+      padding: .75rem;
+      background: #fff;
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+
+    .client-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 16px rgba(104, 10, 28, 0.1);
+      border-color: #e49eab;
+    }
+
+    .client-card.active {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 2px #ffd8df inset;
+      background: #fff6f7;
+    }
+
+    .client-top {
+      display: flex;
+      justify-content: space-between;
+      gap: .55rem;
+      align-items: start;
+    }
+
+    .client-name {
+      margin: 0;
+      font-size: .98rem;
+    }
+
+    .chip {
+      font-size: .72rem;
+      font-weight: 700;
+      border: 1px solid #efb8c2;
+      color: #7f2f3d;
+      background: #fff0f3;
+      border-radius: 999px;
+      padding: .18rem .48rem;
+      white-space: nowrap;
+    }
+
+    .client-meta {
+      margin: .45rem 0 0;
+      color: #6e4b53;
+      font-size: .8rem;
+      line-height: 1.34;
     }
 
     .chat-shell {
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto auto 1fr auto;
       min-height: calc(100vh - 2rem);
     }
 
     .chat-head {
-      padding: .85rem 1rem;
+      padding: .82rem .95rem;
       border-bottom: 1px solid var(--line);
       display: flex;
-      align-items: center;
       justify-content: space-between;
       gap: .7rem;
+      align-items: center;
     }
 
-    .badge {
-      font-size: .76rem;
+    .status {
+      font-size: .75rem;
       font-weight: 700;
-      padding: .32rem .52rem;
+      color: #7f2f3d;
+      border: 1px solid #efb8c2;
       border-radius: 999px;
-      border: 1px solid #bdd4f8;
-      color: var(--brand-2);
-      background: #eef5ff;
+      padding: .28rem .5rem;
+      background: #fff0f3;
+    }
+
+    .selected-client {
+      margin: 0;
+      padding: .65rem .95rem;
+      border-bottom: 1px dashed var(--line);
+      background: var(--soft);
+      font-size: .86rem;
+      color: #6f424b;
+      line-height: 1.35;
     }
 
     .chat {
       padding: .95rem;
-      overflow: auto;
       display: grid;
       gap: .7rem;
       align-content: start;
-      max-height: calc(100vh - 220px);
+      overflow: auto;
+      max-height: calc(100vh - 270px);
     }
 
     .msg {
-      max-width: 85%;
-      padding: .7rem .8rem;
+      max-width: 86%;
+      padding: .68rem .78rem;
       border-radius: 12px;
-      line-height: 1.42;
-      white-space: pre-wrap;
       border: 1px solid var(--line);
+      white-space: pre-wrap;
+      line-height: 1.4;
     }
 
     .msg.coach {
-      background: #f5f9ff;
       justify-self: start;
-      border-color: #cfddf5;
+      background: #fff4f6;
+      border-color: #efc1c9;
     }
 
     .msg.rep {
-      background: #eaf8ef;
       justify-self: end;
-      border-color: #b5e2c5;
+      background: #eef8f1;
+      border-color: #bfe2ca;
+    }
+
+    .composer-wrap {
+      border-top: 1px solid var(--line);
+      padding: .72rem;
+    }
+
+    .hint {
+      margin-bottom: .45rem;
+      font-size: .79rem;
+      color: #6b4a51;
     }
 
     .composer {
-      border-top: 1px solid var(--line);
-      padding: .75rem;
       display: grid;
-      gap: .55rem;
-      grid-template-columns: 1fr auto;
+      gap: .5rem;
+      grid-template-columns: 1fr auto auto;
       align-items: end;
     }
 
     .composer textarea {
-      min-height: 72px;
-      max-height: 180px;
+      min-height: 76px;
+      max-height: 190px;
       resize: vertical;
     }
 
     .send {
       width: auto;
-      min-width: 120px;
-      margin: 0;
+      min-width: 118px;
       height: 42px;
-      align-self: end;
+      margin: 0;
     }
 
-    .hint {
-      font-size: .8rem;
-      color: var(--muted);
-      padding: 0 .25rem .35rem;
+    .hidden {
+      display: none;
     }
 
-    .hidden { display: none; }
-
-    @media (max-width: 980px) {
-      .layout {
+    @media (max-width: 1050px) {
+      .shell {
         grid-template-columns: 1fr;
       }
 
@@ -218,467 +306,471 @@
         max-height: 56vh;
       }
     }
+
+    @media (max-width: 760px) {
+      .composer {
+        grid-template-columns: 1fr;
+      }
+
+      .send {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="layout">
+  <div class="shell">
     <aside class="panel">
       <h1>CoachVente Honda Brossard</h1>
-      <p class="subtitle">Simulateur et évaluateur de vente automobile (Honda, Canada/Québec, FR).</p>
+      <p class="subtitle">SÃ©lectionne un client dans la galerie. Le profil choisi influence le comportement du client et les stratÃ©gies de vente attendues.</p>
+      <span class="badge-brand">Accent Honda Rouge</span>
 
-      <label for="level">Niveau du représentant</label>
+      <label for="level">Niveau du reprÃ©sentant</label>
       <select id="level">
-        <option value="Débutant">Débutant</option>
-        <option value="Intermédiaire" selected>Intermédiaire</option>
-        <option value="Avancé">Avancé</option>
+        <option value="DÃ©butant">DÃ©butant</option>
+        <option value="IntermÃ©diaire" selected>IntermÃ©diaire</option>
+        <option value="AvancÃ©">AvancÃ©</option>
       </select>
 
       <label for="goal">Objectif de la session</label>
       <select id="goal">
-        <option value="Structure complète" selected>Structure complète</option>
-        <option value="Découverte">Découverte</option>
+        <option value="Structure complÃ¨te" selected>Structure complÃ¨te</option>
+        <option value="DÃ©couverte">DÃ©couverte</option>
         <option value="Objections">Objections</option>
         <option value="Closing">Closing</option>
         <option value="Gestion du prix">Gestion du prix</option>
         <option value="Financement/Location">Financement/Location</option>
       </select>
 
-      <label for="scenario">Scénario client</label>
-      <select id="scenario">
-        <option value="A" selected>A - Famille pragmatique (CR-V/HR-V, budget serré, trade-in)</option>
-        <option value="B">B - Navetteur analytique (Civic, compare 2 marques, frais)</option>
-        <option value="C">C - Client pressé (Pilot/CR-V, besoin rapide, reprise/délais)</option>
-      </select>
+      <div class="meta" id="metaBox">Mode: PrÃ©paration\nAction: Choisis un client pour ouvrir le chat.</div>
 
-      <button id="startBtn">Lancer la simulation</button>
-      <button id="resetBtn" class="alt">Réinitialiser</button>
+      <label>Galerie des clients</label>
+      <div id="gallery" class="gallery-wrap"></div>
 
-      <div class="meta" id="metaBox">
-        Mode: Préparation
-      </div>
+      <button id="reloadClientsBtn" class="alt">Recharger la galerie</button>
+      <button id="resetBtn" class="alt">RÃ©initialiser la session</button>
     </aside>
 
-    <section class="chat-shell">
+    <section id="chatShell" class="chat-shell hidden">
       <div class="chat-head">
         <strong id="sessionTitle">Session inactive</strong>
-        <span class="badge" id="modeBadge">Préparation</span>
+        <span id="modeBadge" class="status">PrÃ©paration</span>
       </div>
 
-      <div class="chat" id="chat"></div>
+      <p id="selectedClientBox" class="selected-client">Aucun client sÃ©lectionnÃ©.</p>
 
-      <div>
-        <div class="hint">Tape <strong>FIN SIMULATION</strong> pour passer en mode évaluation.</div>
+      <div id="chat" class="chat"></div>
+
+      <div class="composer-wrap">
+        <div class="hint">EntrÃ©e = envoyer. Shift+EntrÃ©e = nouvelle ligne. Le bouton Terminer la simulation lance l'Ã©valuation.</div>
         <div class="composer">
-          <textarea id="userInput" placeholder="Écris ici ta réplique de représentant..."></textarea>
-          <button class="send" id="sendBtn">Envoyer</button>
+          <textarea id="userInput" placeholder="Ã‰cris ici ta rÃ©plique de reprÃ©sentant..."></textarea>
+          <button id="sendBtn" class="send">Envoyer</button>
+          <button id="endBtn" class="send alt">Terminer la simulation</button>
         </div>
       </div>
     </section>
   </div>
 
   <script>
-    const chat = document.getElementById('chat');
-    const userInput = document.getElementById('userInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const startBtn = document.getElementById('startBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const modeBadge = document.getElementById('modeBadge');
-    const metaBox = document.getElementById('metaBox');
-    const sessionTitle = document.getElementById('sessionTitle');
+    const chatShell = document.getElementById("chatShell");
+    const chat = document.getElementById("chat");
+    const gallery = document.getElementById("gallery");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const endBtn = document.getElementById("endBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const reloadClientsBtn = document.getElementById("reloadClientsBtn");
+    const modeBadge = document.getElementById("modeBadge");
+    const metaBox = document.getElementById("metaBox");
+    const sessionTitle = document.getElementById("sessionTitle");
+    const selectedClientBox = document.getElementById("selectedClientBox");
 
     const state = {
       active: false,
-      mode: 'preparation',
-      level: 'Intermédiaire',
-      goal: 'Structure complète',
-      scenario: 'A',
-      turn: 0,
-      convo: [],
-      repMessages: [],
-      clientStep: 0,
-      scenarioData: null
+      busy: false,
+      mode: "preparation",
+      level: "IntermÃ©diaire",
+      goal: "Structure complÃ¨te",
+      clients: [],
+      selectedClient: null,
+      conversation: []
     };
 
-    const SCENARIOS = {
-      A: {
-        name: 'Famille pragmatique',
-        model: 'CR-V vs HR-V',
-        persona: 'Couple avec 1 enfant, budget serré, hésite achat/location, a un trade-in (Elantra 2018).',
-        urgency: 'Dans le prochain mois',
-        seed: [
-          'Bonjour. On regarde un VUS compact, surtout pour la famille et les commissions.',
-          'On hésite entre un CR-V et un HR-V, pis on veut pas dépasser notre budget mensuel.',
-          'On a aussi une Elantra 2018 à faire évaluer.'
-        ]
-      },
-      B: {
-        name: 'Navetteur analytique',
-        model: 'Civic',
-        persona: 'Client seul, compare 2 marques, sensible aux frais cachés, veut paiement bas.',
-        urgency: '2 à 6 semaines',
-        seed: [
-          'Salut. Je fais beaucoup d\'autoroute, donc je regarde une Civic.',
-          'Je compare avec une autre marque, et je veux comprendre le coût total, pas juste le prix affiché.',
-          'Mon objectif c\'est un paiement mensuel bas, sans surprise.'
-        ]
-      },
-      C: {
-        name: 'Client pressé',
-        model: 'Pilot/CR-V',
-        persona: 'Besoin rapide, focus délai et valeur de reprise, peu de temps pour magasiner.',
-        urgency: 'Cette semaine',
-        seed: [
-          'Bonjour. Je vais être direct: j\'ai besoin d\'un véhicule rapidement.',
-          'Je regarde surtout Pilot ou CR-V selon disponibilité.',
-          'J\'ai une reprise, puis je veux savoir si on peut avancer vite.'
-        ]
+    function setMode(mode) {
+      state.mode = mode;
+      const labels = {
+        preparation: "PrÃ©paration",
+        simulation: "Mode Simulation",
+        evaluation: "Mode Ã‰valuation"
+      };
+      modeBadge.textContent = labels[mode] || mode;
+    }
+
+    function updateMeta(extra = "") {
+      if (!state.selectedClient) {
+        metaBox.textContent = "Mode: PrÃ©paration\nAction: Choisis un client pour ouvrir le chat.";
+        return;
       }
-    };
+
+      const client = state.selectedClient;
+      const lines = [
+        `Mode: ${state.mode === "simulation" ? "Simulation" : state.mode === "evaluation" ? "Ã‰valuation" : "PrÃ©paration"}`,
+        `Client: ${client.name}`,
+        `Segment: ${client.segment} | DifficultÃ©: ${client.difficulty}`,
+        `Objectif: ${state.goal}`,
+        `StratÃ©gie impactÃ©e: ${client.sales_strategy}`
+      ];
+
+      if (extra) lines.push(`Info: ${extra}`);
+      metaBox.textContent = lines.join("\n");
+    }
+
+    function setBusy(isBusy) {
+      state.busy = isBusy;
+      sendBtn.disabled = isBusy;
+      endBtn.disabled = isBusy;
+      reloadClientsBtn.disabled = isBusy;
+      sendBtn.textContent = isBusy ? "Envoi..." : "Envoyer";
+    }
 
     function addMessage(role, text) {
-      state.convo.push({ role, text });
-      if (role === 'rep') state.repMessages.push(text);
-
-      const bubble = document.createElement('div');
+      const bubble = document.createElement("div");
       bubble.className = `msg ${role}`;
       bubble.textContent = text;
       chat.appendChild(bubble);
       chat.scrollTop = chat.scrollHeight;
     }
 
-    function setMode(mode) {
-      state.mode = mode;
-      const labels = {
-        preparation: 'Préparation',
-        simulation: 'Mode Simulation',
-        evaluation: 'Mode Évaluation'
-      };
-      modeBadge.textContent = labels[mode] || mode;
+    function addRepMessage(text) {
+      addMessage("rep", text);
+      state.conversation.push({ role: "user", content: text });
     }
 
-    function updateMeta() {
-      const sc = state.scenarioData;
-      if (!state.active || !sc) {
-        metaBox.textContent = 'Mode: Préparation';
+    function addCoachMessage(text) {
+      addMessage("coach", text);
+      state.conversation.push({ role: "assistant", content: text });
+    }
+
+    function normalizeText(input) {
+      return (input || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function isClientReadyToBuy(text) {
+      const t = normalizeText(text);
+      const negativePattern = /(pas|pas encore|pas pret|pas prete).{0,20}(acheter|achat|signer|depot|deposer)/;
+      if (negativePattern.test(t)) return false;
+
+      const positiveSignals = [
+        "je suis pret a acheter",
+        "je suis prete a acheter",
+        "je veux l acheter",
+        "je le prends",
+        "je la prends",
+        "on le prend",
+        "on la prend",
+        "on avance",
+        "on peut signer",
+        "faisons le depot",
+        "on fait le depot",
+        "ca me convient on y va",
+        "c est bon pour moi on y va",
+        "pret a acheter",
+        "prete a acheter"
+      ];
+
+      return positiveSignals.some((signal) => t.includes(signal));
+    }
+
+    async function loadClients() {
+      const response = await fetch("/api/clients", { method: "GET" });
+      if (!response.ok) throw new Error(`Erreur /api/clients (${response.status})`);
+      const data = await response.json();
+      if (!Array.isArray(data.clients) || data.clients.length === 0) {
+        throw new Error("Aucun client retournÃ© par l'API.");
+      }
+
+      state.clients = data.clients;
+      renderGallery();
+      updateMeta(data.warning ? `Fallback local utilisÃ© (${data.warning})` : "Profils chargÃ©s depuis Supabase/API.");
+    }
+
+    function makeCard(client, isRandom = false) {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "client-card";
+      if (!isRandom && state.selectedClient && state.selectedClient.id === client.id) {
+        card.classList.add("active");
+      }
+
+      if (isRandom) {
+        card.innerHTML = [
+          '<div class="client-top">',
+          '<h3 class="client-name">Client alÃ©atoire</h3>',
+          '<span class="chip">Surprise</span>',
+          '</div>',
+          '<p class="client-meta">Choisit un profil au hasard et l\'affiche au dÃ©but du chat avant la simulation.</p>'
+        ].join("");
+        card.addEventListener("click", () => selectRandomClient());
+        return card;
+      }
+
+      card.innerHTML = [
+        '<div class="client-top">',
+        `<h3 class="client-name">${client.name}</h3>`,
+        `<span class="chip">${client.difficulty}</span>`,
+        '</div>',
+        `<p class="client-meta"><strong>Segment:</strong> ${client.segment}</p>`,
+        `<p class="client-meta"><strong>Persona:</strong> ${client.persona}</p>`,
+        `<p class="client-meta"><strong>StratÃ©gie:</strong> ${client.sales_strategy}</p>`
+      ].join("");
+
+      card.addEventListener("click", () => selectClient(client));
+      return card;
+    }
+
+    function renderGallery() {
+      gallery.innerHTML = "";
+      gallery.appendChild(makeCard({}, true));
+      state.clients.forEach((client) => {
+        gallery.appendChild(makeCard(client));
+      });
+    }
+
+    async function requestCoachReply() {
+      const payload = {
+        conversation: state.conversation,
+        context: {
+          mode: state.mode,
+          level: state.level,
+          goal: state.goal,
+          client: state.selectedClient
+        }
+      };
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        const details = data?.details ? `\n${data.details}` : "";
+        throw new Error(`Erreur API (${response.status})${details}`);
+      }
+
+      const data = await response.json();
+      return data.reply;
+    }
+
+    async function finishSimulation(options = {}) {
+      const {
+        reasonLabel = "manuelle",
+        markerMessage = "FIN SIMULATION",
+        alreadyBusy = false
+      } = options;
+
+      if (!state.active) {
+        addMessage("coach", "Aucune simulation active.");
         return;
       }
 
-      metaBox.innerHTML =
-        `Mode: ${state.mode === 'simulation' ? 'Simulation' : 'Évaluation'}\n` +
-        `Niveau: ${state.level}\n` +
-        `Objectif: ${state.goal}\n` +
-        `Scénario: ${state.scenario} - ${sc.name}`;
+      if (state.mode !== "simulation") {
+        addMessage("coach", "La simulation est dÃ©jÃ  terminÃ©e.");
+        return;
+      }
+
+      setMode("evaluation");
+      updateMeta(`Simulation terminÃ©e (${reasonLabel}).`);
+      state.conversation.push({ role: "user", content: markerMessage });
+      addMessage("coach", `Simulation terminÃ©e (${reasonLabel}). GÃ©nÃ©ration de l'Ã©valuation...`);
+
+      if (!alreadyBusy) setBusy(true);
+      try {
+        const reply = await requestCoachReply();
+        addCoachMessage(reply);
+        sessionTitle.textContent = `Ã‰valuation - ${state.selectedClient.name}`;
+      } catch (err) {
+        addMessage("coach", `Je ne peux pas rÃ©pondre pour l'instant. VÃ©rifie OPENAI_API_KEY puis redÃ©ploie.\n\nDÃ©tail: ${err.message}`);
+      } finally {
+        if (!alreadyBusy) setBusy(false);
+      }
     }
 
-    function askStartupPrompt() {
-      addMessage(
-        'coach',
-        'Tu es en simulation active. Reste en rôle de représentant. Je suis le client.\n' +
-        'Objectif: vente complète, réaliste et éthique.\n\n' +
-        'Rappel: écris "FIN SIMULATION" quand tu veux passer à l\'évaluation.'
-      );
+    async function sendAndReply(repText) {
+      addRepMessage(repText);
 
-      const intro = state.scenarioData.seed.join(' ');
-      addMessage('coach', intro);
+      setBusy(true);
+      try {
+        const reply = await requestCoachReply();
+        addCoachMessage(reply);
+
+        if (state.mode === "simulation" && isClientReadyToBuy(reply)) {
+          await finishSimulation({
+            reasonLabel: "automatique (client prÃªt Ã  acheter)",
+            markerMessage: "FIN SIMULATION (AUTO: client prÃªt Ã  acheter).",
+            alreadyBusy: true
+          });
+        }
+      } catch (err) {
+        addMessage("coach", `Je ne peux pas rÃ©pondre pour l'instant. VÃ©rifie OPENAI_API_KEY puis redÃ©ploie.\n\nDÃ©tail: ${err.message}`);
+      } finally {
+        setBusy(false);
+      }
     }
 
-    function startSimulation() {
+    function showClientSummary(client, origin) {
+      selectedClientBox.textContent = [
+        `Client sÃ©lectionnÃ© (${origin}): ${client.name} [${client.segment} | ${client.difficulty}]`,
+        `Persona: ${client.persona}`,
+        `Besoins: ${client.needs}`,
+        `Objections: ${client.objections}`,
+        `Budget: ${client.budget_range} | Urgence: ${client.urgency}`,
+        `Trade-in: ${client.trade_in} | Financement/Location: ${client.financing_preference}`,
+        `StratÃ©gie vendeur impactÃ©e: ${client.sales_strategy}`
+      ].join("\n");
+    }
+
+    async function startSimulation() {
+      if (state.busy || !state.selectedClient) return;
+
       state.active = true;
-      state.turn = 0;
-      state.convo = [];
-      state.repMessages = [];
-      state.clientStep = 0;
-      state.level = document.getElementById('level').value;
-      state.goal = document.getElementById('goal').value;
-      state.scenario = document.getElementById('scenario').value;
-      state.scenarioData = SCENARIOS[state.scenario];
+      state.mode = "simulation";
+      state.conversation = [];
+      state.level = document.getElementById("level").value;
+      state.goal = document.getElementById("goal").value;
 
-      chat.innerHTML = '';
-      setMode('simulation');
-      updateMeta();
-      sessionTitle.textContent = `Session: ${state.scenarioData.name}`;
+      chat.innerHTML = "";
+      setMode("simulation");
+      sessionTitle.textContent = `Session - ${state.selectedClient.name}`;
+      updateMeta("Simulation dÃ©marrÃ©e.");
 
-      addMessage('coach',
-        'Bienvenue dans CoachVente Honda Brossard.\n' +
-        `Niveau détecté: ${state.level}.\n` +
-        `Focus: ${state.goal}.\n` +
-        `Scénario ${state.scenario}: ${state.scenarioData.persona}`
+      addMessage(
+        "coach",
+        "Simulation lancÃ©e. Je suis le client selon le profil sÃ©lectionnÃ©. Termine avec le bouton quand tu veux l'Ã©valuation."
       );
 
-      askStartupPrompt();
+      state.conversation.push({
+        role: "user",
+        content: [
+          "DÃ©marre maintenant la simulation en mode client seulement.",
+          `Niveau reprÃ©sentant: ${state.level}.`,
+          `Objectif de session: ${state.goal}.`,
+          `Client: ${state.selectedClient.name}.`,
+          `Segment: ${state.selectedClient.segment}.`,
+          `DifficultÃ©: ${state.selectedClient.difficulty}.`,
+          `Persona: ${state.selectedClient.persona}.`,
+          `Besoins: ${state.selectedClient.needs}.`,
+          `Objections: ${state.selectedClient.objections}.`,
+          `Budget: ${state.selectedClient.budget_range}.`,
+          `Urgence: ${state.selectedClient.urgency}.`,
+          `Trade-in: ${state.selectedClient.trade_in}.`,
+          `PrÃ©fÃ©rence financement/location: ${state.selectedClient.financing_preference}.`,
+          `StratÃ©gie de vente attendue chez le vendeur: ${state.selectedClient.sales_strategy}.`,
+          "Commence immÃ©diatement avec la premiÃ¨re rÃ©plique client."
+        ].join(" ")
+      });
+
+      setBusy(true);
+      try {
+        const firstReply = await requestCoachReply();
+        addCoachMessage(firstReply);
+      } catch (err) {
+        addMessage("coach", `Impossible de dÃ©marrer la simulation. DÃ©tail: ${err.message}`);
+      } finally {
+        setBusy(false);
+      }
+
       userInput.focus();
     }
 
-    function containsAny(text, terms) {
-      const t = text.toLowerCase();
-      return terms.some(term => t.includes(term));
+    function activateChat() {
+      chatShell.classList.remove("hidden");
     }
 
-    function generateClientReply(repText) {
-      const text = repText.toLowerCase();
-      const sc = state.scenarioData;
-      state.turn += 1;
-
-      if (containsAny(text, ['taux exact', 'promo exacte', 'inventaire exact', 'rabais exact'])) {
-        return 'Je comprends. Pour les taux/promos/inventaire exacts, fais juste une hypothèse réaliste pis on continue la simulation.';
-      }
-
-      if (state.clientStep === 0) {
-        state.clientStep++;
-        if (containsAny(text, ['budget', 'besoin', 'usage', 'km', 'famille', 'question'])) {
-          return 'Bonne question. Je fais environ 22 000 km par année, surtout ville/autoroute. J\'veux quelque chose de fiable, pas trop cher par mois.';
-        }
-        return 'Je peux te donner plus de détails, oui. Qu\'est-ce que tu veux savoir en premier?';
-      }
-
-      if (state.clientStep === 1) {
-        state.clientStep++;
-        if (containsAny(text, ['reformul', 'si je comprends', 'donc', 'résume'])) {
-          return 'Oui, c\'est pas mal ça. J\'veux juste être certain de faire un bon choix, pas me faire pousser.';
-        }
-        return 'Exact. J\'hésite encore entre payer moins par mois et garder plus de valeur à long terme.';
-      }
-
-      if (state.clientStep === 2) {
-        state.clientStep++;
-        if (containsAny(text, ['cr-v', 'hr-v', 'civic', 'pilot', 'option'])) {
-          return `O.K., je vois mieux les options. Entre ${sc.model}, j\'aurais besoin que tu me dises clairement ce que je gagne au quotidien.`;
-        }
-        return 'Je veux une recommandation claire: pas 10 options, juste 1-2 qui fitent vraiment.';
-      }
-
-      if (state.clientStep === 3) {
-        state.clientStep++;
-        if (containsAny(text, ['paiement', 'location', 'financement', 'mensuel', 'terme'])) {
-          return 'C\'est là que j\'ai une objection: si le paiement dépasse mon confort, je bloque. Montre-moi des scénarios transparents.';
-        }
-        return 'Avant d\'avancer, j\'ai peur que ça finisse plus cher que prévu avec tous les frais.';
-      }
-
-      if (state.clientStep === 4) {
-        state.clientStep++;
-        if (containsAny(text, ['essai', 'route', 'prochaine étape', 'dépôt', 'rdv'])) {
-          return 'Un essai routier, oui, ça m\'aiderait à me décider. Si ça me convient, je veux savoir exactement les documents à apporter.';
-        }
-        return 'Je suis pas fermé, mais j\'ai besoin d\'une prochaine étape claire pour avancer sans pression.';
-      }
-
-      if (containsAny(text, ['merci', 'parfait', 'super'])) {
-        return 'Parfait, merci. Je veux juste que tout soit clair et éthique, puis on avance.';
-      }
-
-      return 'O.K., je t\'écoute. Qu\'est-ce que tu proposes comme prochaine étape concrète?';
+    async function selectClient(client, origin = "galerie") {
+      if (state.busy) return;
+      state.selectedClient = client;
+      renderGallery();
+      activateChat();
+      showClientSummary(client, origin);
+      await startSimulation();
     }
 
-    function clamp(val, min, max) {
-      return Math.max(min, Math.min(max, val));
-    }
-
-    function scoreCriteria(repMsgs) {
-      const joined = repMsgs.join(' \n ').toLowerCase();
-      const qCount = repMsgs.join(' ').split('?').length - 1;
-
-      const c = {
-        accueil: 4,
-        decouverte: 3,
-        reformulation: 3,
-        valeur: 3,
-        produit: 3,
-        objections: 3,
-        budget: 3,
-        closing: 3,
-        structure: 4,
-        pro: 6
-      };
-
-      if (containsAny(joined, ['bonjour', 'bienvenue', 'enchanté', 'merci d\'être venu'])) c.accueil += 3;
-      if (qCount >= 4) c.decouverte += 3;
-      if (containsAny(joined, ['budget', 'usage', 'kilom', 'famille', 'trajet', 'délai'])) c.decouverte += 2;
-      if (containsAny(joined, ['si je comprends', 'donc si je résume', 'corrige-moi'])) c.reformulation += 4;
-      if (containsAny(joined, ['bénéfice', 'avantage', 'valeur', 'au quotidien', 'pour toi'])) c.valeur += 4;
-      if (containsAny(joined, ['civic', 'cr-v', 'hr-v', 'pilot', 'accord'])) c.produit += 3;
-      if (containsAny(joined, ['je comprends', 'c\'est normal', 'bonne question', 'je te propose'])) c.objections += 3;
-      if (containsAny(joined, ['paiement', 'mensuel', 'financement', 'location', 'terme', 'comptant'])) c.budget += 4;
-      if (containsAny(joined, ['prochaine étape', 'on fixe', 'rdv', 'essai routier', 'dépôt'])) c.closing += 4;
-      if (repMsgs.length >= 7) c.structure += 3;
-      if (containsAny(joined, ['sans pression', 'transpar', 'éthique', 'clair'])) c.pro += 2;
-      if (containsAny(joined, ['faut signer tout de suite', 'si tu refuses'])) c.pro -= 3;
-
-      Object.keys(c).forEach(k => c[k] = clamp(c[k], 1, 10));
-      return c;
-    }
-
-    function levelMention(score) {
-      if (score >= 90) return 'Expert';
-      if (score >= 75) return 'Avancé';
-      if (score >= 60) return 'Intermédiaire';
-      return 'Débutant';
-    }
-
-    function pickQuotes(repMsgs) {
-      const clean = repMsgs.map(m => m.trim()).filter(Boolean);
-      const first = clean[0] || 'Bonjour, merci de votre visite.';
-      const longest = clean.slice().sort((a, b) => b.length - a.length)[0] || first;
-      const last = clean[clean.length - 1] || first;
-
-      const unique = [];
-      [first, longest, last].forEach(q => {
-        if (!unique.includes(q)) unique.push(q);
-      });
-      while (unique.length < 3) unique.push(first);
-      return unique.slice(0, 3);
-    }
-
-    function createImprovementPlan(scores) {
-      const entries = [
-        ['Découverte', scores.decouverte],
-        ['Reformulation', scores.reformulation],
-        ['Valeur', scores.valeur],
-        ['Objections', scores.objections],
-        ['Budget/Prix', scores.budget],
-        ['Closing', scores.closing]
-      ].sort((a, b) => a[1] - b[1]);
-
-      return [entries[0][0], entries[1][0], entries[2][0]];
-    }
-
-    function generateEvaluation() {
-      const repMsgs = state.repMessages;
-      const scores = scoreCriteria(repMsgs);
-      const list = [
-        scores.accueil,
-        scores.decouverte,
-        scores.reformulation,
-        scores.valeur,
-        scores.produit,
-        scores.objections,
-        scores.budget,
-        scores.closing,
-        scores.structure,
-        scores.pro
-      ];
-
-      const global = Math.round((list.reduce((a, b) => a + b, 0) / list.length) * 10);
-      const mention = levelMention(global);
-      const quotes = pickQuotes(repMsgs);
-      const priorities = createImprovementPlan(scores);
-
-      const summary =
-        'A) Résumé\n' +
-        `Tu as maintenu un échange réaliste et professionnel avec une bonne base de relation client. ` +
-        `La progression est présente, mais certaines transitions restent rapides (besoins -> proposition). ` +
-        `La valeur perçue et le cadrage budget peuvent être plus structurés pour sécuriser la décision. ` +
-        `Le closing gagne à être plus direct avec une prochaine action datée.`;
-
-      const note =
-        '\n\nB) Note globale\n' +
-        `${global}/100 - ${mention}`;
-
-      const grid =
-        '\n\nC) Grille détaillée (/10)\n' +
-        `1. Accueil & rapport: ${scores.accueil}/10 - Ton posé, base de confiance correcte.\n` +
-        `2. Découverte des besoins: ${scores.decouverte}/10 - Bon départ, approfondir budget, usage et critères de décision.\n` +
-        `3. Reformulation & validation: ${scores.reformulation}/10 - Reformule plus explicitement avant de proposer.\n` +
-        `4. Présentation de valeur: ${scores.valeur}/10 - Lier chaque option à un bénéfice concret du client.\n` +
-        `5. Maîtrise produit: ${scores.produit}/10 - Mention des modèles correcte, garder des comparatifs simples.\n` +
-        `6. Gestion des objections: ${scores.objections}/10 - Bonne empathie, ajouter preuves/exemples chiffrés.\n` +
-        `7. Gestion budget/prix: ${scores.budget}/10 - Clarifier scénarios de paiement avec transparence.\n` +
-        `8. Closing & prochaines étapes: ${scores.closing}/10 - Demander un engagement clair et immédiat.\n` +
-        `9. Structure & contrôle du processus: ${scores.structure}/10 - Processus global présent, transitions à renforcer.\n` +
-        `10. Professionnalisme & conformité: ${scores.pro}/10 - Respectueux et éthique, sans pression excessive.`;
-
-      const moments =
-        '\n\nD) Moments clés (citations exactes)\n' +
-        `1) "${quotes[0]}"\n` +
-        `Pourquoi: Point d\'entrée utile, mais peut mieux orienter la découverte.\n` +
-        `Alternative: "Pour bien vous conseiller, je vais d\'abord valider votre usage, budget mensuel et délai."\n` +
-        `2) "${quotes[1]}"\n` +
-        `Pourquoi: Bon effort d\'explication; ajoute une reformulation claire avant la proposition.\n` +
-        `Alternative: "Si je résume: priorité paiement stable + fiabilité. Je vous propose 2 options alignées."\n` +
-        `3) "${quotes[2]}"\n` +
-        `Pourquoi: Bonne intention de conclusion, mais engagement pas assez concret.\n` +
-        `Alternative: "On fixe l\'essai routier aujourd\'hui à 17h30 et je prépare les scénarios de paiement."`;
-
-      const plan =
-        '\n\nE) Plan d\'amélioration (7 jours)\n' +
-        `3 priorités: ${priorities.join(' | ')}\n` +
-        '3 exercices pratiques:\n' +
-        '1. Faire 10 questions ouvertes de découverte et les pratiquer à voix haute.\n' +
-        '2. Objections: appliquer la séquence Empathie -> Clarification -> Preuve -> Validation (5 cas/jour).\n' +
-        '3. Closing: finir chaque simulation avec une date/heure + prochaine action confirmée.\n' +
-        '1 objectif mesurable: obtenir au moins 8/10 en Découverte et 8/10 en Closing à la prochaine simulation.';
-
-      const scripts =
-        '\n\nF) 5 phrases prêtes à l\'emploi\n' +
-        '1. "Avant de parler prix, j\'aimerais comprendre votre usage réel pour vous éviter un mauvais fit."\n' +
-        '2. "Si je vous ai bien compris, vos 3 priorités sont: budget mensuel, fiabilité, et délai rapide."\n' +
-        '3. "Je vous propose 2 options seulement: une pour minimiser le paiement, l\'autre pour maximiser la valeur."\n' +
-        '4. "Votre objection est légitime; regardons les chiffres ensemble de façon transparente."\n' +
-        '5. "Prochaine étape: essai routier aujourd\'hui, puis je vous remets les scénarios détaillés."';
-
-      const question =
-        '\n\nG) Question de coaching\n' +
-        'Quelle question de découverte aurait pu te donner la vraie priorité émotionnelle du client plus tôt?';
-
-      return summary + note + grid + moments + plan + scripts + question;
-    }
-
-    function handleSend() {
-      const text = userInput.value.trim();
-      if (!text) return;
-      if (!state.active) {
-        addMessage('coach', 'Clique sur "Lancer la simulation" pour démarrer une session.');
-        userInput.value = '';
-        return;
-      }
-
-      addMessage('rep', text);
-      userInput.value = '';
-
-      if (text.toUpperCase() === 'FIN SIMULATION') {
-        setMode('evaluation');
-        updateMeta();
-        const evaluation = generateEvaluation();
-        addMessage('coach', evaluation);
-        sessionTitle.textContent = `Évaluation - ${state.scenarioData.name}`;
-        return;
-      }
-
-      if (state.mode !== 'simulation') {
-        addMessage('coach', 'La session est en mode évaluation. Réinitialise pour recommencer.');
-        return;
-      }
-
-      const reply = generateClientReply(text);
-      addMessage('coach', reply);
+    async function selectRandomClient() {
+      if (!state.clients.length) return;
+      const idx = Math.floor(Math.random() * state.clients.length);
+      const chosen = state.clients[idx];
+      await selectClient(chosen, "alÃ©atoire");
     }
 
     function resetSession() {
+      if (state.busy) return;
       state.active = false;
-      state.mode = 'preparation';
-      state.convo = [];
-      state.repMessages = [];
-      state.clientStep = 0;
-      chat.innerHTML = '';
-      sessionTitle.textContent = 'Session inactive';
-      setMode('preparation');
-      updateMeta();
-      addMessage('coach',
-        'Prêt. Choisis niveau + objectif + scénario, puis clique "Lancer la simulation".'
-      );
+      state.mode = "preparation";
+      state.conversation = [];
+      chat.innerHTML = "";
+      sessionTitle.textContent = "Session inactive";
+      setMode("preparation");
+      updateMeta("Session rÃ©initialisÃ©e. Choisis un client.");
+      userInput.value = "";
     }
 
-    startBtn.addEventListener('click', startSimulation);
-    resetBtn.addEventListener('click', resetSession);
-    sendBtn.addEventListener('click', handleSend);
+    async function handleSend() {
+      const text = userInput.value.trim();
+      if (!text || state.busy) return;
+      userInput.value = "";
 
-    userInput.addEventListener('keydown', (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      if (!state.active) {
+        addMessage("coach", "Clique d'abord sur un client dans la galerie pour ouvrir la simulation.");
+        return;
+      }
+
+      if (text.toUpperCase() === "FIN SIMULATION") {
+        await finishSimulation({
+          reasonLabel: "manuelle",
+          markerMessage: "FIN SIMULATION"
+        });
+        return;
+      }
+
+      await sendAndReply(text);
+    }
+
+    async function handleEndSimulation() {
+      if (state.busy) return;
+      await finishSimulation({
+        reasonLabel: "manuelle (bouton)",
+        markerMessage: "FIN SIMULATION (dÃ©clenchÃ©e par bouton)."
+      });
+    }
+
+    async function initialize() {
+      resetSession();
+      try {
+        await loadClients();
+      } catch (err) {
+        updateMeta(`Erreur chargement clients: ${err.message}`);
+      }
+    }
+
+    sendBtn.addEventListener("click", handleSend);
+    endBtn.addEventListener("click", handleEndSimulation);
+    resetBtn.addEventListener("click", resetSession);
+    reloadClientsBtn.addEventListener("click", loadClients);
+
+    userInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
         handleSend();
       }
     });
 
-    resetSession();
+    initialize();
   </script>
 </body>
 </html>
