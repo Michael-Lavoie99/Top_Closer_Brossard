@@ -1,51 +1,684 @@
 ﻿<!doctype html>
-<html lang="fr">
+<html lang="fr-CA">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Page de test</title>
+  <title>CoachVente Honda Brossard</title>
   <style>
-    :root { color-scheme: light; }
+    :root {
+      --bg-1: #f4f7fb;
+      --bg-2: #e9f4ff;
+      --card: #ffffff;
+      --ink: #152238;
+      --muted: #5c6b82;
+      --brand: #005bbb;
+      --brand-2: #003f84;
+      --line: #d6e0ed;
+      --ok: #0e7a3f;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      font-family: Segoe UI, Arial, sans-serif;
       min-height: 100vh;
+      font-family: "Segoe UI", "Aptos", Arial, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(circle at 20% 0%, var(--bg-2), var(--bg-1) 42%);
+    }
+
+    .layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem;
       display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, #f3f7ff, #eefcf7);
+      gap: 1rem;
+      grid-template-columns: 330px 1fr;
     }
-    .card {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      text-align: center;
-      max-width: 420px;
-      width: calc(100% - 2rem);
+
+    .panel, .chat-shell {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(15, 30, 56, 0.08);
     }
-    h1 { margin-top: 0; }
-    button {
-      border: 0;
-      padding: .7rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #0f766e;
-      color: white;
+
+    .panel {
+      padding: 1rem;
+      align-self: start;
+      position: sticky;
+      top: 1rem;
+    }
+
+    h1 {
+      margin: 0 0 .25rem;
+      font-size: 1.15rem;
+    }
+
+    .subtitle {
+      margin: 0 0 1rem;
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.4;
+    }
+
+    label {
+      display: block;
+      font-size: .85rem;
       font-weight: 600;
+      margin: .8rem 0 .35rem;
+    }
+
+    select, textarea, input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .65rem .75rem;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .row {
+      display: grid;
+      gap: .6rem;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    button {
+      margin-top: .9rem;
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: .75rem .95rem;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(120deg, var(--brand), var(--brand-2));
+    }
+
+    button.alt {
+      background: #eef4ff;
+      color: var(--brand-2);
+      border: 1px solid #c6d9fb;
+    }
+
+    .meta {
+      margin-top: .85rem;
+      padding: .65rem;
+      border-radius: 10px;
+      border: 1px dashed #bfd2ea;
+      font-size: .84rem;
+      color: #334767;
+      background: #f6faff;
+      line-height: 1.35;
+    }
+
+    .chat-shell {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: calc(100vh - 2rem);
+    }
+
+    .chat-head {
+      padding: .85rem 1rem;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .7rem;
+    }
+
+    .badge {
+      font-size: .76rem;
+      font-weight: 700;
+      padding: .32rem .52rem;
+      border-radius: 999px;
+      border: 1px solid #bdd4f8;
+      color: var(--brand-2);
+      background: #eef5ff;
+    }
+
+    .chat {
+      padding: .95rem;
+      overflow: auto;
+      display: grid;
+      gap: .7rem;
+      align-content: start;
+      max-height: calc(100vh - 220px);
+    }
+
+    .msg {
+      max-width: 85%;
+      padding: .7rem .8rem;
+      border-radius: 12px;
+      line-height: 1.42;
+      white-space: pre-wrap;
+      border: 1px solid var(--line);
+    }
+
+    .msg.coach {
+      background: #f5f9ff;
+      justify-self: start;
+      border-color: #cfddf5;
+    }
+
+    .msg.rep {
+      background: #eaf8ef;
+      justify-self: end;
+      border-color: #b5e2c5;
+    }
+
+    .composer {
+      border-top: 1px solid var(--line);
+      padding: .75rem;
+      display: grid;
+      gap: .55rem;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+    }
+
+    .composer textarea {
+      min-height: 72px;
+      max-height: 180px;
+      resize: vertical;
+    }
+
+    .send {
+      width: auto;
+      min-width: 120px;
+      margin: 0;
+      height: 42px;
+      align-self: end;
+    }
+
+    .hint {
+      font-size: .8rem;
+      color: var(--muted);
+      padding: 0 .25rem .35rem;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        position: static;
+      }
+
+      .chat-shell {
+        min-height: 70vh;
+      }
+
+      .chat {
+        max-height: 56vh;
+      }
     }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>Page de test</h1>
-    <p>Si tu vois cette page, le projet est prêt pour les prochains tests.</p>
-    <button id="testBtn">Cliquer</button>
-  </main>
+  <div class="layout">
+    <aside class="panel">
+      <h1>CoachVente Honda Brossard</h1>
+      <p class="subtitle">Simulateur et évaluateur de vente automobile (Honda, Canada/Québec, FR).</p>
+
+      <label for="level">Niveau du représentant</label>
+      <select id="level">
+        <option value="Débutant">Débutant</option>
+        <option value="Intermédiaire" selected>Intermédiaire</option>
+        <option value="Avancé">Avancé</option>
+      </select>
+
+      <label for="goal">Objectif de la session</label>
+      <select id="goal">
+        <option value="Structure complète" selected>Structure complète</option>
+        <option value="Découverte">Découverte</option>
+        <option value="Objections">Objections</option>
+        <option value="Closing">Closing</option>
+        <option value="Gestion du prix">Gestion du prix</option>
+        <option value="Financement/Location">Financement/Location</option>
+      </select>
+
+      <label for="scenario">Scénario client</label>
+      <select id="scenario">
+        <option value="A" selected>A - Famille pragmatique (CR-V/HR-V, budget serré, trade-in)</option>
+        <option value="B">B - Navetteur analytique (Civic, compare 2 marques, frais)</option>
+        <option value="C">C - Client pressé (Pilot/CR-V, besoin rapide, reprise/délais)</option>
+      </select>
+
+      <button id="startBtn">Lancer la simulation</button>
+      <button id="resetBtn" class="alt">Réinitialiser</button>
+
+      <div class="meta" id="metaBox">
+        Mode: Préparation
+      </div>
+    </aside>
+
+    <section class="chat-shell">
+      <div class="chat-head">
+        <strong id="sessionTitle">Session inactive</strong>
+        <span class="badge" id="modeBadge">Préparation</span>
+      </div>
+
+      <div class="chat" id="chat"></div>
+
+      <div>
+        <div class="hint">Tape <strong>FIN SIMULATION</strong> pour passer en mode évaluation.</div>
+        <div class="composer">
+          <textarea id="userInput" placeholder="Écris ici ta réplique de représentant..."></textarea>
+          <button class="send" id="sendBtn">Envoyer</button>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <script>
-    document.getElementById('testBtn').addEventListener('click', function () {
-      alert('Test OK');
+    const chat = document.getElementById('chat');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const modeBadge = document.getElementById('modeBadge');
+    const metaBox = document.getElementById('metaBox');
+    const sessionTitle = document.getElementById('sessionTitle');
+
+    const state = {
+      active: false,
+      mode: 'preparation',
+      level: 'Intermédiaire',
+      goal: 'Structure complète',
+      scenario: 'A',
+      turn: 0,
+      convo: [],
+      repMessages: [],
+      clientStep: 0,
+      scenarioData: null
+    };
+
+    const SCENARIOS = {
+      A: {
+        name: 'Famille pragmatique',
+        model: 'CR-V vs HR-V',
+        persona: 'Couple avec 1 enfant, budget serré, hésite achat/location, a un trade-in (Elantra 2018).',
+        urgency: 'Dans le prochain mois',
+        seed: [
+          'Bonjour. On regarde un VUS compact, surtout pour la famille et les commissions.',
+          'On hésite entre un CR-V et un HR-V, pis on veut pas dépasser notre budget mensuel.',
+          'On a aussi une Elantra 2018 à faire évaluer.'
+        ]
+      },
+      B: {
+        name: 'Navetteur analytique',
+        model: 'Civic',
+        persona: 'Client seul, compare 2 marques, sensible aux frais cachés, veut paiement bas.',
+        urgency: '2 à 6 semaines',
+        seed: [
+          'Salut. Je fais beaucoup d\'autoroute, donc je regarde une Civic.',
+          'Je compare avec une autre marque, et je veux comprendre le coût total, pas juste le prix affiché.',
+          'Mon objectif c\'est un paiement mensuel bas, sans surprise.'
+        ]
+      },
+      C: {
+        name: 'Client pressé',
+        model: 'Pilot/CR-V',
+        persona: 'Besoin rapide, focus délai et valeur de reprise, peu de temps pour magasiner.',
+        urgency: 'Cette semaine',
+        seed: [
+          'Bonjour. Je vais être direct: j\'ai besoin d\'un véhicule rapidement.',
+          'Je regarde surtout Pilot ou CR-V selon disponibilité.',
+          'J\'ai une reprise, puis je veux savoir si on peut avancer vite.'
+        ]
+      }
+    };
+
+    function addMessage(role, text) {
+      state.convo.push({ role, text });
+      if (role === 'rep') state.repMessages.push(text);
+
+      const bubble = document.createElement('div');
+      bubble.className = `msg ${role}`;
+      bubble.textContent = text;
+      chat.appendChild(bubble);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      const labels = {
+        preparation: 'Préparation',
+        simulation: 'Mode Simulation',
+        evaluation: 'Mode Évaluation'
+      };
+      modeBadge.textContent = labels[mode] || mode;
+    }
+
+    function updateMeta() {
+      const sc = state.scenarioData;
+      if (!state.active || !sc) {
+        metaBox.textContent = 'Mode: Préparation';
+        return;
+      }
+
+      metaBox.innerHTML =
+        `Mode: ${state.mode === 'simulation' ? 'Simulation' : 'Évaluation'}\n` +
+        `Niveau: ${state.level}\n` +
+        `Objectif: ${state.goal}\n` +
+        `Scénario: ${state.scenario} - ${sc.name}`;
+    }
+
+    function askStartupPrompt() {
+      addMessage(
+        'coach',
+        'Tu es en simulation active. Reste en rôle de représentant. Je suis le client.\n' +
+        'Objectif: vente complète, réaliste et éthique.\n\n' +
+        'Rappel: écris "FIN SIMULATION" quand tu veux passer à l\'évaluation.'
+      );
+
+      const intro = state.scenarioData.seed.join(' ');
+      addMessage('coach', intro);
+    }
+
+    function startSimulation() {
+      state.active = true;
+      state.turn = 0;
+      state.convo = [];
+      state.repMessages = [];
+      state.clientStep = 0;
+      state.level = document.getElementById('level').value;
+      state.goal = document.getElementById('goal').value;
+      state.scenario = document.getElementById('scenario').value;
+      state.scenarioData = SCENARIOS[state.scenario];
+
+      chat.innerHTML = '';
+      setMode('simulation');
+      updateMeta();
+      sessionTitle.textContent = `Session: ${state.scenarioData.name}`;
+
+      addMessage('coach',
+        'Bienvenue dans CoachVente Honda Brossard.\n' +
+        `Niveau détecté: ${state.level}.\n` +
+        `Focus: ${state.goal}.\n` +
+        `Scénario ${state.scenario}: ${state.scenarioData.persona}`
+      );
+
+      askStartupPrompt();
+      userInput.focus();
+    }
+
+    function containsAny(text, terms) {
+      const t = text.toLowerCase();
+      return terms.some(term => t.includes(term));
+    }
+
+    function generateClientReply(repText) {
+      const text = repText.toLowerCase();
+      const sc = state.scenarioData;
+      state.turn += 1;
+
+      if (containsAny(text, ['taux exact', 'promo exacte', 'inventaire exact', 'rabais exact'])) {
+        return 'Je comprends. Pour les taux/promos/inventaire exacts, fais juste une hypothèse réaliste pis on continue la simulation.';
+      }
+
+      if (state.clientStep === 0) {
+        state.clientStep++;
+        if (containsAny(text, ['budget', 'besoin', 'usage', 'km', 'famille', 'question'])) {
+          return 'Bonne question. Je fais environ 22 000 km par année, surtout ville/autoroute. J\'veux quelque chose de fiable, pas trop cher par mois.';
+        }
+        return 'Je peux te donner plus de détails, oui. Qu\'est-ce que tu veux savoir en premier?';
+      }
+
+      if (state.clientStep === 1) {
+        state.clientStep++;
+        if (containsAny(text, ['reformul', 'si je comprends', 'donc', 'résume'])) {
+          return 'Oui, c\'est pas mal ça. J\'veux juste être certain de faire un bon choix, pas me faire pousser.';
+        }
+        return 'Exact. J\'hésite encore entre payer moins par mois et garder plus de valeur à long terme.';
+      }
+
+      if (state.clientStep === 2) {
+        state.clientStep++;
+        if (containsAny(text, ['cr-v', 'hr-v', 'civic', 'pilot', 'option'])) {
+          return `O.K., je vois mieux les options. Entre ${sc.model}, j\'aurais besoin que tu me dises clairement ce que je gagne au quotidien.`;
+        }
+        return 'Je veux une recommandation claire: pas 10 options, juste 1-2 qui fitent vraiment.';
+      }
+
+      if (state.clientStep === 3) {
+        state.clientStep++;
+        if (containsAny(text, ['paiement', 'location', 'financement', 'mensuel', 'terme'])) {
+          return 'C\'est là que j\'ai une objection: si le paiement dépasse mon confort, je bloque. Montre-moi des scénarios transparents.';
+        }
+        return 'Avant d\'avancer, j\'ai peur que ça finisse plus cher que prévu avec tous les frais.';
+      }
+
+      if (state.clientStep === 4) {
+        state.clientStep++;
+        if (containsAny(text, ['essai', 'route', 'prochaine étape', 'dépôt', 'rdv'])) {
+          return 'Un essai routier, oui, ça m\'aiderait à me décider. Si ça me convient, je veux savoir exactement les documents à apporter.';
+        }
+        return 'Je suis pas fermé, mais j\'ai besoin d\'une prochaine étape claire pour avancer sans pression.';
+      }
+
+      if (containsAny(text, ['merci', 'parfait', 'super'])) {
+        return 'Parfait, merci. Je veux juste que tout soit clair et éthique, puis on avance.';
+      }
+
+      return 'O.K., je t\'écoute. Qu\'est-ce que tu proposes comme prochaine étape concrète?';
+    }
+
+    function clamp(val, min, max) {
+      return Math.max(min, Math.min(max, val));
+    }
+
+    function scoreCriteria(repMsgs) {
+      const joined = repMsgs.join(' \n ').toLowerCase();
+      const qCount = repMsgs.join(' ').split('?').length - 1;
+
+      const c = {
+        accueil: 4,
+        decouverte: 3,
+        reformulation: 3,
+        valeur: 3,
+        produit: 3,
+        objections: 3,
+        budget: 3,
+        closing: 3,
+        structure: 4,
+        pro: 6
+      };
+
+      if (containsAny(joined, ['bonjour', 'bienvenue', 'enchanté', 'merci d\'être venu'])) c.accueil += 3;
+      if (qCount >= 4) c.decouverte += 3;
+      if (containsAny(joined, ['budget', 'usage', 'kilom', 'famille', 'trajet', 'délai'])) c.decouverte += 2;
+      if (containsAny(joined, ['si je comprends', 'donc si je résume', 'corrige-moi'])) c.reformulation += 4;
+      if (containsAny(joined, ['bénéfice', 'avantage', 'valeur', 'au quotidien', 'pour toi'])) c.valeur += 4;
+      if (containsAny(joined, ['civic', 'cr-v', 'hr-v', 'pilot', 'accord'])) c.produit += 3;
+      if (containsAny(joined, ['je comprends', 'c\'est normal', 'bonne question', 'je te propose'])) c.objections += 3;
+      if (containsAny(joined, ['paiement', 'mensuel', 'financement', 'location', 'terme', 'comptant'])) c.budget += 4;
+      if (containsAny(joined, ['prochaine étape', 'on fixe', 'rdv', 'essai routier', 'dépôt'])) c.closing += 4;
+      if (repMsgs.length >= 7) c.structure += 3;
+      if (containsAny(joined, ['sans pression', 'transpar', 'éthique', 'clair'])) c.pro += 2;
+      if (containsAny(joined, ['faut signer tout de suite', 'si tu refuses'])) c.pro -= 3;
+
+      Object.keys(c).forEach(k => c[k] = clamp(c[k], 1, 10));
+      return c;
+    }
+
+    function levelMention(score) {
+      if (score >= 90) return 'Expert';
+      if (score >= 75) return 'Avancé';
+      if (score >= 60) return 'Intermédiaire';
+      return 'Débutant';
+    }
+
+    function pickQuotes(repMsgs) {
+      const clean = repMsgs.map(m => m.trim()).filter(Boolean);
+      const first = clean[0] || 'Bonjour, merci de votre visite.';
+      const longest = clean.slice().sort((a, b) => b.length - a.length)[0] || first;
+      const last = clean[clean.length - 1] || first;
+
+      const unique = [];
+      [first, longest, last].forEach(q => {
+        if (!unique.includes(q)) unique.push(q);
+      });
+      while (unique.length < 3) unique.push(first);
+      return unique.slice(0, 3);
+    }
+
+    function createImprovementPlan(scores) {
+      const entries = [
+        ['Découverte', scores.decouverte],
+        ['Reformulation', scores.reformulation],
+        ['Valeur', scores.valeur],
+        ['Objections', scores.objections],
+        ['Budget/Prix', scores.budget],
+        ['Closing', scores.closing]
+      ].sort((a, b) => a[1] - b[1]);
+
+      return [entries[0][0], entries[1][0], entries[2][0]];
+    }
+
+    function generateEvaluation() {
+      const repMsgs = state.repMessages;
+      const scores = scoreCriteria(repMsgs);
+      const list = [
+        scores.accueil,
+        scores.decouverte,
+        scores.reformulation,
+        scores.valeur,
+        scores.produit,
+        scores.objections,
+        scores.budget,
+        scores.closing,
+        scores.structure,
+        scores.pro
+      ];
+
+      const global = Math.round((list.reduce((a, b) => a + b, 0) / list.length) * 10);
+      const mention = levelMention(global);
+      const quotes = pickQuotes(repMsgs);
+      const priorities = createImprovementPlan(scores);
+
+      const summary =
+        'A) Résumé\n' +
+        `Tu as maintenu un échange réaliste et professionnel avec une bonne base de relation client. ` +
+        `La progression est présente, mais certaines transitions restent rapides (besoins -> proposition). ` +
+        `La valeur perçue et le cadrage budget peuvent être plus structurés pour sécuriser la décision. ` +
+        `Le closing gagne à être plus direct avec une prochaine action datée.`;
+
+      const note =
+        '\n\nB) Note globale\n' +
+        `${global}/100 - ${mention}`;
+
+      const grid =
+        '\n\nC) Grille détaillée (/10)\n' +
+        `1. Accueil & rapport: ${scores.accueil}/10 - Ton posé, base de confiance correcte.\n` +
+        `2. Découverte des besoins: ${scores.decouverte}/10 - Bon départ, approfondir budget, usage et critères de décision.\n` +
+        `3. Reformulation & validation: ${scores.reformulation}/10 - Reformule plus explicitement avant de proposer.\n` +
+        `4. Présentation de valeur: ${scores.valeur}/10 - Lier chaque option à un bénéfice concret du client.\n` +
+        `5. Maîtrise produit: ${scores.produit}/10 - Mention des modèles correcte, garder des comparatifs simples.\n` +
+        `6. Gestion des objections: ${scores.objections}/10 - Bonne empathie, ajouter preuves/exemples chiffrés.\n` +
+        `7. Gestion budget/prix: ${scores.budget}/10 - Clarifier scénarios de paiement avec transparence.\n` +
+        `8. Closing & prochaines étapes: ${scores.closing}/10 - Demander un engagement clair et immédiat.\n` +
+        `9. Structure & contrôle du processus: ${scores.structure}/10 - Processus global présent, transitions à renforcer.\n` +
+        `10. Professionnalisme & conformité: ${scores.pro}/10 - Respectueux et éthique, sans pression excessive.`;
+
+      const moments =
+        '\n\nD) Moments clés (citations exactes)\n' +
+        `1) "${quotes[0]}"\n` +
+        `Pourquoi: Point d\'entrée utile, mais peut mieux orienter la découverte.\n` +
+        `Alternative: "Pour bien vous conseiller, je vais d\'abord valider votre usage, budget mensuel et délai."\n` +
+        `2) "${quotes[1]}"\n` +
+        `Pourquoi: Bon effort d\'explication; ajoute une reformulation claire avant la proposition.\n` +
+        `Alternative: "Si je résume: priorité paiement stable + fiabilité. Je vous propose 2 options alignées."\n` +
+        `3) "${quotes[2]}"\n` +
+        `Pourquoi: Bonne intention de conclusion, mais engagement pas assez concret.\n` +
+        `Alternative: "On fixe l\'essai routier aujourd\'hui à 17h30 et je prépare les scénarios de paiement."`;
+
+      const plan =
+        '\n\nE) Plan d\'amélioration (7 jours)\n' +
+        `3 priorités: ${priorities.join(' | ')}\n` +
+        '3 exercices pratiques:\n' +
+        '1. Faire 10 questions ouvertes de découverte et les pratiquer à voix haute.\n' +
+        '2. Objections: appliquer la séquence Empathie -> Clarification -> Preuve -> Validation (5 cas/jour).\n' +
+        '3. Closing: finir chaque simulation avec une date/heure + prochaine action confirmée.\n' +
+        '1 objectif mesurable: obtenir au moins 8/10 en Découverte et 8/10 en Closing à la prochaine simulation.';
+
+      const scripts =
+        '\n\nF) 5 phrases prêtes à l\'emploi\n' +
+        '1. "Avant de parler prix, j\'aimerais comprendre votre usage réel pour vous éviter un mauvais fit."\n' +
+        '2. "Si je vous ai bien compris, vos 3 priorités sont: budget mensuel, fiabilité, et délai rapide."\n' +
+        '3. "Je vous propose 2 options seulement: une pour minimiser le paiement, l\'autre pour maximiser la valeur."\n' +
+        '4. "Votre objection est légitime; regardons les chiffres ensemble de façon transparente."\n' +
+        '5. "Prochaine étape: essai routier aujourd\'hui, puis je vous remets les scénarios détaillés."';
+
+      const question =
+        '\n\nG) Question de coaching\n' +
+        'Quelle question de découverte aurait pu te donner la vraie priorité émotionnelle du client plus tôt?';
+
+      return summary + note + grid + moments + plan + scripts + question;
+    }
+
+    function handleSend() {
+      const text = userInput.value.trim();
+      if (!text) return;
+      if (!state.active) {
+        addMessage('coach', 'Clique sur "Lancer la simulation" pour démarrer une session.');
+        userInput.value = '';
+        return;
+      }
+
+      addMessage('rep', text);
+      userInput.value = '';
+
+      if (text.toUpperCase() === 'FIN SIMULATION') {
+        setMode('evaluation');
+        updateMeta();
+        const evaluation = generateEvaluation();
+        addMessage('coach', evaluation);
+        sessionTitle.textContent = `Évaluation - ${state.scenarioData.name}`;
+        return;
+      }
+
+      if (state.mode !== 'simulation') {
+        addMessage('coach', 'La session est en mode évaluation. Réinitialise pour recommencer.');
+        return;
+      }
+
+      const reply = generateClientReply(text);
+      addMessage('coach', reply);
+    }
+
+    function resetSession() {
+      state.active = false;
+      state.mode = 'preparation';
+      state.convo = [];
+      state.repMessages = [];
+      state.clientStep = 0;
+      chat.innerHTML = '';
+      sessionTitle.textContent = 'Session inactive';
+      setMode('preparation');
+      updateMeta();
+      addMessage('coach',
+        'Prêt. Choisis niveau + objectif + scénario, puis clique "Lancer la simulation".'
+      );
+    }
+
+    startBtn.addEventListener('click', startSimulation);
+    resetBtn.addEventListener('click', resetSession);
+    sendBtn.addEventListener('click', handleSend);
+
+    userInput.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        handleSend();
+      }
     });
+
+    resetSession();
   </script>
 </body>
 </html>
