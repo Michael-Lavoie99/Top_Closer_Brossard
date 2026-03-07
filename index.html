@@ -157,7 +157,8 @@
       color: #542d35;
     }
 
-    .field select {
+    .field select,
+    .field input {
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: .6rem .7rem;
@@ -426,6 +427,44 @@
       gap: .5rem;
     }
 
+    .users-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .7rem;
+      margin-bottom: .7rem;
+      flex-wrap: wrap;
+    }
+
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+    }
+
+    .users-table th,
+    .users-table td {
+      border-bottom: 1px solid var(--line);
+      padding: .46rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .users-form {
+      margin-top: .8rem;
+      display: grid;
+      gap: .6rem;
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
+    }
+
+    .users-form .field {
+      margin: 0;
+    }
+
+    .users-form .full {
+      grid-column: 1 / -1;
+    }
+
     @media (max-width: 980px) {
       .controls { grid-template-columns: 1fr; }
       .grid-2 { grid-template-columns: 1fr; }
@@ -465,6 +504,7 @@
           <p class="sub">Choisis un client. Le chat s ouvre apres clic et la simulation se termine automatiquement si le client devient tres satisfait ou tres insatisfait.</p>
         </div>
         <div>
+          <button id="manageUsersBtn" class="alt hidden">Gestion utilisateurs</button>
           <button id="reloadClientsBtn" class="alt">Recharger clients</button>
         </div>
       </div>
@@ -560,6 +600,64 @@
     </div>
   </div>
 
+  <div id="usersModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <h3>Gestion des utilisateurs</h3>
+      <div class="users-toolbar">
+        <p class="sub" style="margin:0">Ajoute ou modifie les comptes representants, managers et admins.</p>
+        <button id="refreshUsersBtn" class="alt tiny-btn" type="button">Rafraichir</button>
+      </div>
+
+      <div class="card">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Courriel</th>
+              <th>Nom</th>
+              <th>Role</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+
+      <form id="userForm" class="users-form card">
+        <div class="field">
+          <label for="userEmailInput">Courriel</label>
+          <input id="userEmailInput" type="email" required placeholder="rep@hondabrossard.com" />
+        </div>
+        <div class="field">
+          <label for="userNameInput">Nom (optionnel)</label>
+          <input id="userNameInput" type="text" placeholder="Prenom Nom" />
+        </div>
+        <div class="field">
+          <label for="userRoleSelect">Role</label>
+          <select id="userRoleSelect">
+            <option value="representant" selected>Representant</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="userActiveSelect">Statut</label>
+          <select id="userActiveSelect">
+            <option value="active" selected>Actif</option>
+            <option value="inactive">Desactive</option>
+          </select>
+        </div>
+        <p id="usersMessage" class="auth-msg full"></p>
+        <div class="footer-actions full" style="margin-top:0">
+          <button id="saveUserBtn" type="submit">Enregistrer utilisateur</button>
+        </div>
+      </form>
+
+      <div class="footer-actions">
+        <button id="closeUsersModalBtn" class="alt" type="button">Fermer</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
     const BROWSER_FALLBACK_CLIENTS = [
@@ -617,6 +715,7 @@
       authToken: "",
       user: null,
       googleClientId: "",
+      users: [],
       active: false,
       busy: false,
       conversation: [],
@@ -637,6 +736,7 @@
     const sessionBar = document.getElementById("sessionBar");
     const sessionUser = document.getElementById("sessionUser");
     const logoutBtn = document.getElementById("logoutBtn");
+    const manageUsersBtn = document.getElementById("manageUsersBtn");
     const cards = document.getElementById("cards");
     const galleryView = document.getElementById("galleryView");
     const chatView = document.getElementById("chatView");
@@ -662,6 +762,15 @@
     const pistesSolution = document.getElementById("pistesSolution");
     const actionsManager = document.getElementById("actionsManager");
     const nextObjective = document.getElementById("nextObjective");
+    const usersModal = document.getElementById("usersModal");
+    const refreshUsersBtn = document.getElementById("refreshUsersBtn");
+    const usersTableBody = document.getElementById("usersTableBody");
+    const userForm = document.getElementById("userForm");
+    const userEmailInput = document.getElementById("userEmailInput");
+    const userNameInput = document.getElementById("userNameInput");
+    const userRoleSelect = document.getElementById("userRoleSelect");
+    const userActiveSelect = document.getElementById("userActiveSelect");
+    const usersMessage = document.getElementById("usersMessage");
 
     function setBusy(isBusy) {
       state.busy = isBusy;
@@ -677,6 +786,15 @@
       authMessage.classList.toggle("bad", Boolean(isError));
     }
 
+    function setUsersMessage(message, isError = false) {
+      usersMessage.textContent = message || "";
+      usersMessage.classList.toggle("bad", Boolean(isError));
+    }
+
+    function isAdminUser() {
+      return String(state.user?.role || "").toLowerCase() === "admin";
+    }
+
     function getAuthHeaders(baseHeaders = {}) {
       const headers = { ...baseHeaders };
       if (state.authToken) {
@@ -690,8 +808,10 @@
       authView.classList.toggle("hidden", loggedIn);
       galleryView.classList.toggle("hidden", !loggedIn);
       sessionBar.classList.toggle("hidden", !loggedIn);
+      manageUsersBtn.classList.toggle("hidden", !loggedIn || !isAdminUser());
       if (loggedIn) {
-        sessionUser.textContent = `${state.user.name || "Representant"} - ${state.user.email}`;
+        const roleLabel = String(state.user.role || "representant");
+        sessionUser.textContent = `${state.user.name || "Representant"} - ${state.user.email} (${roleLabel})`;
       } else {
         sessionUser.textContent = "";
       }
@@ -701,6 +821,7 @@
       state.authToken = "";
       state.user = null;
       state.clients = [];
+      state.users = [];
       state.selectedClient = null;
       state.active = false;
       localStorage.removeItem(AUTH_TOKEN_KEY);
@@ -709,6 +830,8 @@
       chatLog.innerHTML = "";
       cards.innerHTML = "";
       chatView.classList.add("hidden");
+      usersModal.classList.add("hidden");
+      setUsersMessage("");
       updateSessionUi();
       setAuthMessage(message, Boolean(message));
     }
@@ -941,6 +1064,72 @@
         state.clients = BROWSER_FALLBACK_CLIENTS;
       }
       renderCards();
+    }
+
+    function renderUsersTable() {
+      usersTableBody.innerHTML = "";
+      const rows = Array.isArray(state.users) ? state.users : [];
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = '<td colspan="4">Aucun utilisateur configure.</td>';
+        usersTableBody.appendChild(tr);
+        return;
+      }
+
+      rows.forEach((u) => {
+        const tr = document.createElement("tr");
+        const status = u.is_active === false ? "Desactive" : "Actif";
+        tr.innerHTML = `
+          <td>${u.email || "-"}</td>
+          <td>${u.full_name || "-"}</td>
+          <td>${u.role || "representant"}</td>
+          <td>${status}</td>
+        `;
+        usersTableBody.appendChild(tr);
+      });
+    }
+
+    async function callAdminUsersApi(method = "GET", body = null) {
+      const options = {
+        method,
+        headers: getAuthHeaders(method === "GET" ? {} : { "Content-Type": "application/json" })
+      };
+      if (body && method !== "GET") {
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch("/api/admin/users", options);
+      if (response.status === 401) {
+        clearSession("Session expiree. Reconnecte-toi.");
+        throw new Error("Session invalide");
+      }
+      if (response.status === 403) {
+        throw new Error("Acces admin requis");
+      }
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.details || data?.error || `Erreur ${response.status}`);
+      }
+      return data;
+    }
+
+    async function loadUsersAdmin() {
+      if (!isAdminUser()) return;
+      setUsersMessage("Chargement des utilisateurs...");
+      try {
+        const data = await callAdminUsersApi("GET");
+        state.users = Array.isArray(data.users) ? data.users : [];
+        renderUsersTable();
+        setUsersMessage("");
+      } catch (err) {
+        setUsersMessage(err.message || "Impossible de charger les utilisateurs", true);
+      }
+    }
+
+    async function openUsersModal() {
+      if (!isAdminUser()) return;
+      usersModal.classList.remove("hidden");
+      await loadUsersAdmin();
     }
 
     async function callChatApi() {
@@ -1247,6 +1436,42 @@
     }
 
     document.getElementById("reloadClientsBtn").addEventListener("click", loadClients);
+    manageUsersBtn.addEventListener("click", openUsersModal);
+    refreshUsersBtn.addEventListener("click", loadUsersAdmin);
+    document.getElementById("closeUsersModalBtn").addEventListener("click", () => {
+      usersModal.classList.add("hidden");
+      setUsersMessage("");
+    });
+    usersModal.addEventListener("click", (event) => {
+      if (event.target === usersModal) {
+        usersModal.classList.add("hidden");
+        setUsersMessage("");
+      }
+    });
+    userForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!isAdminUser()) return;
+
+      const email = userEmailInput.value.trim().toLowerCase();
+      const fullName = userNameInput.value.trim();
+      const role = userRoleSelect.value;
+      const isActive = userActiveSelect.value === "active";
+
+      if (!email) {
+        setUsersMessage("Le courriel est obligatoire.", true);
+        return;
+      }
+
+      setUsersMessage("Enregistrement en cours...");
+      try {
+        await callAdminUsersApi("POST", { email, fullName, role, isActive });
+        setUsersMessage("Utilisateur enregistre.");
+        userNameInput.value = "";
+        await loadUsersAdmin();
+      } catch (err) {
+        setUsersMessage(err.message || "Enregistrement impossible", true);
+      }
+    });
     logoutBtn.addEventListener("click", () => {
       clearSession("Deconnecte.");
       renderGoogleButton();

@@ -13,7 +13,8 @@ module.exports = async (req, res) => {
     user: {
       email: user.email,
       name: user.name,
-      picture: user.picture
+      picture: user.picture,
+      role: user.role || "representant"
     }
   });
 };

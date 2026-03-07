@@ -23,6 +23,12 @@ function parseCsvList(value) {
     .filter(Boolean);
 }
 
+function normalizeRole(value) {
+  const role = String(value || "").trim().toLowerCase();
+  if (role === "admin" || role === "manager" || role === "representant") return role;
+  return "representant";
+}
+
 function signPayload(payload, secret) {
   const header = { alg: "HS256", typ: "JWT" };
   const encodedHeader = encodeBase64Url(JSON.stringify(header));
@@ -117,12 +123,48 @@ async function validateGoogleCredential(credential) {
     throw new Error("Courriel non autorise par la politique d acces");
   }
 
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  let role = "representant";
+  let fullName = String(tokenInfo.name || email);
+
+  if (supabaseUrl && supabaseServiceRoleKey) {
+    const endpoint = `${supabaseUrl}/rest/v1/app_users?select=email,full_name,role,is_active&email=eq.${encodeURIComponent(email)}&limit=1`;
+
+    const userLookupResponse = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        apikey: supabaseServiceRoleKey,
+        Authorization: `Bearer ${supabaseServiceRoleKey}`,
+        Accept: "application/json"
+      }
+    });
+
+    if (!userLookupResponse.ok) {
+      throw new Error("Lecture des permissions utilisateur impossible");
+    }
+
+    const rows = await userLookupResponse.json();
+    const row = Array.isArray(rows) ? rows[0] : null;
+    if (!row) {
+      throw new Error("Compte non inscrit. Contacte un administrateur.");
+    }
+
+    if (row.is_active === false) {
+      throw new Error("Compte desactive. Contacte un administrateur.");
+    }
+
+    role = normalizeRole(row.role);
+    fullName = String(row.full_name || fullName);
+  }
+
   return {
     sub: String(tokenInfo.sub || ""),
     email,
-    name: String(tokenInfo.name || email),
+    name: fullName,
     picture: String(tokenInfo.picture || ""),
-    hostedDomain
+    hostedDomain,
+    role
   };
 }
 
@@ -138,6 +180,7 @@ function createSessionToken(user) {
     email: user.email,
     name: user.name,
     picture: user.picture,
+    role: normalizeRole(user.role),
     iat: now,
     exp: now + SESSION_TTL_SECONDS
   };
@@ -173,6 +216,20 @@ function requireAuth(req, res) {
     return null;
   }
 
+  user.role = normalizeRole(user.role);
+  return user;
+}
+
+function requireRole(req, res, allowedRoles = []) {
+  const user = requireAuth(req, res);
+  if (!user) return null;
+
+  const allowed = Array.isArray(allowedRoles) ? allowedRoles.map(normalizeRole) : [];
+  if (!allowed.includes(user.role)) {
+    res.status(403).json({ error: "Permission refusee" });
+    return null;
+  }
+
   return user;
 }
 
@@ -180,6 +237,7 @@ module.exports = {
   createSessionToken,
   getBearerToken,
   requireAuth,
+  requireRole,
   setAuthCors,
   validateGoogleCredential,
   verifySessionToken

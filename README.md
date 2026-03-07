@@ -44,3 +44,10 @@ Variables ajoutees :
 - `AUTH_SESSION_SECRET` : secret long (32+ caracteres) pour signer les sessions
 - `ALLOWED_GOOGLE_DOMAINS` : optionnel, domaines autorises separes par virgules (ex: `hondabrossard.com`)
 - `ALLOWED_GOOGLE_EMAILS` : optionnel, liste blanche d emails autorises separes par virgules
+
+## Gestion des roles (admin/manager/representant)
+1. Dans Supabase SQL Editor, execute `supabase/seed_users.sql`.
+2. Ouvre la table `public.app_users` et remplace `admin@hondabrossard.com` par ton vrai courriel admin.
+3. Connecte-toi avec cet email admin.
+4. Dans l'application, utilise le bouton `Gestion utilisateurs` pour ajouter/modifier les comptes.
+5. Un utilisateur doit etre `is_active=true` pour se connecter.
