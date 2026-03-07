@@ -465,6 +465,54 @@
       grid-column: 1 / -1;
     }
 
+    .history-list {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      max-height: 280px;
+      overflow-y: auto;
+      background: #fff;
+    }
+
+    .history-item {
+      width: 100%;
+      border: 0;
+      border-bottom: 1px solid #f1d6db;
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+      padding: .62rem .7rem;
+      cursor: pointer;
+    }
+
+    .history-item:last-child {
+      border-bottom: 0;
+    }
+
+    .history-item.active {
+      background: #fff1f4;
+      border-left: 3px solid var(--brand);
+      padding-left: .52rem;
+    }
+
+    .history-item small {
+      display: block;
+      color: #6f4d56;
+      margin-top: .16rem;
+    }
+
+    .transcript-box {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: .65rem;
+      max-height: 320px;
+      overflow: auto;
+      white-space: pre-wrap;
+      line-height: 1.35;
+      font-size: .86rem;
+    }
+
     @media (max-width: 980px) {
       .controls { grid-template-columns: 1fr; }
       .grid-2 { grid-template-columns: 1fr; }
@@ -504,6 +552,7 @@
           <p class="sub">Choisis un client. Le chat s ouvre apres clic et la simulation se termine automatiquement si le client devient tres satisfait ou tres insatisfait.</p>
         </div>
         <div>
+          <button id="historyBtn" class="alt">Mes simulations</button>
           <button id="manageUsersBtn" class="alt hidden">Gestion utilisateurs</button>
           <button id="reloadClientsBtn" class="alt">Recharger clients</button>
         </div>
@@ -658,6 +707,36 @@
     </div>
   </div>
 
+  <div id="historyModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <h3>Mes simulations</h3>
+      <div class="users-toolbar">
+        <p id="historyMessage" class="auth-msg" style="margin:0"></p>
+        <button id="refreshHistoryBtn" class="alt tiny-btn" type="button">Rafraichir</button>
+      </div>
+
+      <div class="grid-2">
+        <section class="card">
+          <h4>Liste</h4>
+          <div id="historyList" class="history-list"></div>
+        </section>
+
+        <section class="card">
+          <h4>Details</h4>
+          <p id="historyMeta" class="small"></p>
+          <p id="historyScore" class="small"></p>
+          <p id="historyResume" class="small"></p>
+          <h4 style="margin-top:.8rem">Transcript complet</h4>
+          <div id="historyTranscript" class="transcript-box"></div>
+        </section>
+      </div>
+
+      <div class="footer-actions">
+        <button id="closeHistoryModalBtn" class="alt" type="button">Fermer</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
     const BROWSER_FALLBACK_CLIENTS = [
@@ -716,6 +795,8 @@
       user: null,
       googleClientId: "",
       users: [],
+      simulations: [],
+      selectedSimulationId: null,
       active: false,
       busy: false,
       conversation: [],
@@ -736,6 +817,7 @@
     const sessionBar = document.getElementById("sessionBar");
     const sessionUser = document.getElementById("sessionUser");
     const logoutBtn = document.getElementById("logoutBtn");
+    const historyBtn = document.getElementById("historyBtn");
     const manageUsersBtn = document.getElementById("manageUsersBtn");
     const cards = document.getElementById("cards");
     const galleryView = document.getElementById("galleryView");
@@ -771,6 +853,14 @@
     const userRoleSelect = document.getElementById("userRoleSelect");
     const userActiveSelect = document.getElementById("userActiveSelect");
     const usersMessage = document.getElementById("usersMessage");
+    const historyModal = document.getElementById("historyModal");
+    const historyMessage = document.getElementById("historyMessage");
+    const refreshHistoryBtn = document.getElementById("refreshHistoryBtn");
+    const historyList = document.getElementById("historyList");
+    const historyMeta = document.getElementById("historyMeta");
+    const historyScore = document.getElementById("historyScore");
+    const historyResume = document.getElementById("historyResume");
+    const historyTranscript = document.getElementById("historyTranscript");
 
     function setBusy(isBusy) {
       state.busy = isBusy;
@@ -789,6 +879,11 @@
     function setUsersMessage(message, isError = false) {
       usersMessage.textContent = message || "";
       usersMessage.classList.toggle("bad", Boolean(isError));
+    }
+
+    function setHistoryMessage(message, isError = false) {
+      historyMessage.textContent = message || "";
+      historyMessage.classList.toggle("bad", Boolean(isError));
     }
 
     function isAdminUser() {
@@ -822,6 +917,8 @@
       state.user = null;
       state.clients = [];
       state.users = [];
+      state.simulations = [];
+      state.selectedSimulationId = null;
       state.selectedClient = null;
       state.active = false;
       localStorage.removeItem(AUTH_TOKEN_KEY);
@@ -831,7 +928,9 @@
       cards.innerHTML = "";
       chatView.classList.add("hidden");
       usersModal.classList.add("hidden");
+      historyModal.classList.add("hidden");
       setUsersMessage("");
+      setHistoryMessage("");
       updateSessionUi();
       setAuthMessage(message, Boolean(message));
     }
@@ -1064,6 +1163,126 @@
         state.clients = BROWSER_FALLBACK_CLIENTS;
       }
       renderCards();
+    }
+
+    async function callSimulationsApi(method = "GET", body = null) {
+      const options = {
+        method,
+        headers: getAuthHeaders(method === "GET" ? {} : { "Content-Type": "application/json" })
+      };
+      if (body && method !== "GET") {
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch("/api/simulations", options);
+      if (response.status === 401) {
+        clearSession("Session expiree. Reconnecte-toi.");
+        throw new Error("Session invalide");
+      }
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.details || data?.error || `Erreur ${response.status}`);
+      }
+
+      return data;
+    }
+
+    function formatDate(value) {
+      const d = value ? new Date(value) : null;
+      if (!d || Number.isNaN(d.getTime())) return "-";
+      return d.toLocaleString("fr-CA");
+    }
+
+    function renderSelectedSimulation() {
+      const selected = state.simulations.find((s) => String(s.id) === String(state.selectedSimulationId));
+      if (!selected) {
+        historyMeta.textContent = "Selectionne une simulation pour voir les details.";
+        historyScore.textContent = "";
+        historyResume.textContent = "";
+        historyTranscript.textContent = "";
+        return;
+      }
+
+      const score = Number.isFinite(selected?.evaluation?.score) ? selected.evaluation.score : "N/A";
+      const verdict = selected?.evaluation?.verdict || "Sans verdict";
+      historyMeta.textContent = `${formatDate(selected.created_at)} | ${selected.client_name || "Client"} | Niveau: ${selected.level || "-"} | Objectif: ${selected.goal || "-"}`;
+      historyScore.textContent = `Score: ${score} | Verdict: ${verdict}`;
+      historyResume.textContent = selected?.evaluation?.resume || "";
+
+      const transcript = Array.isArray(selected.transcript) ? selected.transcript : [];
+      historyTranscript.textContent = transcript
+        .map((m) => `${m.role === "assistant" ? "Client" : "Representant"}: ${m.content || ""}`)
+        .join("\n\n");
+    }
+
+    function renderSimulationList() {
+      historyList.innerHTML = "";
+      if (!state.simulations.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.style.padding = ".65rem";
+        empty.textContent = "Aucune simulation enregistree.";
+        historyList.appendChild(empty);
+        renderSelectedSimulation();
+        return;
+      }
+
+      state.simulations.forEach((s) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `history-item ${String(s.id) === String(state.selectedSimulationId) ? "active" : ""}`;
+        const score = Number.isFinite(s?.evaluation?.score) ? s.evaluation.score : "N/A";
+        btn.innerHTML = `
+          <strong>${s.client_name || "Client"}</strong>
+          <small>${formatDate(s.created_at)} | Score: ${score}</small>
+        `;
+        btn.addEventListener("click", () => {
+          state.selectedSimulationId = s.id;
+          renderSimulationList();
+          renderSelectedSimulation();
+        });
+        historyList.appendChild(btn);
+      });
+
+      renderSelectedSimulation();
+    }
+
+    async function loadSimulations() {
+      setHistoryMessage("Chargement...");
+      try {
+        const data = await callSimulationsApi("GET");
+        state.simulations = Array.isArray(data.simulations) ? data.simulations : [];
+        if (!state.simulations.some((s) => String(s.id) === String(state.selectedSimulationId))) {
+          state.selectedSimulationId = state.simulations[0]?.id || null;
+        }
+        renderSimulationList();
+        setHistoryMessage("");
+      } catch (err) {
+        setHistoryMessage(err.message || "Impossible de charger les simulations", true);
+      }
+    }
+
+    async function saveSimulation(evaluation) {
+      try {
+        await callSimulationsApi("POST", {
+          conversation: state.conversation,
+          context: {
+            level: state.level,
+            goal: state.goal,
+            client: state.selectedClient,
+            outcome: state.outcome
+          },
+          evaluation
+        });
+      } catch (err) {
+        addMessage("client", `Note: sauvegarde de simulation echouee (${err.message}).`);
+      }
+    }
+
+    async function openHistoryModal() {
+      historyModal.classList.remove("hidden");
+      await loadSimulations();
     }
 
     function renderUsersTable() {
@@ -1328,8 +1547,9 @@
       try {
         const evaluation = await callEvaluationApi();
         showResultModal(evaluation);
+        await saveSimulation(evaluation);
       } catch (err) {
-        showResultModal({
+        const fallbackEvaluation = {
           score: outcome === "very_unsatisfied" ? 45 : outcome === "very_satisfied" ? 82 : 60,
           verdict: "Bilan rapide",
           resume: `Evaluation detaillee indisponible (${err.message}).`,
@@ -1338,7 +1558,9 @@
           pistesSolution: ["Relancer l evaluation", "Verifier l endpoint /api/evaluate", "Faire une nouvelle simulation"],
           actionsManager: ["Suivre conversion simulation->engagement", "Suivre objection prix", "Suivre qualite de closing"],
           nextObjective: "Obtenir une evaluation IA complete a la prochaine tentative."
-        });
+        };
+        showResultModal(fallbackEvaluation);
+        await saveSimulation(fallbackEvaluation);
       } finally {
         setBusy(false);
       }
@@ -1436,6 +1658,18 @@
     }
 
     document.getElementById("reloadClientsBtn").addEventListener("click", loadClients);
+    historyBtn.addEventListener("click", openHistoryModal);
+    refreshHistoryBtn.addEventListener("click", loadSimulations);
+    document.getElementById("closeHistoryModalBtn").addEventListener("click", () => {
+      historyModal.classList.add("hidden");
+      setHistoryMessage("");
+    });
+    historyModal.addEventListener("click", (event) => {
+      if (event.target === historyModal) {
+        historyModal.classList.add("hidden");
+        setHistoryMessage("");
+      }
+    });
     manageUsersBtn.addEventListener("click", openUsersModal);
     refreshUsersBtn.addEventListener("click", loadUsersAdmin);
     document.getElementById("closeUsersModalBtn").addEventListener("click", () => {

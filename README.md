@@ -51,3 +51,8 @@ Variables ajoutees :
 3. Connecte-toi avec cet email admin.
 4. Dans l'application, utilise le bouton `Gestion utilisateurs` pour ajouter/modifier les comptes.
 5. Un utilisateur doit etre `is_active=true` pour se connecter.
+
+## Historique des simulations
+- Chaque simulation est enregistree dans `public.simulation_runs` (transcript complet + evaluation).
+- Endpoint backend: `api/simulations.js`.
+- Setup SQL requis: executer `supabase/seed_simulations.sql` dans Supabase SQL Editor.
