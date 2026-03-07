@@ -106,16 +106,15 @@ async function validateGoogleCredential(credential) {
   const allowedDomains = parseCsvList(process.env.ALLOWED_GOOGLE_DOMAINS);
   const allowedEmails = parseCsvList(process.env.ALLOWED_GOOGLE_EMAILS);
   const emailDomain = email.includes("@") ? email.split("@")[1] : "";
+  const hasEmailWhitelist = allowedEmails.length > 0;
+  const hasDomainWhitelist = allowedDomains.length > 0;
+  const isEmailAllowed = hasEmailWhitelist && allowedEmails.includes(email);
+  const isDomainAllowed =
+    hasDomainWhitelist && (allowedDomains.includes(emailDomain) || (hostedDomain && allowedDomains.includes(hostedDomain)));
 
-  if (allowedEmails.length > 0 && !allowedEmails.includes(email)) {
-    throw new Error("Ce courriel n est pas autorise");
-  }
-
-  if (allowedDomains.length > 0) {
-    const hasDomainMatch = allowedDomains.includes(emailDomain) || (hostedDomain && allowedDomains.includes(hostedDomain));
-    if (!hasDomainMatch) {
-      throw new Error("Ce domaine n est pas autorise");
-    }
+  // Rule: allow if domain is allowed OR email is explicitly allowed.
+  if ((hasEmailWhitelist || hasDomainWhitelist) && !isEmailAllowed && !isDomainAllowed) {
+    throw new Error("Courriel non autorise par la politique d acces");
   }
 
   return {
