@@ -129,9 +129,9 @@ async function validateGoogleCredential(credential) {
   let fullName = String(tokenInfo.name || email);
 
   if (supabaseUrl && supabaseServiceRoleKey) {
-    const endpoint = `${supabaseUrl}/rest/v1/app_users?select=email,full_name,role,is_active&email=eq.${encodeURIComponent(email)}&limit=1`;
+    const lookupEndpoint = `${supabaseUrl}/rest/v1/app_users?select=email,full_name,role,is_active&email=eq.${encodeURIComponent(email)}&limit=1`;
 
-    const userLookupResponse = await fetch(endpoint, {
+    const userLookupResponse = await fetch(lookupEndpoint, {
       method: "GET",
       headers: {
         apikey: supabaseServiceRoleKey,
@@ -145,9 +145,38 @@ async function validateGoogleCredential(credential) {
     }
 
     const rows = await userLookupResponse.json();
-    const row = Array.isArray(rows) ? rows[0] : null;
+    let row = Array.isArray(rows) ? rows[0] : null;
+
     if (!row) {
-      throw new Error("Compte non inscrit. Contacte un administrateur.");
+      const createEndpoint = `${supabaseUrl}/rest/v1/app_users`;
+      const createResponse = await fetch(createEndpoint, {
+        method: "POST",
+        headers: {
+          apikey: supabaseServiceRoleKey,
+          Authorization: `Bearer ${supabaseServiceRoleKey}`,
+          "Content-Type": "application/json",
+          Prefer: "resolution=merge-duplicates,return=representation"
+        },
+        body: JSON.stringify([
+          {
+            email,
+            full_name: fullName || null,
+            role: "representant",
+            is_active: true
+          }
+        ])
+      });
+
+      if (!createResponse.ok) {
+        throw new Error("Creation automatique utilisateur impossible");
+      }
+
+      const createdRows = await createResponse.json();
+      row = Array.isArray(createdRows) ? createdRows[0] : null;
+    }
+
+    if (!row) {
+      throw new Error("Utilisateur introuvable apres creation");
     }
 
     if (row.is_active === false) {
