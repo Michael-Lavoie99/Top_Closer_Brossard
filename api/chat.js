@@ -1,9 +1,9 @@
-﻿const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const { requireAuth, setAuthCors } = require("./_auth");
 
 function buildSystemPrompt(context) {
   const level = context?.level || "Intermediaire";
   const goal = context?.goal || "Structure complete";
-  const mode = context?.mode || "simulation";
   const client = context?.client || {};
 
   const clientName = client?.name || "Client non specifie";
@@ -26,7 +26,7 @@ function buildSystemPrompt(context) {
     "Contexte session:",
     `- Niveau representant: ${level}`,
     `- Objectif principal: ${goal}`,
-    `- Mode: ${mode}`,
+    "- Mode: simulation (force)",
     "",
     "Profil client:",
     `- Nom: ${clientName}`,
@@ -48,16 +48,6 @@ function buildSystemPrompt(context) {
     ""
   ];
 
-  if (mode === "evaluation") {
-    return [
-      ...common,
-      "MODE EVALUATION:",
-      "- Donne STRICTEMENT la structure A a G demandee.",
-      "- Integre explicitement si la strategie vendeur attendue a ete appliquee.",
-      "- Ne joue plus le client dans ce mode."
-    ].join("\n");
-  }
-
   return [
     ...common,
     "MODE SIMULATION (VERROUILLE):",
@@ -66,7 +56,7 @@ function buildSystemPrompt(context) {
     "- N'ecris jamais: 'en tant que coach', 'je te conseille', 'voici la grille', etc.",
     "- Reponds en premiere personne client, concret, court, realiste.",
     "- Tu peux hesiter, objecter, demander des clarifications.",
-    "- Si le representant ecrit FIN SIMULATION, la prochaine reponse bascule en mode evaluation.",
+    "- Meme si le representant ecrit FIN SIMULATION, tu restes client.",
     "",
     "Auto-controle avant chaque reponse:",
     "1) Est-ce que je parle comme CLIENT ?",
@@ -83,22 +73,22 @@ function normalizeConversation(conversation) {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  setAuthCors(res, "POST, OPTIONS");
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  const user = requireAuth(req, res);
+  if (!user) return;
   if (!process.env.OPENAI_API_KEY) return res.status(500).json({ error: "OPENAI_API_KEY is missing" });
 
   try {
     const body = typeof req.body === "object" && req.body !== null ? req.body : {};
     const context = body.context || {};
-    const mode = context.mode === "evaluation" ? "evaluation" : "simulation";
+    const mode = "simulation";
     const conversation = normalizeConversation(body.conversation || []);
 
     const messages = [{ role: "system", content: buildSystemPrompt({ ...context, mode }) }, ...conversation];
-    const maxTokens = mode === "evaluation" ? 1800 : 650;
+    const maxTokens = 650;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

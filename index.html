@@ -6,482 +6,1207 @@
   <title>CoachVente Honda Brossard</title>
   <style>
     :root {
-      --bg-1: #fff6f7;
-      --bg-2: #ffe8ec;
+      --bg: #fff4f6;
       --card: #ffffff;
-      --ink: #24171a;
-      --muted: #6f4f57;
+      --ink: #26181b;
+      --muted: #6b4a51;
+      --line: #f2c7cf;
       --brand: #d0021b;
       --brand-2: #8f0013;
-      --line: #f2c7cf;
-      --soft: #fff2f4;
+      --ok: #0f7d3e;
+      --bad: #9b1c2a;
     }
+
     * { box-sizing: border-box; }
-    body {
+
+    html, body {
       margin: 0;
-      min-height: 100vh;
+      height: 100%;
       font-family: "Segoe UI", "Aptos", Arial, sans-serif;
       color: var(--ink);
-      background: radial-gradient(circle at 10% 0%, var(--bg-2), var(--bg-1) 45%);
+      background: radial-gradient(circle at 10% 0%, #ffe9ee, var(--bg) 46%);
     }
-    .shell {
-      max-width: 1240px;
+
+    .app {
+      min-height: 100%;
+      padding: 1rem;
+      max-width: 1380px;
       margin: 0 auto;
-      padding: 1rem;
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: 360px 1fr;
     }
-    .panel, .chat-shell {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      box-shadow: 0 8px 22px rgba(74, 6, 18, 0.1);
-    }
-    .panel {
-      padding: 1rem;
-      align-self: start;
-      position: sticky;
-      top: 1rem;
-    }
-    h1 { margin: 0; font-size: 1.15rem; }
-    .subtitle { margin: .35rem 0 .95rem; font-size: .92rem; color: var(--muted); line-height: 1.35; }
-    .badge-brand {
-      display: inline-block;
-      margin-top: .45rem;
-      padding: .2rem .5rem;
-      border: 1px solid #efb8c2;
-      border-radius: 999px;
-      font-size: .75rem;
-      font-weight: 700;
-      color: var(--brand-2);
-      background: #fff1f4;
-    }
-    label { display: block; margin: .8rem 0 .35rem; font-size: .84rem; font-weight: 700; }
-    select, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: .65rem .75rem;
+
+    .hidden { display: none !important; }
+
+    button, select, textarea {
       font: inherit;
-      background: #fff;
-      color: var(--ink);
     }
+
     button {
-      margin-top: .85rem;
       border: 0;
       border-radius: 10px;
-      padding: .72rem .9rem;
-      font: inherit;
+      padding: .7rem .95rem;
       font-weight: 700;
       cursor: pointer;
       color: #fff;
-      background: linear-gradient(125deg, var(--brand), var(--brand-2));
+      background: linear-gradient(130deg, var(--brand), var(--brand-2));
     }
-    button.alt { background: #fff2f4; color: var(--brand-2); border: 1px solid #efb8c2; }
-    button:disabled { opacity: .55; cursor: not-allowed; }
-    .meta {
-      margin-top: .8rem;
-      padding: .65rem;
-      border-radius: 10px;
-      background: var(--soft);
-      border: 1px dashed #efb8c2;
+
+    button.alt {
+      background: #fff;
+      color: var(--brand-2);
+      border: 1px solid var(--line);
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .view {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 12px 28px rgba(70, 6, 16, 0.08);
+    }
+
+    .gallery-view {
+      padding: 1rem;
+    }
+
+    .auth-view {
+      padding: 1.2rem;
+      max-width: 540px;
+      margin: 8vh auto 0;
+      display: grid;
+      gap: .9rem;
+    }
+
+    .auth-actions {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      flex-wrap: wrap;
+    }
+
+    .auth-msg {
+      font-size: .84rem;
+      color: #6f4d56;
+      min-height: 1.2rem;
+      margin: 0;
+    }
+
+    .auth-msg.bad {
+      color: var(--bad);
+      font-weight: 700;
+    }
+
+    .session-bar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: .55rem;
+      margin-bottom: .75rem;
+    }
+
+    .session-user {
       font-size: .82rem;
-      white-space: pre-wrap;
-      color: #5d3942;
+      color: #633f47;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff6f8;
+      padding: .27rem .62rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 62vw;
+    }
+
+    .gallery-head {
+      display: grid;
+      gap: .8rem;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      margin-bottom: .9rem;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .sub {
+      margin: .28rem 0 0;
+      color: var(--muted);
       line-height: 1.35;
     }
-    .gallery-wrap {
+
+    .controls {
       display: grid;
-      gap: .75rem;
-      margin-top: .75rem;
-      max-height: 58vh;
-      overflow: auto;
-      padding-right: .1rem;
+      grid-template-columns: repeat(2, minmax(160px, 1fr));
+      gap: .6rem;
+      margin: .9rem 0 1rem;
     }
-    .client-card {
-      border: 1px solid #efc4cc;
-      border-radius: 12px;
-      padding: .75rem;
-      background: #fff;
-      cursor: pointer;
-      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-      text-align: left;
+
+    .field {
+      display: grid;
+      gap: .35rem;
     }
-    .client-card:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 16px rgba(104, 10, 28, 0.1);
-      border-color: #e49eab;
-    }
-    .client-card.active {
-      border-color: var(--brand);
-      box-shadow: 0 0 0 2px #ffd8df inset;
-      background: #fff6f7;
-    }
-    .client-top { display: flex; justify-content: space-between; gap: .55rem; align-items: start; }
-    .client-name { margin: 0; font-size: .98rem; }
-    .chip {
-      font-size: .72rem;
+
+    .field label {
+      font-size: .82rem;
       font-weight: 700;
-      border: 1px solid #efb8c2;
-      color: #7f2f3d;
-      background: #fff0f3;
-      border-radius: 999px;
-      padding: .18rem .48rem;
-      white-space: nowrap;
+      color: #542d35;
     }
-    .client-meta { margin: .45rem 0 0; color: #6e4b53; font-size: .8rem; line-height: 1.34; }
-    .chat-shell { display: grid; grid-template-rows: auto auto 1fr auto; min-height: calc(100vh - 2rem); }
-    .chat-head {
-      padding: .82rem .95rem;
-      border-bottom: 1px solid var(--line);
+
+    .field select {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .6rem .7rem;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .cards {
+      display: grid;
+      gap: .9rem;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    }
+
+    .client-card {
+      border: 1px solid #efc3cc;
+      border-radius: 13px;
+      background: #fff;
+      padding: .85rem;
+      display: grid;
+      gap: .5rem;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+    }
+
+    .client-card:hover {
+      border-color: #e393a4;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(99, 12, 31, 0.11);
+    }
+
+    .client-top {
       display: flex;
       justify-content: space-between;
-      gap: .7rem;
+      gap: .45rem;
+      align-items: flex-start;
+    }
+
+    .client-name {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .chip {
+      font-size: .72rem;
+      padding: .16rem .45rem;
+      border-radius: 999px;
+      border: 1px solid #ebb3be;
+      background: #fff1f4;
+      color: #7b2a39;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .small {
+      font-size: .83rem;
+      color: #6f4d56;
+      line-height: 1.34;
+      margin: 0;
+    }
+
+    .chat-view {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      height: calc(100vh - 2rem);
+      min-height: 640px;
+      overflow: hidden;
+    }
+
+    .chat-head {
+      border-bottom: 1px solid var(--line);
+      padding: .75rem .95rem;
+      display: flex;
+      justify-content: space-between;
+      gap: .6rem;
       align-items: center;
     }
-    .status {
-      font-size: .75rem;
-      font-weight: 700;
-      color: #7f2f3d;
-      border: 1px solid #efb8c2;
-      border-radius: 999px;
-      padding: .28rem .5rem;
-      background: #fff0f3;
+
+    .head-left {
+      display: flex;
+      gap: .55rem;
+      align-items: center;
+      min-width: 0;
     }
-    .selected-client {
+
+    .head-title {
       margin: 0;
-      padding: .65rem .95rem;
+      font-size: 1.05rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .head-right {
+      display: flex;
+      gap: .45rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .status {
+      font-size: .74rem;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: .24rem .55rem;
+      border: 1px solid var(--line);
+      background: #fff3f5;
+      color: #6f2d3a;
+    }
+
+    .tiny-btn {
+      padding: .45rem .65rem;
+      font-size: .76rem;
+      line-height: 1;
+      border-radius: 999px;
+    }
+
+    .tiny-btn.active {
+      background: linear-gradient(130deg, var(--brand), var(--brand-2));
+      color: #fff;
+      border: 0;
+    }
+
+    .client-strip {
       border-bottom: 1px dashed var(--line);
-      background: var(--soft);
-      font-size: .86rem;
-      color: #6f424b;
+      padding: .65rem .95rem;
+      background: #fff5f7;
+      color: #65444c;
+      font-size: .85rem;
       line-height: 1.35;
       white-space: pre-wrap;
+      max-height: 150px;
+      overflow: auto;
     }
-    .chat {
+
+    .chat-log {
+      overflow: auto;
       padding: .95rem;
       display: grid;
       gap: .7rem;
       align-content: start;
-      overflow: auto;
-      max-height: calc(100vh - 270px);
+      background: #fff;
     }
+
     .msg {
-      max-width: 86%;
-      padding: .68rem .78rem;
+      max-width: 82%;
       border-radius: 12px;
       border: 1px solid var(--line);
+      padding: .72rem .8rem;
+      line-height: 1.42;
       white-space: pre-wrap;
-      line-height: 1.4;
     }
-    .msg.coach { justify-self: start; background: #fff4f6; border-color: #efc1c9; }
-    .msg.rep { justify-self: end; background: #eef8f1; border-color: #bfe2ca; }
-    .composer-wrap { border-top: 1px solid var(--line); padding: .72rem; }
-    .hint { margin-bottom: .45rem; font-size: .79rem; color: #6b4a51; }
-    .composer { display: grid; gap: .5rem; grid-template-columns: 1fr auto auto; align-items: end; }
-    .composer textarea { min-height: 76px; max-height: 190px; resize: vertical; }
-    .send { width: auto; min-width: 118px; height: 42px; margin: 0; }
-    .hidden { display: none; }
-    @media (max-width: 1050px) {
-      .shell { grid-template-columns: 1fr; }
-      .panel { position: static; }
-      .chat-shell { min-height: 70vh; }
-      .chat { max-height: 56vh; }
+
+    .msg.client {
+      justify-self: start;
+      background: #fff3f6;
     }
+
+    .msg.rep {
+      justify-self: end;
+      background: #eef9f1;
+      border-color: #c4e5cf;
+    }
+
+    .composer {
+      border-top: 1px solid var(--line);
+      padding: .75rem;
+      display: grid;
+      gap: .5rem;
+      grid-template-columns: 1fr auto auto auto;
+      align-items: end;
+      background: #fff;
+    }
+
+    .composer textarea {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .64rem .72rem;
+      min-height: 74px;
+      max-height: 170px;
+      resize: vertical;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .hint {
+      font-size: .78rem;
+      color: #6c4b53;
+      padding: 0 .2rem;
+      grid-column: 1 / -1;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 8, 12, 0.6);
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+      z-index: 40;
+    }
+
+    .modal {
+      width: min(900px, 100%);
+      max-height: 88vh;
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(33, 8, 15, 0.28);
+      padding: 1rem;
+    }
+
+    .modal h3 {
+      margin: .1rem 0 .45rem;
+      font-size: 1.18rem;
+    }
+
+    .score-row {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      margin-bottom: .8rem;
+    }
+
+    .score-pill {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(130deg, var(--brand), var(--brand-2));
+      border-radius: 999px;
+      padding: .35rem .8rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      gap: .8rem;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: .75rem;
+    }
+
+    .card h4 {
+      margin: 0 0 .45rem;
+      font-size: .95rem;
+    }
+
+    .list {
+      margin: 0;
+      padding-left: 1rem;
+      color: #63434b;
+      line-height: 1.35;
+      font-size: .9rem;
+    }
+
+    .footer-actions {
+      margin-top: .9rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+    }
+
+    @media (max-width: 980px) {
+      .controls { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .chat-view { height: calc(100vh - 1rem); min-height: 560px; }
+    }
+
     @media (max-width: 760px) {
+      .gallery-head { grid-template-columns: 1fr; }
       .composer { grid-template-columns: 1fr; }
-      .send { width: 100%; }
+      .msg { max-width: 94%; }
+      .head-right { justify-content: flex-start; }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <aside class="panel">
-      <h1>CoachVente Honda Brossard</h1>
-      <p class="subtitle">Selectionne un client dans la galerie. Le profil choisi influence le comportement du client et la strategie de vente attendue.</p>
-      <span class="badge-brand">Accent Honda Rouge</span>
+  <div class="app">
+    <section id="authView" class="view auth-view">
+      <div>
+        <h1 class="title">CoachVente Honda Brossard</h1>
+        <p class="sub">Connexion requise pour les representants. Utilise ton Gmail de travail pour acceder a la plateforme.</p>
+      </div>
+      <div class="auth-actions">
+        <div id="googleSignIn"></div>
+      </div>
+      <p id="authMessage" class="auth-msg"></p>
+    </section>
 
-      <label for="level">Niveau du representant</label>
-      <select id="level">
-        <option value="Debutant">Debutant</option>
-        <option value="Intermediaire" selected>Intermediaire</option>
-        <option value="Avance">Avance</option>
-      </select>
+    <div id="sessionBar" class="session-bar hidden">
+      <span id="sessionUser" class="session-user"></span>
+      <button id="logoutBtn" class="alt tiny-btn" type="button">Se deconnecter</button>
+    </div>
 
-      <label for="goal">Objectif de la session</label>
-      <select id="goal">
-        <option value="Structure complete" selected>Structure complete</option>
-        <option value="Decouverte">Decouverte</option>
-        <option value="Objections">Objections</option>
-        <option value="Closing">Closing</option>
-        <option value="Gestion du prix">Gestion du prix</option>
-        <option value="Financement/Location">Financement/Location</option>
-      </select>
-
-      <div class="meta" id="metaBox">Mode: Preparation
-Action: Choisis un client pour ouvrir le chat.</div>
-
-      <label>Galerie des clients</label>
-      <div id="gallery" class="gallery-wrap"></div>
-
-      <button id="reloadClientsBtn" class="alt">Recharger la galerie</button>
-      <button id="resetBtn" class="alt">Reinitialiser la session</button>
-    </aside>
-
-    <section id="chatShell" class="chat-shell hidden">
-      <div class="chat-head">
-        <strong id="sessionTitle">Session inactive</strong>
-        <span id="modeBadge" class="status">Preparation</span>
+    <section id="galleryView" class="view gallery-view hidden">
+      <div class="gallery-head">
+        <div>
+          <h1 class="title">CoachVente Honda Brossard</h1>
+          <p class="sub">Choisis un client. Le chat s ouvre apres clic et la simulation se termine automatiquement si le client devient tres satisfait ou tres insatisfait.</p>
+        </div>
+        <div>
+          <button id="reloadClientsBtn" class="alt">Recharger clients</button>
+        </div>
       </div>
 
-      <p id="selectedClientBox" class="selected-client">Aucun client selectionne.</p>
-
-      <div id="chat" class="chat"></div>
-
-      <div class="composer-wrap">
-        <div class="hint">Entree = envoyer. Shift+Entree = nouvelle ligne. Le bouton Terminer la simulation lance l'evaluation.</div>
-        <div class="composer">
-          <textarea id="userInput" placeholder="Ecris ici ta replique de representant..."></textarea>
-          <button id="sendBtn" class="send">Envoyer</button>
-          <button id="endBtn" class="send alt">Terminer la simulation</button>
+      <div class="controls">
+        <div class="field">
+          <label for="level">Niveau vendeur</label>
+          <select id="level">
+            <option value="Debutant">Debutant</option>
+            <option value="Intermediaire" selected>Intermediaire</option>
+            <option value="Avance">Avance</option>
+          </select>
         </div>
+        <div class="field">
+          <label for="goal">Objectif de session</label>
+          <select id="goal">
+            <option value="Structure complete" selected>Structure complete</option>
+            <option value="Decouverte">Decouverte</option>
+            <option value="Objections">Objections</option>
+            <option value="Closing">Closing</option>
+            <option value="Gestion du prix">Gestion du prix</option>
+            <option value="Financement/Location">Financement/Location</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="cards" class="cards"></div>
+    </section>
+
+    <section id="chatView" class="view chat-view hidden">
+      <header class="chat-head">
+        <div class="head-left">
+          <button id="backToGalleryBtn" class="alt">Retour galerie</button>
+          <h2 id="chatTitle" class="head-title">Session</h2>
+        </div>
+        <div class="head-right">
+          <button id="voiceModeBtn" class="alt tiny-btn" type="button">Client: ecrit seulement</button>
+          <button id="stopVoiceBtn" class="alt tiny-btn" type="button">Couper voix</button>
+          <span id="statusPill" class="status">Simulation active</span>
+        </div>
+      </header>
+
+      <div id="clientStrip" class="client-strip"></div>
+
+      <div id="chatLog" class="chat-log"></div>
+
+      <div class="composer">
+        <div class="hint">Entree envoie. Shift+Entree fait une nouvelle ligne. Bouton micro = dictee.</div>
+        <textarea id="inputBox" placeholder="Ecris ta phrase de representant..."></textarea>
+        <button id="micBtn" class="alt" type="button">Dicter</button>
+        <button id="sendBtn">Envoyer</button>
+        <button id="endBtn" class="alt">Terminer</button>
       </div>
     </section>
   </div>
 
+  <div id="resultModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <h3>Resultat de simulation</h3>
+      <div class="score-row">
+        <span class="score-pill" id="scorePill">0 / 100</span>
+        <strong id="verdictText">-</strong>
+      </div>
+      <p id="resumeText" class="sub" style="margin-top:0"></p>
+
+      <div class="grid-2">
+        <section class="card">
+          <h4>Bons coups</h4>
+          <ul id="bonsCoups" class="list"></ul>
+        </section>
+        <section class="card">
+          <h4>Mauvais coups</h4>
+          <ul id="mauvaisCoups" class="list"></ul>
+        </section>
+        <section class="card">
+          <h4>Pistes de solution</h4>
+          <ul id="pistesSolution" class="list"></ul>
+        </section>
+        <section class="card">
+          <h4>Vision directeur des ventes</h4>
+          <ul id="actionsManager" class="list"></ul>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top:.8rem">
+        <h4>Objectif concret prochaine simulation</h4>
+        <p id="nextObjective" class="small" style="margin:0"></p>
+      </section>
+
+      <div class="footer-actions">
+        <button id="closeModalBtn">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
-    const FALLBACK_CLIENTS_BROWSER = [
-      { id: 1, name: "Famille pragmatique", segment: "Famille", difficulty: "Intermediaire", persona: "Couple avec un enfant, veut un VUS polyvalent sans depasser le budget mensuel.", needs: "Espace, securite, fiabilite, paiement stable.", objections: "Paiement trop eleve, peur des frais caches.", budget_range: "550-700 CAD/mois", urgency: "30 jours", trade_in: "Hyundai Elantra 2018", financing_preference: "Hesite entre achat et location", sales_strategy: "Decouverte structuree + comparaison claire de 2 options max + cadrage des couts totaux." },
-      { id: 2, name: "Navetteur analytique", segment: "Solo", difficulty: "Intermediaire", persona: "Professionnel qui roule beaucoup et compare 2-3 marques de maniere rationnelle.", needs: "Consommation, cout total, transparence.", objections: "Sceptique sur les frais concession.", budget_range: "450-600 CAD/mois", urgency: "2-6 semaines", trade_in: "Aucun", financing_preference: "Financement", sales_strategy: "Utiliser des chiffres simples, preuves concretes et reponses factuelles sans pression." },
-      { id: 3, name: "Client presse", segment: "Urgence", difficulty: "Debutant", persona: "Besoin d'un vehicule tres vite, peu de temps pour magasiner.", needs: "Disponibilite rapide, processus efficace.", objections: "Peur de perdre du temps.", budget_range: "600-850 CAD/mois", urgency: "Cette semaine", trade_in: "SUV 2017", financing_preference: "Ouvert", sales_strategy: "Diriger la vente par etapes courtes, confirmer rapidement la prochaine action." }
+    const BROWSER_FALLBACK_CLIENTS = [
+      {
+        id: 1,
+        name: "Famille pragmatique",
+        segment: "Famille",
+        difficulty: "Intermediaire",
+        persona: "Couple avec un enfant, budget mensuel controle.",
+        needs: "Espace, fiabilite, securite.",
+        objections: "Paiement trop eleve, peur des frais caches.",
+        budget_range: "550-700 CAD/mois",
+        urgency: "30 jours",
+        trade_in: "Elantra 2018",
+        financing_preference: "Achat ou location",
+        sales_strategy: "Decouverte structuree puis 2 options maximum"
+      },
+      {
+        id: 2,
+        name: "Navetteur analytique",
+        segment: "Solo",
+        difficulty: "Intermediaire",
+        persona: "Professionnel qui compare chiffres et cout total.",
+        needs: "Consommation et transparence.",
+        objections: "Sceptique sur les frais concession.",
+        budget_range: "450-600 CAD/mois",
+        urgency: "2-6 semaines",
+        trade_in: "Aucun",
+        financing_preference: "Financement",
+        sales_strategy: "Reponses factuelles et preuve concrete"
+      },
+      {
+        id: 3,
+        name: "Client presse",
+        segment: "Urgence",
+        difficulty: "Debutant",
+        persona: "Besoin d un vehicule tres vite.",
+        needs: "Disponibilite immediate.",
+        objections: "Peur de perdre du temps.",
+        budget_range: "600-850 CAD/mois",
+        urgency: "Cette semaine",
+        trade_in: "SUV 2017",
+        financing_preference: "Ouvert",
+        sales_strategy: "Processus court avec prochaine etape claire"
+      }
     ];
 
-    const chatShell = document.getElementById("chatShell");
-    const chat = document.getElementById("chat");
-    const gallery = document.getElementById("gallery");
-    const userInput = document.getElementById("userInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const endBtn = document.getElementById("endBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const reloadClientsBtn = document.getElementById("reloadClientsBtn");
-    const modeBadge = document.getElementById("modeBadge");
-    const metaBox = document.getElementById("metaBox");
-    const sessionTitle = document.getElementById("sessionTitle");
-    const selectedClientBox = document.getElementById("selectedClientBox");
+    const AUTH_TOKEN_KEY = "coachvente_auth_token";
 
     const state = {
-      active: false,
-      busy: false,
-      mode: "preparation",
-      level: "Intermediaire",
-      goal: "Structure complete",
       clients: [],
       selectedClient: null,
-      conversation: []
+      level: "Intermediaire",
+      goal: "Structure complete",
+      authToken: "",
+      user: null,
+      googleClientId: "",
+      active: false,
+      busy: false,
+      conversation: [],
+      positiveHits: 0,
+      negativeHits: 0,
+      outcome: "manual",
+      voiceOutputEnabled: false,
+      speechSynthesisSupported: "speechSynthesis" in window,
+      speechRecognitionSupported: Boolean(window.SpeechRecognition || window.webkitSpeechRecognition),
+      speechRecognition: null,
+      dictating: false,
+      dictationBase: ""
     };
 
-    function setMode(mode) {
-      state.mode = mode;
-      const labels = { preparation: "Preparation", simulation: "Mode Simulation", evaluation: "Mode Evaluation" };
-      modeBadge.textContent = labels[mode] || mode;
-    }
+    const authView = document.getElementById("authView");
+    const authMessage = document.getElementById("authMessage");
+    const googleSignIn = document.getElementById("googleSignIn");
+    const sessionBar = document.getElementById("sessionBar");
+    const sessionUser = document.getElementById("sessionUser");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const cards = document.getElementById("cards");
+    const galleryView = document.getElementById("galleryView");
+    const chatView = document.getElementById("chatView");
+    const chatTitle = document.getElementById("chatTitle");
+    const statusPill = document.getElementById("statusPill");
+    const clientStrip = document.getElementById("clientStrip");
+    const chatLog = document.getElementById("chatLog");
+    const inputBox = document.getElementById("inputBox");
+    const micBtn = document.getElementById("micBtn");
+    const sendBtn = document.getElementById("sendBtn");
+    const endBtn = document.getElementById("endBtn");
+    const voiceModeBtn = document.getElementById("voiceModeBtn");
+    const stopVoiceBtn = document.getElementById("stopVoiceBtn");
+    const levelSelect = document.getElementById("level");
+    const goalSelect = document.getElementById("goal");
 
-    function updateMeta(extra = "") {
-      if (!state.selectedClient) {
-        metaBox.textContent = `Mode: Preparation\nAction: Choisis un client pour ouvrir le chat.${extra ? `\nInfo: ${extra}` : ""}`;
-        return;
-      }
-      const c = state.selectedClient;
-      metaBox.textContent = [
-        `Mode: ${state.mode === "simulation" ? "Simulation" : state.mode === "evaluation" ? "Evaluation" : "Preparation"}`,
-        `Client: ${c.name}`,
-        `Segment: ${c.segment} | Difficulte: ${c.difficulty}`,
-        `Objectif: ${state.goal}`,
-        `Strategie impactee: ${c.sales_strategy}`,
-        extra ? `Info: ${extra}` : ""
-      ].filter(Boolean).join("\n");
-    }
+    const resultModal = document.getElementById("resultModal");
+    const scorePill = document.getElementById("scorePill");
+    const verdictText = document.getElementById("verdictText");
+    const resumeText = document.getElementById("resumeText");
+    const bonsCoups = document.getElementById("bonsCoups");
+    const mauvaisCoups = document.getElementById("mauvaisCoups");
+    const pistesSolution = document.getElementById("pistesSolution");
+    const actionsManager = document.getElementById("actionsManager");
+    const nextObjective = document.getElementById("nextObjective");
 
     function setBusy(isBusy) {
       state.busy = isBusy;
       sendBtn.disabled = isBusy;
       endBtn.disabled = isBusy;
-      reloadClientsBtn.disabled = isBusy;
+      micBtn.disabled = isBusy || !state.speechRecognitionSupported;
+      document.getElementById("reloadClientsBtn").disabled = isBusy;
       sendBtn.textContent = isBusy ? "Envoi..." : "Envoyer";
     }
 
-    function addMessage(role, text) {
-      const bubble = document.createElement("div");
-      bubble.className = `msg ${role}`;
-      bubble.textContent = text;
-      chat.appendChild(bubble);
-      chat.scrollTop = chat.scrollHeight;
+    function setAuthMessage(message, isError = false) {
+      authMessage.textContent = message || "";
+      authMessage.classList.toggle("bad", Boolean(isError));
     }
 
-    function addRepMessage(text) {
+    function getAuthHeaders(baseHeaders = {}) {
+      const headers = { ...baseHeaders };
+      if (state.authToken) {
+        headers.Authorization = `Bearer ${state.authToken}`;
+      }
+      return headers;
+    }
+
+    function updateSessionUi() {
+      const loggedIn = Boolean(state.authToken && state.user?.email);
+      authView.classList.toggle("hidden", loggedIn);
+      galleryView.classList.toggle("hidden", !loggedIn);
+      sessionBar.classList.toggle("hidden", !loggedIn);
+      if (loggedIn) {
+        sessionUser.textContent = `${state.user.name || "Representant"} - ${state.user.email}`;
+      } else {
+        sessionUser.textContent = "";
+      }
+    }
+
+    function clearSession(message = "") {
+      state.authToken = "";
+      state.user = null;
+      state.clients = [];
+      state.selectedClient = null;
+      state.active = false;
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      stopDictation();
+      stopSpeaking();
+      chatLog.innerHTML = "";
+      cards.innerHTML = "";
+      chatView.classList.add("hidden");
+      updateSessionUi();
+      setAuthMessage(message, Boolean(message));
+    }
+
+    function setSession(token, user) {
+      state.authToken = token;
+      state.user = user;
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+      setAuthMessage("");
+      updateSessionUi();
+    }
+
+    function openChatView() {
+      if (!state.authToken) return;
+      galleryView.classList.add("hidden");
+      chatView.classList.remove("hidden");
+    }
+
+    function openGalleryView() {
+      if (!state.authToken) {
+        chatView.classList.add("hidden");
+        return;
+      }
+      stopDictation();
+      stopSpeaking();
+      chatView.classList.add("hidden");
+      galleryView.classList.remove("hidden");
+    }
+
+    function addMessage(role, text) {
+      const el = document.createElement("div");
+      el.className = `msg ${role}`;
+      el.textContent = text;
+      chatLog.appendChild(el);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function pushRep(text) {
       addMessage("rep", text);
       state.conversation.push({ role: "user", content: text });
     }
 
-    function addCoachMessage(text) {
-      addMessage("coach", text);
+    function pushClient(text) {
+      addMessage("client", text);
       state.conversation.push({ role: "assistant", content: text });
+      speakClientMessage(text);
     }
 
-    function normalizeText(input) {
-      return (input || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    function normalizeText(t) {
+      return (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
-    function isClientReadyToBuy(text) {
-      const t = normalizeText(text);
-      if (/(pas|pas encore|pas pret|pas prete).{0,20}(acheter|achat|signer|depot|deposer)/.test(t)) return false;
-      return [
-        "je suis pret a acheter","je suis prete a acheter","je veux l acheter","je le prends","je la prends",
-        "on le prend","on la prend","on avance","on peut signer","faisons le depot","on fait le depot"
-      ].some((s) => t.includes(s));
+    function listHasAny(text, arr) {
+      return arr.some((w) => text.includes(w));
+    }
+
+    function updateOutcomeFromClientReply(reply) {
+      const t = normalizeText(reply);
+
+      const positive = [
+        "je le prends", "je la prends", "on avance", "on signe", "allons-y", "ca me va", "c est bon", "faisons le depot"
+      ];
+      const negative = [
+        "je quitte", "je vais ailleurs", "pas interesse", "on arrete", "j abandonne", "c est non", "trop cher pour moi", "je n ai plus confiance"
+      ];
+
+      if (listHasAny(t, positive)) state.positiveHits += 1;
+      if (listHasAny(t, negative)) state.negativeHits += 1;
+
+      if (state.positiveHits >= 1) return "very_satisfied";
+      if (state.negativeHits >= 1) return "very_unsatisfied";
+      return null;
+    }
+
+    function renderCards() {
+      cards.innerHTML = "";
+
+      const randomBtn = document.createElement("button");
+      randomBtn.className = "client-card";
+      randomBtn.innerHTML = `
+        <div class="client-top">
+          <h3 class="client-name">Client aleatoire</h3>
+          <span class="chip">Surprise</span>
+        </div>
+        <p class="small">Choisit un profil au hasard et ouvre directement le chat.</p>
+      `;
+      randomBtn.addEventListener("click", async () => {
+        if (!state.clients.length) return;
+        const idx = Math.floor(Math.random() * state.clients.length);
+        await selectClient(state.clients[idx], "aleatoire");
+      });
+      cards.appendChild(randomBtn);
+
+      state.clients.forEach((c) => {
+        const card = document.createElement("button");
+        card.className = "client-card";
+        card.innerHTML = `
+          <div class="client-top">
+            <h3 class="client-name">${c.name}</h3>
+            <span class="chip">${c.difficulty || "N/A"}</span>
+          </div>
+          <p class="small"><strong>Segment:</strong> ${c.segment || "N/A"}</p>
+          <p class="small"><strong>Persona:</strong> ${c.persona || "N/A"}</p>
+          <p class="small"><strong>Strategie:</strong> ${c.sales_strategy || "N/A"}</p>
+        `;
+        card.addEventListener("click", async () => selectClient(c, "galerie"));
+        cards.appendChild(card);
+      });
+    }
+
+    async function loadAuthConfig() {
+      const response = await fetch("/api/auth/config", { method: "GET" });
+      if (!response.ok) throw new Error("Configuration Google indisponible");
+      const data = await response.json();
+      if (!data?.googleClientId) throw new Error("GOOGLE_CLIENT_ID manquant cote serveur");
+      state.googleClientId = data.googleClientId;
+    }
+
+    async function validateSessionToken() {
+      const token = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (!token) return false;
+
+      state.authToken = token;
+      const response = await fetch("/api/auth/me", {
+        method: "GET",
+        headers: getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        clearSession("");
+        return false;
+      }
+
+      const data = await response.json();
+      state.user = data.user || null;
+      updateSessionUi();
+      return Boolean(state.user?.email);
+    }
+
+    function renderGoogleButton() {
+      if (!window.google?.accounts?.id) {
+        setAuthMessage("Google Sign-In indisponible dans ce navigateur.", true);
+        return;
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: state.googleClientId,
+        callback: onGoogleCredential
+      });
+
+      googleSignIn.innerHTML = "";
+      window.google.accounts.id.renderButton(googleSignIn, {
+        type: "standard",
+        theme: "outline",
+        text: "signin_with",
+        shape: "rectangular",
+        size: "large",
+        locale: "fr-CA"
+      });
+    }
+
+    async function waitForGoogleIdentity(maxMs = 6000) {
+      const started = Date.now();
+      while (!window.google?.accounts?.id) {
+        if (Date.now() - started > maxMs) return false;
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
+      return true;
+    }
+
+    async function onGoogleCredential(response) {
+      setAuthMessage("Connexion en cours...");
+
+      try {
+        const authResponse = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credential: response?.credential || "" })
+        });
+
+        const data = await authResponse.json().catch(() => ({}));
+        if (!authResponse.ok) {
+          throw new Error(data?.details || data?.error || "Connexion Google refusee");
+        }
+
+        setSession(data.token, data.user);
+        await loadClients();
+      } catch (err) {
+        clearSession(err.message || "Connexion Google impossible");
+      }
+    }
+
+    async function initAuth() {
+      updateSessionUi();
+      setAuthMessage("Preparation de la connexion Google...");
+
+      try {
+        await loadAuthConfig();
+        const hasSession = await validateSessionToken();
+        if (hasSession) {
+          setAuthMessage("");
+          await loadClients();
+          return;
+        }
+
+        setAuthMessage("Connecte-toi avec ton Gmail de travail.");
+        const ready = await waitForGoogleIdentity();
+        if (!ready) throw new Error("Script Google Sign-In non charge");
+        renderGoogleButton();
+      } catch (err) {
+        clearSession(err.message || "Erreur d initialisation auth");
+      }
     }
 
     async function loadClients() {
       try {
-        const response = await fetch("/api/clients", { method: "GET" });
-        if (!response.ok) throw new Error(`Erreur /api/clients (${response.status})`);
+        const response = await fetch("/api/clients", {
+          method: "GET",
+          headers: getAuthHeaders()
+        });
+        if (response.status === 401) {
+          clearSession("Session expiree. Reconnecte-toi.");
+          return;
+        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        if (!Array.isArray(data.clients) || data.clients.length === 0) throw new Error("Aucun client retourne.");
+        if (!Array.isArray(data.clients) || data.clients.length === 0) throw new Error("Aucun client");
         state.clients = data.clients;
-        renderGallery();
-        updateMeta(data.warning ? `Fallback serveur utilise: ${data.warning}` : "Profils charges depuis API.");
-      } catch (err) {
-        state.clients = FALLBACK_CLIENTS_BROWSER;
-        renderGallery();
-        updateMeta(`API indisponible, fallback navigateur utilise (${err.message}).`);
+      } catch {
+        state.clients = BROWSER_FALLBACK_CLIENTS;
       }
+      renderCards();
     }
 
-    function makeCard(client, isRandom = false) {
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "client-card";
-      if (!isRandom && state.selectedClient && state.selectedClient.id === client.id) card.classList.add("active");
-
-      if (isRandom) {
-        card.innerHTML = '<div class="client-top"><h3 class="client-name">Client aleatoire</h3><span class="chip">Surprise</span></div><p class="client-meta">Choisit un profil au hasard et le presente au debut du chat.</p>';
-        card.addEventListener("click", () => selectRandomClient());
-        return card;
-      }
-
-      card.innerHTML = [
-        '<div class="client-top">',
-        `<h3 class="client-name">${client.name}</h3>`,
-        `<span class="chip">${client.difficulty}</span>`,
-        '</div>',
-        `<p class="client-meta"><strong>Segment:</strong> ${client.segment}</p>`,
-        `<p class="client-meta"><strong>Persona:</strong> ${client.persona}</p>`,
-        `<p class="client-meta"><strong>Strategie:</strong> ${client.sales_strategy}</p>`
-      ].join("");
-      card.addEventListener("click", () => selectClient(client));
-      return card;
-    }
-
-    function renderGallery() {
-      gallery.innerHTML = "";
-      gallery.appendChild(makeCard({}, true));
-      state.clients.forEach((c) => gallery.appendChild(makeCard(c)));
-    }
-
-    async function requestCoachReply() {
+    async function callChatApi() {
       const payload = {
         conversation: state.conversation,
-        context: { mode: state.mode, level: state.level, goal: state.goal, client: state.selectedClient }
+        context: {
+          mode: "simulation",
+          level: state.level,
+          goal: state.goal,
+          client: state.selectedClient
+        }
       };
+
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(payload)
       });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        const details = data?.details ? `\n${data.details}` : "";
-        throw new Error(`Erreur API (${response.status})${details}`);
+
+      if (response.status === 401) {
+        clearSession("Session expiree. Reconnecte-toi.");
+        throw new Error("Session invalide");
       }
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(`Erreur API (${response.status}) ${err.details || ""}`);
+      }
+
       const data = await response.json();
       return data.reply;
     }
 
-    async function finishSimulation(options = {}) {
-      const { reasonLabel = "manuelle", markerMessage = "FIN SIMULATION", alreadyBusy = false } = options;
-      if (!state.active) return addMessage("coach", "Aucune simulation active.");
-      if (state.mode !== "simulation") return addMessage("coach", "La simulation est deja terminee.");
+    async function callEvaluationApi() {
+      const payload = {
+        conversation: state.conversation,
+        context: {
+          level: state.level,
+          goal: state.goal,
+          client: state.selectedClient,
+          outcome: state.outcome
+        }
+      };
 
-      setMode("evaluation");
-      updateMeta(`Simulation terminee (${reasonLabel}).`);
-      state.conversation.push({ role: "user", content: markerMessage });
-      addMessage("coach", `Simulation terminee (${reasonLabel}). Generation de l'evaluation...`);
+      const response = await fetch("/api/evaluate", {
+        method: "POST",
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(payload)
+      });
 
-      if (!alreadyBusy) setBusy(true);
-      try {
-        const reply = await requestCoachReply();
-        addCoachMessage(reply);
-        sessionTitle.textContent = `Evaluation - ${state.selectedClient.name}`;
-      } catch (err) {
-        addMessage("coach", `Je ne peux pas repondre pour l'instant. Verifie OPENAI_API_KEY puis redeploie.\n\nDetail: ${err.message}`);
-      } finally {
-        if (!alreadyBusy) setBusy(false);
+      if (response.status === 401) {
+        clearSession("Session expiree. Reconnecte-toi.");
+        throw new Error("Session invalide");
+      }
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(`Erreur evaluation (${response.status}) ${err.details || ""}`);
+      }
+
+      const data = await response.json();
+      return data.evaluation;
+    }
+
+    function fillList(el, items) {
+      el.innerHTML = "";
+      (Array.isArray(items) ? items : []).slice(0, 5).forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        el.appendChild(li);
+      });
+      if (!el.children.length) {
+        const li = document.createElement("li");
+        li.textContent = "Aucun point recu.";
+        el.appendChild(li);
       }
     }
 
-    async function sendAndReply(repText) {
-      addRepMessage(repText);
+    function showResultModal(evaluation) {
+      const score = Number.isFinite(evaluation?.score) ? Math.max(0, Math.min(100, Math.round(evaluation.score))) : 60;
+      scorePill.textContent = `${score} / 100`;
+      verdictText.textContent = evaluation?.verdict || "Resultat de session";
+      resumeText.textContent = evaluation?.resume || "Evaluation disponible.";
+      nextObjective.textContent = evaluation?.nextObjective || "Definir un objectif concret pour la prochaine simulation.";
+
+      fillList(bonsCoups, evaluation?.bonsCoups);
+      fillList(mauvaisCoups, evaluation?.mauvaisCoups);
+      fillList(pistesSolution, evaluation?.pistesSolution);
+      fillList(actionsManager, evaluation?.actionsManager);
+
+      resultModal.classList.remove("hidden");
+    }
+
+    function updateVoiceControls() {
+      const outputLabel = state.voiceOutputEnabled ? "Client: ecrit + voix" : "Client: ecrit seulement";
+      voiceModeBtn.textContent = outputLabel;
+      voiceModeBtn.classList.toggle("active", state.voiceOutputEnabled);
+
+      if (!state.speechRecognitionSupported) {
+        micBtn.textContent = "Dictee non supportee";
+        micBtn.disabled = true;
+      } else {
+        micBtn.textContent = state.dictating ? "Arreter dictee" : "Dicter";
+        micBtn.classList.toggle("active", state.dictating);
+      }
+
+      stopVoiceBtn.disabled = !state.speechSynthesisSupported;
+    }
+
+    function stopSpeaking() {
+      if (!state.speechSynthesisSupported) return;
+      window.speechSynthesis.cancel();
+    }
+
+    function speakClientMessage(text) {
+      if (!state.voiceOutputEnabled || !state.speechSynthesisSupported) return;
+      const clean = (text || "").trim();
+      if (!clean) return;
+
+      stopSpeaking();
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.lang = "fr-CA";
+      utterance.rate = 0.97;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function initDictation() {
+      if (!state.speechRecognitionSupported) return;
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = "fr-CA";
+      recognition.interimResults = true;
+      recognition.continuous = true;
+
+      recognition.onresult = (event) => {
+        let finalPart = "";
+        let interimPart = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const chunk = event.results[i][0]?.transcript || "";
+          if (event.results[i].isFinal) finalPart += chunk + " ";
+          else interimPart += chunk;
+        }
+
+        const base = state.dictationBase ? `${state.dictationBase} ` : "";
+        inputBox.value = `${base}${finalPart}${interimPart}`.trimStart();
+      };
+
+      recognition.onerror = () => {
+        state.dictating = false;
+        updateVoiceControls();
+      };
+
+      recognition.onend = () => {
+        state.dictating = false;
+        state.dictationBase = "";
+        updateVoiceControls();
+      };
+
+      state.speechRecognition = recognition;
+    }
+
+    function startDictation() {
+      if (!state.speechRecognition || state.dictating) return;
+      state.dictationBase = inputBox.value.trim();
+      state.dictating = true;
+      updateVoiceControls();
+      state.speechRecognition.start();
+    }
+
+    function stopDictation() {
+      if (!state.speechRecognition || !state.dictating) return;
+      state.dictating = false;
+      state.dictationBase = "";
+      state.speechRecognition.stop();
+      updateVoiceControls();
+    }
+
+    function toggleDictation() {
+      if (!state.speechRecognitionSupported) return;
+      if (state.dictating) stopDictation();
+      else startDictation();
+    }
+
+    async function endSimulation(reason, outcome = "manual") {
+      if (!state.active) return;
+      state.active = false;
+      state.outcome = outcome;
+      stopDictation();
+      stopSpeaking();
+      statusPill.textContent = `Terminee - ${reason}`;
+      addMessage("client", `Simulation terminee: ${reason}. Preparation de ton bilan...`);
+
       setBusy(true);
       try {
-        const reply = await requestCoachReply();
-        addCoachMessage(reply);
-        if (state.mode === "simulation" && isClientReadyToBuy(reply)) {
-          await finishSimulation({ reasonLabel: "automatique (client pret a acheter)", markerMessage: "FIN SIMULATION (AUTO)", alreadyBusy: true });
-        }
+        const evaluation = await callEvaluationApi();
+        showResultModal(evaluation);
       } catch (err) {
-        addMessage("coach", `Je ne peux pas repondre pour l'instant. Verifie OPENAI_API_KEY puis redeploie.\n\nDetail: ${err.message}`);
+        showResultModal({
+          score: outcome === "very_unsatisfied" ? 45 : outcome === "very_satisfied" ? 82 : 60,
+          verdict: "Bilan rapide",
+          resume: `Evaluation detaillee indisponible (${err.message}).`,
+          bonsCoups: ["Session completee", "Maintien du dialogue", "Structure de base presente"],
+          mauvaisCoups: ["Bilan IA indisponible", "A valider manuellement", "Verifier la variable OPENAI_API_KEY"],
+          pistesSolution: ["Relancer l evaluation", "Verifier l endpoint /api/evaluate", "Faire une nouvelle simulation"],
+          actionsManager: ["Suivre conversion simulation->engagement", "Suivre objection prix", "Suivre qualite de closing"],
+          nextObjective: "Obtenir une evaluation IA complete a la prochaine tentative."
+        });
       } finally {
         setBusy(false);
       }
     }
 
-    function showClientSummary(client, origin) {
-      selectedClientBox.textContent = [
-        `Client selectionne (${origin}): ${client.name} [${client.segment} | ${client.difficulty}]`,
-        `Persona: ${client.persona}`,
-        `Besoins: ${client.needs}`,
-        `Objections: ${client.objections}`,
-        `Budget: ${client.budget_range} | Urgence: ${client.urgency}`,
-        `Trade-in: ${client.trade_in} | Financement/Location: ${client.financing_preference}`,
-        `Strategie vendeur impactee: ${client.sales_strategy}`
-      ].join("\n");
+    async function sendRepMessage(text) {
+      pushRep(text);
+      setBusy(true);
+      try {
+        const reply = await callChatApi();
+        pushClient(reply);
+
+        const autoOutcome = updateOutcomeFromClientReply(reply);
+        if (autoOutcome === "very_unsatisfied") {
+          await endSimulation("Client tres insatisfait", "very_unsatisfied");
+        } else if (autoOutcome === "very_satisfied") {
+          await endSimulation("Client pret a acheter", "very_satisfied");
+        }
+      } catch (err) {
+        pushClient(`Erreur: ${err.message}`);
+      } finally {
+        setBusy(false);
+      }
     }
 
-    async function startSimulation() {
-      if (state.busy || !state.selectedClient) return;
+    async function startSimulation(originLabel) {
+      state.level = levelSelect.value;
+      state.goal = goalSelect.value;
       state.active = true;
-      state.mode = "simulation";
       state.conversation = [];
-      state.level = document.getElementById("level").value;
-      state.goal = document.getElementById("goal").value;
+      state.positiveHits = 0;
+      state.negativeHits = 0;
+      state.outcome = "manual";
+      stopSpeaking();
 
-      chat.innerHTML = "";
-      setMode("simulation");
-      sessionTitle.textContent = `Session - ${state.selectedClient.name}`;
-      updateMeta("Simulation demarree.");
+      statusPill.textContent = "Simulation active";
+      chatLog.innerHTML = "";
+      chatTitle.textContent = `Session - ${state.selectedClient.name}`;
+      clientStrip.textContent = [
+        `Client (${originLabel}): ${state.selectedClient.name} [${state.selectedClient.segment} | ${state.selectedClient.difficulty}]`,
+        `Persona: ${state.selectedClient.persona}`,
+        `Besoins: ${state.selectedClient.needs}`,
+        `Objections: ${state.selectedClient.objections}`,
+        `Budget: ${state.selectedClient.budget_range} | Urgence: ${state.selectedClient.urgency}`,
+        `Trade-in: ${state.selectedClient.trade_in} | Financement/Location: ${state.selectedClient.financing_preference}`,
+        `Strategie attendue du vendeur: ${state.selectedClient.sales_strategy}`
+      ].join("\n");
 
-      addMessage("coach", "Simulation lancee. Je suis le client selon le profil choisi. Termine avec le bouton quand tu veux l'evaluation.");
+      openChatView();
 
       state.conversation.push({
         role: "user",
         content: [
-          "Demarre maintenant la simulation en mode client seulement.",
-          `Niveau representant: ${state.level}.`,
-          `Objectif de session: ${state.goal}.`,
+          "Demarre la simulation maintenant en tant que client seulement.",
+          `Niveau vendeur: ${state.level}.`,
+          `Objectif: ${state.goal}.`,
           `Client: ${state.selectedClient.name}.`,
-          `Segment: ${state.selectedClient.segment}.`,
-          `Difficulte: ${state.selectedClient.difficulty}.`,
           `Persona: ${state.selectedClient.persona}.`,
           `Besoins: ${state.selectedClient.needs}.`,
           `Objections: ${state.selectedClient.objections}.`,
@@ -489,93 +1214,83 @@ Action: Choisis un client pour ouvrir le chat.</div>
           `Urgence: ${state.selectedClient.urgency}.`,
           `Trade-in: ${state.selectedClient.trade_in}.`,
           `Preference financement/location: ${state.selectedClient.financing_preference}.`,
-          `Strategie de vente attendue chez le vendeur: ${state.selectedClient.sales_strategy}.`,
-          "Commence immediatement avec la premiere replique client."
+          `Strategie vendeur attendue: ${state.selectedClient.sales_strategy}.`,
+          "Commence avec une premiere replique client naturelle."
         ].join(" ")
       });
 
       setBusy(true);
       try {
-        const firstReply = await requestCoachReply();
-        addCoachMessage(firstReply);
+        const firstReply = await callChatApi();
+        pushClient(firstReply);
       } catch (err) {
-        addMessage("coach", `Impossible de demarrer la simulation. Detail: ${err.message}`);
+        pushClient(`Impossible de demarrer la simulation: ${err.message}`);
       } finally {
         setBusy(false);
       }
 
-      userInput.focus();
+      inputBox.focus();
     }
-
-    function activateChat() { chatShell.classList.remove("hidden"); }
 
     async function selectClient(client, origin = "galerie") {
+      if (!state.authToken) return;
       if (state.busy) return;
       state.selectedClient = client;
-      renderGallery();
-      activateChat();
-      showClientSummary(client, origin);
-      await startSimulation();
-    }
-
-    async function selectRandomClient() {
-      if (!state.clients.length) return;
-      const idx = Math.floor(Math.random() * state.clients.length);
-      await selectClient(state.clients[idx], "aleatoire");
-    }
-
-    function resetSession() {
-      if (state.busy) return;
-      state.active = false;
-      state.mode = "preparation";
-      state.conversation = [];
-      chat.innerHTML = "";
-      sessionTitle.textContent = "Session inactive";
-      setMode("preparation");
-      updateMeta("Session reinitialisee. Choisis un client.");
-      userInput.value = "";
+      await startSimulation(origin);
     }
 
     async function handleSend() {
-      const text = userInput.value.trim();
-      if (!text || state.busy) return;
-      userInput.value = "";
-
-      if (!state.active) {
-        addMessage("coach", "Clique d'abord sur un client dans la galerie pour ouvrir la simulation.");
-        return;
-      }
-
-      if (text.toUpperCase() === "FIN SIMULATION") {
-        await finishSimulation({ reasonLabel: "manuelle", markerMessage: "FIN SIMULATION" });
-        return;
-      }
-
-      await sendAndReply(text);
+      const text = inputBox.value.trim();
+      if (!text || !state.active || state.busy) return;
+      inputBox.value = "";
+      await sendRepMessage(text);
     }
 
-    async function handleEndSimulation() {
+    document.getElementById("reloadClientsBtn").addEventListener("click", loadClients);
+    logoutBtn.addEventListener("click", () => {
+      clearSession("Deconnecte.");
+      renderGoogleButton();
+    });
+
+    document.getElementById("backToGalleryBtn").addEventListener("click", () => {
       if (state.busy) return;
-      await finishSimulation({ reasonLabel: "manuelle (bouton)", markerMessage: "FIN SIMULATION (bouton)" });
-    }
-
-    async function initialize() {
-      resetSession();
-      await loadClients();
-    }
+      state.active = false;
+      openGalleryView();
+    });
 
     sendBtn.addEventListener("click", handleSend);
-    endBtn.addEventListener("click", handleEndSimulation);
-    resetBtn.addEventListener("click", resetSession);
-    reloadClientsBtn.addEventListener("click", loadClients);
-    userInput.addEventListener("keydown", (event) => {
+    micBtn.addEventListener("click", toggleDictation);
+    voiceModeBtn.addEventListener("click", () => {
+      state.voiceOutputEnabled = !state.voiceOutputEnabled;
+      if (!state.voiceOutputEnabled) stopSpeaking();
+      updateVoiceControls();
+    });
+    stopVoiceBtn.addEventListener("click", stopSpeaking);
+
+    endBtn.addEventListener("click", async () => {
+      if (!state.active || state.busy) return;
+      await endSimulation("Terminee manuellement", "manual");
+    });
+
+    inputBox.addEventListener("keydown", (event) => {
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
         handleSend();
       }
     });
 
-    initialize();
+    document.getElementById("closeModalBtn").addEventListener("click", () => {
+      resultModal.classList.add("hidden");
+      openGalleryView();
+    });
+
+    resultModal.addEventListener("click", (event) => {
+      if (event.target === resultModal) resultModal.classList.add("hidden");
+    });
+
+    initDictation();
+    updateVoiceControls();
+    initAuth();
   </script>
 </body>
 </html>

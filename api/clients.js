@@ -1,3 +1,5 @@
+const { requireAuth, setAuthCors } = require("./_auth");
+
 const FALLBACK_CLIENTS = [
   {
     id: 1,
@@ -170,9 +172,7 @@ async function loadClientsFromSupabase() {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  setAuthCors(res, "GET, OPTIONS");
 
   if (req.method === "OPTIONS") {
     res.status(200).end();
@@ -183,6 +183,9 @@ module.exports = async (req, res) => {
     res.status(405).json({ error: "Method not allowed" });
     return;
   }
+
+  const user = requireAuth(req, res);
+  if (!user) return;
 
   try {
     const clients = await loadClientsFromSupabase();

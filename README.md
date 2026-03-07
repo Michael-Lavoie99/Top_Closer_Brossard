@@ -37,3 +37,10 @@ Ajoute dans `Project Settings -> Environment Variables` :
 ## Sécurité
 - Ne jamais exposer `OPENAI_API_KEY` ou `SUPABASE_SERVICE_ROLE_KEY` dans le frontend.
 - Les clés sensibles sont utilisées uniquement dans les routes `api/*` côté serveur.
+
+## Authentification Google
+Variables ajoutees :
+- `GOOGLE_CLIENT_ID` : Client ID OAuth Web Google (Google Sign-In)
+- `AUTH_SESSION_SECRET` : secret long (32+ caracteres) pour signer les sessions
+- `ALLOWED_GOOGLE_DOMAINS` : optionnel, domaines autorises separes par virgules (ex: `hondabrossard.com`)
+- `ALLOWED_GOOGLE_EMAILS` : optionnel, liste blanche d emails autorises separes par virgules
