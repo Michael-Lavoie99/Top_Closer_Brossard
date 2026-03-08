@@ -267,12 +267,17 @@
     }
 
     .cards {
-      display: grid;
-      gap: .95rem;
-      grid-template-columns: repeat(auto-fill, minmax(305px, 1fr));
+      display: flex;
+      gap: .85rem;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: .2rem .1rem .45rem;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: thin;
     }
 
     .client-card {
+      flex: 0 0 300px;
       border: 1px solid #e9d7ca;
       border-radius: 16px;
       background: linear-gradient(160deg, #fff 0%, #fffaf6 100%);
@@ -282,6 +287,11 @@
       text-align: left;
       cursor: pointer;
       transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+      scroll-snap-align: start;
+    }
+
+    .profiles-region {
+      margin-top: .1rem;
     }
 
     .client-card:hover {
@@ -680,13 +690,13 @@
 
       <section class="mode-strip">
         <div class="mode-options">
-          <button id="modeRandomBtn" class="mode-btn" type="button">1. Generer simulations aleatoires</button>
+          <button id="modeRandomBtn" class="mode-btn active" type="button">1. Generer simulations aleatoires</button>
           <button id="modeImproveBtn" class="mode-btn" type="button">2. Axe sur amelioration</button>
-          <button id="modeCustomBtn" class="mode-btn active" type="button">3. Simulation personnalisee</button>
+          <button id="modeCustomBtn" class="mode-btn" type="button">3. Simulation personnalisee</button>
         </div>
         <div class="mode-meta">
-          <p id="modeHint" class="small">Mode personnalise: choisis les parametres puis clique un client.</p>
-          <button id="modeActionBtn" class="alt hidden" type="button">Lancer simulation</button>
+          <p id="modeHint" class="small">Generation auto: niveau, objectif et type de client sont choisis aleatoirement.</p>
+          <button id="modeActionBtn" class="alt" type="button">Generer et lancer</button>
         </div>
       </section>
 
@@ -713,12 +723,14 @@
         <div class="field">
           <label for="clientType">Type de client</label>
           <select id="clientType">
-            <option value="__all__" selected>Tous les types</option>
+            <option value="" selected>Selectionne un type</option>
           </select>
         </div>
       </div>
 
-      <div id="cards" class="cards"></div>
+      <section id="profilesRegion" class="profiles-region">
+        <div id="cards" class="cards"></div>
+      </section>
     </section>
 
     <section id="chatView" class="view chat-view hidden">
@@ -970,7 +982,7 @@
       clients: [],
       selectedClient: null,
       simulationMode: "custom",
-      clientType: "__all__",
+      clientType: "",
       level: "Intermediaire",
       goal: "Structure complete",
       authToken: "",
@@ -1005,6 +1017,7 @@
     const modeHint = document.getElementById("modeHint");
     const modeActionBtn = document.getElementById("modeActionBtn");
     const customControls = document.getElementById("customControls");
+    const profilesRegion = document.getElementById("profilesRegion");
     const historyBtn = document.getElementById("historyBtn");
     const manageUsersBtn = document.getElementById("manageUsersBtn");
     const cards = document.getElementById("cards");
@@ -1205,6 +1218,59 @@
       return "Intermediaire";
     }
 
+    function buildClientName(baseName, idx) {
+      const suffix = [
+        "variation urbaine",
+        "focus budget",
+        "focus objections",
+        "priorite confort",
+        "priorite fiabilite",
+        "focus reprise",
+        "decideur prudent",
+        "version express",
+        "profil compare",
+        "profil conclusion"
+      ][(idx - 1) % 10];
+      return `${baseName} - ${suffix}`;
+    }
+
+    function expandClientsToTenPerType(rawClients) {
+      const clients = Array.isArray(rawClients) ? rawClients : [];
+      const byType = new Map();
+
+      clients.forEach((c) => {
+        const type = normalizeTypeLabel(c.segment);
+        if (!byType.has(type)) byType.set(type, []);
+        byType.get(type).push(c);
+      });
+
+      const expanded = [];
+      let autoId = 100000;
+      byType.forEach((list, type) => {
+        const base = list.slice(0, 10);
+        if (!base.length) return;
+
+        for (let i = 0; i < 10; i += 1) {
+          const src = base[i % base.length];
+          if (i < base.length) {
+            expanded.push({ ...src, segment: type });
+          } else {
+            autoId += 1;
+            expanded.push({
+              ...src,
+              id: `${src.id || autoId}-${i + 1}`,
+              name: buildClientName(src.name || `Client ${type}`, i + 1),
+              segment: type,
+              persona: `${src.persona || "Client"} Variante ${i + 1}: contexte legerement different, mais meme type de besoin.`,
+              sales_strategy: `${src.sales_strategy || "Approche adaptee"} Priorite variant ${i + 1}.`
+            });
+          }
+        }
+      });
+
+      return expanded;
+    }
+
     function setSimulationMode(mode) {
       state.simulationMode = mode;
       modeRandomBtn.classList.toggle("active", mode === "random");
@@ -1214,6 +1280,7 @@
       const custom = mode === "custom";
       customControls.classList.toggle("hidden", !custom);
       modeActionBtn.classList.toggle("hidden", custom);
+      profilesRegion.classList.toggle("hidden", !custom);
 
       if (mode === "random") {
         modeHint.textContent = "Generation auto: niveau, objectif et type de client sont choisis aleatoirement.";
@@ -1227,9 +1294,8 @@
     }
 
     function getVisibleClients() {
-      return state.clientType === "__all__"
-        ? state.clients
-        : state.clients.filter((c) => normalizeTypeLabel(c.segment) === state.clientType);
+      if (!state.clientType) return [];
+      return state.clients.filter((c) => normalizeTypeLabel(c.segment) === state.clientType);
     }
 
     function pickRandom(arr) {
@@ -1245,7 +1311,7 @@
     }
 
     function chooseClientByTypeAndLevel(type, level) {
-      const byType = type === "__all__" ? state.clients : state.clients.filter((c) => normalizeTypeLabel(c.segment) === type);
+      const byType = type ? state.clients.filter((c) => normalizeTypeLabel(c.segment) === type) : state.clients;
       if (!byType.length) return null;
       const byLevel = byType.filter((c) => normalizeDifficultyLabel(c.difficulty) === level);
       return pickRandom(byLevel.length ? byLevel : byType);
@@ -1259,7 +1325,7 @@
 
       const level = pickRandom(levels) || "Intermediaire";
       const goal = pickRandom(goals) || "Structure complete";
-      const type = pickRandom(types) || "__all__";
+      const type = pickRandom(types) || "";
 
       state.clientType = type;
       clientTypeSelect.value = type;
@@ -1281,7 +1347,7 @@
         .join(" ");
 
       let goal = "Structure complete";
-      let type = "__all__";
+      let type = "";
       if (/(prix|budget|paiement|cher)/.test(allText)) {
         goal = "Gestion du prix";
         type = "Prix";
@@ -1315,7 +1381,7 @@
 
       const plan = buildImprovementPlan();
       const validTypes = new Set(state.clients.map((c) => normalizeTypeLabel(c.segment)));
-      const chosenType = validTypes.has(plan.type) ? plan.type : "__all__";
+      const chosenType = validTypes.has(plan.type) ? plan.type : Array.from(validTypes)[0] || "";
 
       state.clientType = chosenType;
       clientTypeSelect.value = chosenType;
@@ -1327,17 +1393,12 @@
     }
 
     function renderClientTypeOptions() {
-      const previous = state.clientType || "__all__";
+      const previous = state.clientType || "";
       const types = Array.from(new Set(state.clients.map((c) => normalizeTypeLabel(c.segment)))).sort((a, b) =>
         a.localeCompare(b, "fr-CA")
       );
 
       clientTypeSelect.innerHTML = "";
-      const allOpt = document.createElement("option");
-      allOpt.value = "__all__";
-      allOpt.textContent = "Tous les types";
-      clientTypeSelect.appendChild(allOpt);
-
       types.forEach((type) => {
         const opt = document.createElement("option");
         opt.value = type;
@@ -1346,29 +1407,13 @@
       });
 
       if (types.includes(previous)) state.clientType = previous;
-      else state.clientType = "__all__";
+      else state.clientType = types[0] || "";
       clientTypeSelect.value = state.clientType;
     }
 
     function renderCards() {
       cards.innerHTML = "";
       const visibleClients = getVisibleClients();
-
-      const randomBtn = document.createElement("button");
-      randomBtn.className = "client-card";
-      randomBtn.innerHTML = `
-        <div class="client-top">
-          <h3 class="client-name">Client aleatoire</h3>
-          <span class="chip">Surprise</span>
-        </div>
-        <p class="small">Choisit un profil au hasard et ouvre directement le chat.</p>
-      `;
-      randomBtn.addEventListener("click", async () => {
-        if (!visibleClients.length) return;
-        const idx = Math.floor(Math.random() * visibleClients.length);
-        await selectClient(visibleClients[idx], "aleatoire");
-      });
-      cards.appendChild(randomBtn);
 
       visibleClients.forEach((c) => {
         const card = document.createElement("button");
@@ -1504,9 +1549,9 @@
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (!Array.isArray(data.clients) || data.clients.length === 0) throw new Error("Aucun client");
-        state.clients = data.clients;
+        state.clients = expandClientsToTenPerType(data.clients);
       } catch {
-        state.clients = BROWSER_FALLBACK_CLIENTS;
+        state.clients = expandClientsToTenPerType(BROWSER_FALLBACK_CLIENTS);
       }
       renderClientTypeOptions();
       renderCards();
@@ -2013,7 +2058,7 @@
       if (state.simulationMode === "improve") await runImprovementSimulation();
     });
     clientTypeSelect.addEventListener("change", () => {
-      state.clientType = clientTypeSelect.value || "__all__";
+      state.clientType = clientTypeSelect.value || "";
       renderCards();
     });
     historyBtn.addEventListener("click", openHistoryModal);
@@ -2107,7 +2152,7 @@
 
     initDictation();
     updateVoiceControls();
-    setSimulationMode("custom");
+    setSimulationMode("random");
     initAuth();
   </script>
 </body>
