@@ -756,6 +756,7 @@
         </div>
         <div class="mode-meta">
           <p id="modeHint" class="small">Generation auto: niveau, objectif et type de client sont choisis aleatoirement.</p>
+          <button id="modeActionBtn" class="alt" type="button">Generer simulation aleatoire</button>
         </div>
       </section>
 
@@ -782,9 +783,9 @@
       </div>
 
       <section id="profilesRegion" class="profiles-region">
-        <div class="launch-panel">
-          <button id="launchSimulationBtn" class="launch-btn" type="button">Lancer une simulation</button>
-        </div>
+        <button id="carouselLeftBtn" class="carousel-arrow" type="button" aria-label="Types precedents">◀</button>
+        <button id="carouselRightBtn" class="carousel-arrow" type="button" aria-label="Types suivants">▶</button>
+        <div id="cards" class="cards"></div>
       </section>
     </section>
 
@@ -1070,11 +1071,14 @@
     const modeImproveBtn = document.getElementById("modeImproveBtn");
     const modeCustomBtn = document.getElementById("modeCustomBtn");
     const modeHint = document.getElementById("modeHint");
-    const launchSimulationBtn = document.getElementById("launchSimulationBtn");
+    const modeActionBtn = document.getElementById("modeActionBtn");
     const customControls = document.getElementById("customControls");
     const profilesRegion = document.getElementById("profilesRegion");
+    const carouselLeftBtn = document.getElementById("carouselLeftBtn");
+    const carouselRightBtn = document.getElementById("carouselRightBtn");
     const historyBtn = document.getElementById("historyBtn");
     const manageUsersBtn = document.getElementById("manageUsersBtn");
+    const cards = document.getElementById("cards");
     const galleryView = document.getElementById("galleryView");
     const chatView = document.getElementById("chatView");
     const chatTitle = document.getElementById("chatTitle");
@@ -1180,6 +1184,7 @@
       stopDictation();
       stopSpeaking();
       chatLog.innerHTML = "";
+      cards.innerHTML = "";
       chatView.classList.add("hidden");
       usersModal.classList.add("hidden");
       historyModal.classList.add("hidden");
@@ -1364,18 +1369,23 @@
       modeCustomBtn.classList.toggle("active", mode === "custom");
 
       customControls.classList.remove("hidden");
-      profilesRegion.classList.remove("hidden");
+      profilesRegion.classList.toggle("hidden", mode !== "custom");
+      modeActionBtn.classList.toggle("hidden", mode === "custom");
 
       if (mode === "random") {
         modeHint.textContent = "Generation auto: niveau, objectif et type de client sont choisis aleatoirement.";
-        launchSimulationBtn.textContent = "Generer simulation aleatoire";
+        modeActionBtn.textContent = "Generer simulation aleatoire";
       } else if (mode === "improve") {
         modeHint.textContent = "Amelioration: selection adaptee selon les difficultes des simulations precedentes.";
-        launchSimulationBtn.textContent = "Lancer simulation d amelioration";
+        modeActionBtn.textContent = "Lancer simulation d amelioration";
       } else {
-        modeHint.textContent = "Mode personnalise: choisis niveau et objectif, puis lance la simulation.";
-        launchSimulationBtn.textContent = "Lancer simulation personnalisee";
+        modeHint.textContent = "Mode personnalise: choisis niveau, objectif et type de client dans le carrousel.";
       }
+    }
+
+    function getVisibleClients() {
+      if (!state.clientType) return [];
+      return state.clients.filter((c) => normalizeTypeLabel(c.segment) === state.clientType);
     }
 
     function pickRandom(arr) {
@@ -1468,9 +1478,61 @@
       if (client) await selectClient(client, "amelioration");
     }
 
+    function renderClientTypeOptions() {
+      const types = Array.from(new Set(state.clients.map((c) => normalizeTypeLabel(c.segment)))).sort((a, b) =>
+        a.localeCompare(b, "fr-CA")
+      );
+      if (!types.length) {
+        state.clientType = "";
+        return;
+      }
+      if (!types.includes(state.clientType)) {
+        state.clientType = types[0];
+      }
+    }
+
+    function renderCards() {
+      cards.innerHTML = "";
+      const grouped = new Map();
+      state.clients.forEach((c) => {
+        const type = normalizeTypeLabel(c.segment);
+        if (!grouped.has(type)) grouped.set(type, []);
+        grouped.get(type).push(c);
+      });
+      const types = Array.from(grouped.keys()).sort((a, b) => a.localeCompare(b, "fr-CA"));
+
+      types.forEach((type, idx) => {
+        const list = grouped.get(type) || [];
+        const sample = list[0] || {};
+        const card = document.createElement("button");
+        card.className = "client-card";
+        if (state.clientType === type) card.classList.add("active");
+        card.innerHTML = `
+          <div class="client-top">
+            <h3 class="client-name">${type}</h3>
+            <span class="chip">${list.length} profils</span>
+          </div>
+          <p class="small">${getShortDescription(sample, idx)}</p>
+        `;
+        card.addEventListener("click", () => {
+          state.clientType = type;
+          renderCards();
+        });
+        cards.appendChild(card);
+      });
+
+      const canScroll = types.length > 1;
+      carouselLeftBtn.disabled = !canScroll;
+      carouselRightBtn.disabled = !canScroll;
+    }
+
     async function runCustomSimulation() {
       if (!state.clients.length || state.busy) return;
-      const client = chooseClientByTypeAndLevel("", levelSelect.value) || pickRandom(state.clients);
+      if (!state.clientType) {
+        modeHint.textContent = "Selectionne d abord un type de client dans le carrousel.";
+        return;
+      }
+      const client = chooseClientByTypeAndLevel(state.clientType, levelSelect.value) || pickRandom(getVisibleClients());
       if (!client) return;
       state.level = levelSelect.value;
       state.goal = goalSelect.value;
@@ -1598,6 +1660,8 @@
       } catch {
         state.clients = expandClientsToTenPerType(BROWSER_FALLBACK_CLIENTS);
       }
+      renderClientTypeOptions();
+      renderCards();
     }
 
     async function callSimulationsApi(method = "GET", body = null) {
@@ -2094,10 +2158,15 @@
     modeRandomBtn.addEventListener("click", () => setSimulationMode("random"));
     modeImproveBtn.addEventListener("click", () => setSimulationMode("improve"));
     modeCustomBtn.addEventListener("click", () => setSimulationMode("custom"));
-    launchSimulationBtn.addEventListener("click", async () => {
+    modeActionBtn.addEventListener("click", async () => {
       if (state.simulationMode === "random") await runRandomSimulation();
       if (state.simulationMode === "improve") await runImprovementSimulation();
-      if (state.simulationMode === "custom") await runCustomSimulation();
+    });
+    carouselLeftBtn.addEventListener("click", () => {
+      cards.scrollBy({ left: -330, behavior: "smooth" });
+    });
+    carouselRightBtn.addEventListener("click", () => {
+      cards.scrollBy({ left: 330, behavior: "smooth" });
     });
     historyBtn.addEventListener("click", openHistoryModal);
     refreshHistoryBtn.addEventListener("click", loadSimulations);
@@ -2190,7 +2259,7 @@
 
     initDictation();
     updateVoiceControls();
-    setSimulationMode("random");
+    setSimulationMode("custom");
     initAuth();
   </script>
 </body>
