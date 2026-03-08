@@ -294,6 +294,25 @@
       margin-top: .1rem;
     }
 
+    .carousel-tools {
+      display: flex;
+      justify-content: flex-end;
+      gap: .45rem;
+      margin-bottom: .45rem;
+    }
+
+    .carousel-arrow {
+      min-width: 40px;
+      padding: .45rem .58rem;
+      border-radius: 999px;
+      background: #fff;
+      color: #5a2f1e;
+      border: 1px solid #dfcbb9;
+      box-shadow: none;
+      font-size: .92rem;
+      line-height: 1;
+    }
+
     .client-card:hover {
       border-color: #d7a685;
       transform: translateY(-2px);
@@ -729,6 +748,10 @@
       </div>
 
       <section id="profilesRegion" class="profiles-region">
+        <div class="carousel-tools">
+          <button id="carouselLeftBtn" class="carousel-arrow" type="button" aria-label="Profils precedents">◀</button>
+          <button id="carouselRightBtn" class="carousel-arrow" type="button" aria-label="Profils suivants">▶</button>
+        </div>
         <div id="cards" class="cards"></div>
       </section>
     </section>
@@ -1018,6 +1041,8 @@
     const modeActionBtn = document.getElementById("modeActionBtn");
     const customControls = document.getElementById("customControls");
     const profilesRegion = document.getElementById("profilesRegion");
+    const carouselLeftBtn = document.getElementById("carouselLeftBtn");
+    const carouselRightBtn = document.getElementById("carouselRightBtn");
     const historyBtn = document.getElementById("historyBtn");
     const manageUsersBtn = document.getElementById("manageUsersBtn");
     const cards = document.getElementById("cards");
@@ -1218,6 +1243,26 @@
       return "Intermediaire";
     }
 
+    function toTitleCase(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    function getCreativeTitle(client, idx) {
+      const vibes = ["Mission", "Projet", "Scenario", "Dossier", "Parcours", "Cap", "Quete", "Virage", "Priorite", "Impulse"];
+      const type = toTitleCase(client.segment || "Client");
+      const vibe = vibes[idx % vibes.length];
+      return `${vibe} ${type} ${idx + 1}`;
+    }
+
+    function getShortDescription(client, idx) {
+      const urgency = client.urgency || "Echeance flexible";
+      const budget = client.budget_range || "Budget a clarifier";
+      const persona = String(client.persona || "Profil client").replace(/\.$/, "");
+      return `${persona}. Budget: ${budget}. Urgence: ${urgency}.`;
+    }
+
     function buildClientName(baseName, idx) {
       const suffix = [
         "variation urbaine",
@@ -1415,21 +1460,28 @@
       cards.innerHTML = "";
       const visibleClients = getVisibleClients();
 
-      visibleClients.forEach((c) => {
+      visibleClients.forEach((c, idx) => {
         const card = document.createElement("button");
         card.className = "client-card";
+        const title = getCreativeTitle(c, idx);
+        const summary = getShortDescription(c, idx);
         card.innerHTML = `
           <div class="client-top">
-            <h3 class="client-name">${c.name}</h3>
+            <h3 class="client-name">${title}</h3>
             <span class="chip">${c.difficulty || "N/A"}</span>
           </div>
+          <p class="small">${summary}</p>
+          <p class="small"><strong>Profil:</strong> ${c.name || "N/A"}</p>
           <p class="small"><strong>Segment:</strong> ${c.segment || "N/A"}</p>
           <p class="small"><strong>Persona:</strong> ${c.persona || "N/A"}</p>
-          <p class="small"><strong>Strategie:</strong> ${c.sales_strategy || "N/A"}</p>
         `;
         card.addEventListener("click", async () => selectClient(c, "galerie"));
         cards.appendChild(card);
       });
+
+      const canScroll = visibleClients.length > 1;
+      carouselLeftBtn.disabled = !canScroll;
+      carouselRightBtn.disabled = !canScroll;
     }
 
     async function loadAuthConfig() {
@@ -1997,8 +2049,7 @@
         `Besoins: ${state.selectedClient.needs}`,
         `Objections: ${state.selectedClient.objections}`,
         `Budget: ${state.selectedClient.budget_range} | Urgence: ${state.selectedClient.urgency}`,
-        `Trade-in: ${state.selectedClient.trade_in} | Financement/Location: ${state.selectedClient.financing_preference}`,
-        `Strategie attendue du vendeur: ${state.selectedClient.sales_strategy}`
+        `Trade-in: ${state.selectedClient.trade_in} | Financement/Location: ${state.selectedClient.financing_preference}`
       ].join("\n");
 
       openChatView();
@@ -2017,7 +2068,6 @@
           `Urgence: ${state.selectedClient.urgency}.`,
           `Trade-in: ${state.selectedClient.trade_in}.`,
           `Preference financement/location: ${state.selectedClient.financing_preference}.`,
-          `Strategie vendeur attendue: ${state.selectedClient.sales_strategy}.`,
           "Commence avec une premiere replique client naturelle."
         ].join(" ")
       });
@@ -2056,6 +2106,12 @@
     modeActionBtn.addEventListener("click", async () => {
       if (state.simulationMode === "random") await runRandomSimulation();
       if (state.simulationMode === "improve") await runImprovementSimulation();
+    });
+    carouselLeftBtn.addEventListener("click", () => {
+      cards.scrollBy({ left: -330, behavior: "smooth" });
+    });
+    carouselRightBtn.addEventListener("click", () => {
+      cards.scrollBy({ left: 330, behavior: "smooth" });
     });
     clientTypeSelect.addEventListener("change", () => {
       state.clientType = clientTypeSelect.value || "";
