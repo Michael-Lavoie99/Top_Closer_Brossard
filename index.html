@@ -319,6 +319,12 @@
       box-shadow: var(--shadow-md);
     }
 
+    .client-card.active {
+      border-color: #ca7a52;
+      background: linear-gradient(160deg, #fff7ef 0%, #fff1e5 100%);
+      box-shadow: 0 10px 22px rgba(108, 58, 35, 0.18);
+    }
+
     .client-top {
       display: flex;
       justify-content: space-between;
@@ -739,18 +745,12 @@
             <option value="Financement/Location">Financement/Location</option>
           </select>
         </div>
-        <div class="field">
-          <label for="clientType">Type de client</label>
-          <select id="clientType">
-            <option value="" selected>Selectionne un type</option>
-          </select>
-        </div>
       </div>
 
       <section id="profilesRegion" class="profiles-region">
         <div class="carousel-tools">
-          <button id="carouselLeftBtn" class="carousel-arrow" type="button" aria-label="Profils precedents">◀</button>
-          <button id="carouselRightBtn" class="carousel-arrow" type="button" aria-label="Profils suivants">▶</button>
+          <button id="carouselLeftBtn" class="carousel-arrow" type="button" aria-label="Types precedents">◀</button>
+          <button id="carouselRightBtn" class="carousel-arrow" type="button" aria-label="Types suivants">▶</button>
         </div>
         <div id="cards" class="cards"></div>
       </section>
@@ -1060,7 +1060,6 @@
     const stopVoiceBtn = document.getElementById("stopVoiceBtn");
     const levelSelect = document.getElementById("level");
     const goalSelect = document.getElementById("goal");
-    const clientTypeSelect = document.getElementById("clientType");
 
     const resultModal = document.getElementById("resultModal");
     const scorePill = document.getElementById("scorePill");
@@ -1324,7 +1323,7 @@
 
       const custom = mode === "custom";
       customControls.classList.toggle("hidden", !custom);
-      modeActionBtn.classList.toggle("hidden", custom);
+      modeActionBtn.classList.remove("hidden");
       profilesRegion.classList.toggle("hidden", !custom);
 
       if (mode === "random") {
@@ -1334,7 +1333,8 @@
         modeHint.textContent = "Amelioration: selection adaptee selon les difficultes des simulations precedentes.";
         modeActionBtn.textContent = "Analyser et lancer";
       } else {
-        modeHint.textContent = "Mode personnalise: choisis les parametres puis clique un client.";
+        modeHint.textContent = "Mode personnalise: choisis niveau, objectif et type de client.";
+        modeActionBtn.textContent = "Lancer simulation";
       }
     }
 
@@ -1373,7 +1373,6 @@
       const type = pickRandom(types) || "";
 
       state.clientType = type;
-      clientTypeSelect.value = type;
       setLevelAndGoal(level, goal);
       renderCards();
 
@@ -1429,7 +1428,6 @@
       const chosenType = validTypes.has(plan.type) ? plan.type : Array.from(validTypes)[0] || "";
 
       state.clientType = chosenType;
-      clientTypeSelect.value = chosenType;
       setLevelAndGoal(plan.level, plan.goal);
       renderCards();
 
@@ -1438,50 +1436,64 @@
     }
 
     function renderClientTypeOptions() {
-      const previous = state.clientType || "";
       const types = Array.from(new Set(state.clients.map((c) => normalizeTypeLabel(c.segment)))).sort((a, b) =>
         a.localeCompare(b, "fr-CA")
       );
-
-      clientTypeSelect.innerHTML = "";
-      types.forEach((type) => {
-        const opt = document.createElement("option");
-        opt.value = type;
-        opt.textContent = type;
-        clientTypeSelect.appendChild(opt);
-      });
-
-      if (types.includes(previous)) state.clientType = previous;
-      else state.clientType = types[0] || "";
-      clientTypeSelect.value = state.clientType;
+      if (!types.length) {
+        state.clientType = "";
+        return;
+      }
+      if (!types.includes(state.clientType)) {
+        state.clientType = types[0];
+      }
     }
 
     function renderCards() {
       cards.innerHTML = "";
-      const visibleClients = getVisibleClients();
+      const grouped = new Map();
+      state.clients.forEach((c) => {
+        const type = normalizeTypeLabel(c.segment);
+        if (!grouped.has(type)) grouped.set(type, []);
+        grouped.get(type).push(c);
+      });
+      const types = Array.from(grouped.keys()).sort((a, b) => a.localeCompare(b, "fr-CA"));
 
-      visibleClients.forEach((c, idx) => {
+      types.forEach((type, idx) => {
+        const list = grouped.get(type) || [];
+        const sample = list[0] || {};
         const card = document.createElement("button");
         card.className = "client-card";
-        const title = getCreativeTitle(c, idx);
-        const summary = getShortDescription(c, idx);
+        if (state.clientType === type) card.classList.add("active");
         card.innerHTML = `
           <div class="client-top">
-            <h3 class="client-name">${title}</h3>
-            <span class="chip">${c.difficulty || "N/A"}</span>
+            <h3 class="client-name">${type}</h3>
+            <span class="chip">${list.length} profils</span>
           </div>
-          <p class="small">${summary}</p>
-          <p class="small"><strong>Profil:</strong> ${c.name || "N/A"}</p>
-          <p class="small"><strong>Segment:</strong> ${c.segment || "N/A"}</p>
-          <p class="small"><strong>Persona:</strong> ${c.persona || "N/A"}</p>
+          <p class="small">${getShortDescription(sample, idx)}</p>
         `;
-        card.addEventListener("click", async () => selectClient(c, "galerie"));
+        card.addEventListener("click", () => {
+          state.clientType = type;
+          renderCards();
+        });
         cards.appendChild(card);
       });
 
-      const canScroll = visibleClients.length > 1;
+      const canScroll = types.length > 1;
       carouselLeftBtn.disabled = !canScroll;
       carouselRightBtn.disabled = !canScroll;
+    }
+
+    async function runCustomSimulation() {
+      if (!state.clients.length || state.busy) return;
+      if (!state.clientType) {
+        modeHint.textContent = "Selectionne d abord un type de client.";
+        return;
+      }
+      const client = chooseClientByTypeAndLevel(state.clientType, levelSelect.value) || pickRandom(getVisibleClients());
+      if (!client) return;
+      state.level = levelSelect.value;
+      state.goal = goalSelect.value;
+      await selectClient(client, "personnalisee");
     }
 
     async function loadAuthConfig() {
@@ -2106,16 +2118,13 @@
     modeActionBtn.addEventListener("click", async () => {
       if (state.simulationMode === "random") await runRandomSimulation();
       if (state.simulationMode === "improve") await runImprovementSimulation();
+      if (state.simulationMode === "custom") await runCustomSimulation();
     });
     carouselLeftBtn.addEventListener("click", () => {
       cards.scrollBy({ left: -330, behavior: "smooth" });
     });
     carouselRightBtn.addEventListener("click", () => {
       cards.scrollBy({ left: 330, behavior: "smooth" });
-    });
-    clientTypeSelect.addEventListener("change", () => {
-      state.clientType = clientTypeSelect.value || "";
-      renderCards();
     });
     historyBtn.addEventListener("click", openHistoryModal);
     refreshHistoryBtn.addEventListener("click", loadSimulations);
