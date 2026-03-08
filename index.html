@@ -1256,10 +1256,17 @@
     }
 
     function getShortDescription(client, idx) {
-      const urgency = client.urgency || "Echeance flexible";
-      const budget = client.budget_range || "Budget a clarifier";
-      const persona = String(client.persona || "Profil client").replace(/\.$/, "");
-      return `${persona}. Budget: ${budget}. Urgence: ${urgency}.`;
+      const hints = [
+        "Recherche une orientation generale avant de prendre une decision.",
+        "Souhaite comprendre rapidement les options possibles.",
+        "A besoin d etre rassure sur un choix adapte a sa situation.",
+        "Veut avancer sans se sentir presse dans la discussion.",
+        "Cherche une solution pratique qui repond a son quotidien.",
+        "Est en phase de reflexion et veut clarifier ses priorites.",
+        "Veut une discussion simple pour mieux cadrer son projet.",
+        "Cherche un vehicule qui correspond a ses besoins globaux."
+      ];
+      return hints[idx % hints.length];
     }
 
     function buildClientName(baseName, idx) {
