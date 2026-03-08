@@ -271,9 +271,14 @@
       gap: .85rem;
       overflow-x: auto;
       overflow-y: hidden;
-      padding: .2rem .1rem .45rem;
+      padding: .2rem 2.7rem .45rem;
       scroll-snap-type: x mandatory;
       scrollbar-width: thin;
+      -ms-overflow-style: none;
+    }
+
+    .cards::-webkit-scrollbar {
+      display: none;
     }
 
     .client-card {
@@ -291,26 +296,34 @@
     }
 
     .profiles-region {
+      position: relative;
       margin-top: .1rem;
     }
 
-    .carousel-tools {
-      display: flex;
-      justify-content: flex-end;
-      gap: .45rem;
-      margin-bottom: .45rem;
-    }
-
     .carousel-arrow {
-      min-width: 40px;
-      padding: .45rem .58rem;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+      width: 42px;
+      height: 42px;
+      padding: 0;
       border-radius: 999px;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(4px);
       color: #5a2f1e;
       border: 1px solid #dfcbb9;
-      box-shadow: none;
+      box-shadow: 0 8px 16px rgba(24, 18, 15, 0.12);
       font-size: .92rem;
       line-height: 1;
+    }
+
+    #carouselLeftBtn {
+      left: .35rem;
+    }
+
+    #carouselRightBtn {
+      right: .35rem;
     }
 
     .client-card:hover {
@@ -748,10 +761,8 @@
       </div>
 
       <section id="profilesRegion" class="profiles-region">
-        <div class="carousel-tools">
-          <button id="carouselLeftBtn" class="carousel-arrow" type="button" aria-label="Types precedents">◀</button>
-          <button id="carouselRightBtn" class="carousel-arrow" type="button" aria-label="Types suivants">▶</button>
-        </div>
+        <button id="carouselLeftBtn" class="carousel-arrow" type="button" aria-label="Types precedents">◀</button>
+        <button id="carouselRightBtn" class="carousel-arrow" type="button" aria-label="Types suivants">▶</button>
         <div id="cards" class="cards"></div>
       </section>
     </section>
