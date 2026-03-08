@@ -194,6 +194,46 @@
       margin: 1rem 0 1.05rem;
     }
 
+    .mode-strip {
+      border: 1px solid #e7d8ca;
+      border-radius: 14px;
+      background: #fff;
+      padding: .8rem;
+      margin: .5rem 0 1rem;
+      box-shadow: 0 6px 14px rgba(24, 19, 16, 0.05);
+      display: grid;
+      gap: .6rem;
+    }
+
+    .mode-options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: .55rem;
+    }
+
+    .mode-btn {
+      text-align: left;
+      border: 1px solid #e4d4c6;
+      background: #fff;
+      color: #2b2f38;
+      box-shadow: none;
+      padding: .68rem .72rem;
+    }
+
+    .mode-btn.active {
+      border-color: #cc7b52;
+      background: #fff1e7;
+      color: #5a2c18;
+    }
+
+    .mode-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: .6rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
     .field {
       display: grid;
       gap: .36rem;
@@ -591,6 +631,7 @@
 
     @media (max-width: 980px) {
       .controls { grid-template-columns: 1fr; }
+      .mode-options { grid-template-columns: 1fr; }
       .grid-2 { grid-template-columns: 1fr; }
       .chat-view { height: calc(100vh - 1rem); min-height: 560px; }
       .session-user { max-width: 78vw; }
@@ -637,7 +678,19 @@
         </div>
       </div>
 
-      <div class="controls">
+      <section class="mode-strip">
+        <div class="mode-options">
+          <button id="modeRandomBtn" class="mode-btn" type="button">1. Generer simulations aleatoires</button>
+          <button id="modeImproveBtn" class="mode-btn" type="button">2. Axe sur amelioration</button>
+          <button id="modeCustomBtn" class="mode-btn active" type="button">3. Simulation personnalisee</button>
+        </div>
+        <div class="mode-meta">
+          <p id="modeHint" class="small">Mode personnalise: choisis les parametres puis clique un client.</p>
+          <button id="modeActionBtn" class="alt hidden" type="button">Lancer simulation</button>
+        </div>
+      </section>
+
+      <div id="customControls" class="controls">
         <div class="field">
           <label for="level">Niveau vendeur</label>
           <select id="level">
@@ -916,6 +969,7 @@
     const state = {
       clients: [],
       selectedClient: null,
+      simulationMode: "custom",
       clientType: "__all__",
       level: "Intermediaire",
       goal: "Structure complete",
@@ -945,6 +999,12 @@
     const sessionBar = document.getElementById("sessionBar");
     const sessionUser = document.getElementById("sessionUser");
     const logoutBtn = document.getElementById("logoutBtn");
+    const modeRandomBtn = document.getElementById("modeRandomBtn");
+    const modeImproveBtn = document.getElementById("modeImproveBtn");
+    const modeCustomBtn = document.getElementById("modeCustomBtn");
+    const modeHint = document.getElementById("modeHint");
+    const modeActionBtn = document.getElementById("modeActionBtn");
+    const customControls = document.getElementById("customControls");
     const historyBtn = document.getElementById("historyBtn");
     const manageUsersBtn = document.getElementById("manageUsersBtn");
     const cards = document.getElementById("cards");
@@ -1138,6 +1198,134 @@
       return String(value || "").trim() || "Autre";
     }
 
+    function normalizeDifficultyLabel(value) {
+      const t = normalizeText(value || "");
+      if (t.includes("debut")) return "Debutant";
+      if (t.includes("avanc")) return "Avance";
+      return "Intermediaire";
+    }
+
+    function setSimulationMode(mode) {
+      state.simulationMode = mode;
+      modeRandomBtn.classList.toggle("active", mode === "random");
+      modeImproveBtn.classList.toggle("active", mode === "improve");
+      modeCustomBtn.classList.toggle("active", mode === "custom");
+
+      const custom = mode === "custom";
+      customControls.classList.toggle("hidden", !custom);
+      modeActionBtn.classList.toggle("hidden", custom);
+
+      if (mode === "random") {
+        modeHint.textContent = "Generation auto: niveau, objectif et type de client sont choisis aleatoirement.";
+        modeActionBtn.textContent = "Generer et lancer";
+      } else if (mode === "improve") {
+        modeHint.textContent = "Amelioration: selection adaptee selon les difficultes des simulations precedentes.";
+        modeActionBtn.textContent = "Analyser et lancer";
+      } else {
+        modeHint.textContent = "Mode personnalise: choisis les parametres puis clique un client.";
+      }
+    }
+
+    function getVisibleClients() {
+      return state.clientType === "__all__"
+        ? state.clients
+        : state.clients.filter((c) => normalizeTypeLabel(c.segment) === state.clientType);
+    }
+
+    function pickRandom(arr) {
+      if (!Array.isArray(arr) || !arr.length) return null;
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function setLevelAndGoal(level, goal) {
+      state.level = level;
+      state.goal = goal;
+      levelSelect.value = level;
+      goalSelect.value = goal;
+    }
+
+    function chooseClientByTypeAndLevel(type, level) {
+      const byType = type === "__all__" ? state.clients : state.clients.filter((c) => normalizeTypeLabel(c.segment) === type);
+      if (!byType.length) return null;
+      const byLevel = byType.filter((c) => normalizeDifficultyLabel(c.difficulty) === level);
+      return pickRandom(byLevel.length ? byLevel : byType);
+    }
+
+    async function runRandomSimulation() {
+      if (!state.clients.length || state.busy) return;
+      const levels = ["Debutant", "Intermediaire", "Avance"];
+      const goals = ["Structure complete", "Decouverte", "Objections", "Closing", "Gestion du prix", "Financement/Location"];
+      const types = Array.from(new Set(state.clients.map((c) => normalizeTypeLabel(c.segment))));
+
+      const level = pickRandom(levels) || "Intermediaire";
+      const goal = pickRandom(goals) || "Structure complete";
+      const type = pickRandom(types) || "__all__";
+
+      state.clientType = type;
+      clientTypeSelect.value = type;
+      setLevelAndGoal(level, goal);
+      renderCards();
+
+      const client = chooseClientByTypeAndLevel(type, level) || pickRandom(state.clients);
+      if (client) await selectClient(client, "aleatoire");
+    }
+
+    function buildImprovementPlan() {
+      const allText = (state.simulations || [])
+        .slice(0, 15)
+        .map((s) => {
+          const bad = Array.isArray(s?.evaluation?.mauvaisCoups) ? s.evaluation.mauvaisCoups.join(" ") : "";
+          const resume = String(s?.evaluation?.resume || "");
+          return `${bad} ${resume}`.toLowerCase();
+        })
+        .join(" ");
+
+      let goal = "Structure complete";
+      let type = "__all__";
+      if (/(prix|budget|paiement|cher)/.test(allText)) {
+        goal = "Gestion du prix";
+        type = "Prix";
+      } else if (/(objection|confiance|hesit|refus)/.test(allText)) {
+        goal = "Objections";
+        type = "Confiance";
+      } else if (/(closing|conclu|signe|depot)/.test(allText)) {
+        goal = "Closing";
+        type = "Decision";
+      } else if (/(besoin|question|decouverte|qualification)/.test(allText)) {
+        goal = "Decouverte";
+        type = "Exploration";
+      } else if (/(financement|location|taux)/.test(allText)) {
+        goal = "Financement/Location";
+        type = "Mobilite urbaine";
+      }
+
+      const scores = (state.simulations || [])
+        .slice(0, 10)
+        .map((s) => Number(s?.evaluation?.score))
+        .filter((v) => Number.isFinite(v));
+      const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 60;
+      const level = avg < 55 ? "Debutant" : avg < 75 ? "Intermediaire" : "Avance";
+
+      return { goal, type, level };
+    }
+
+    async function runImprovementSimulation() {
+      if (!state.clients.length || state.busy) return;
+      if (!state.simulations.length) await loadSimulations();
+
+      const plan = buildImprovementPlan();
+      const validTypes = new Set(state.clients.map((c) => normalizeTypeLabel(c.segment)));
+      const chosenType = validTypes.has(plan.type) ? plan.type : "__all__";
+
+      state.clientType = chosenType;
+      clientTypeSelect.value = chosenType;
+      setLevelAndGoal(plan.level, plan.goal);
+      renderCards();
+
+      const client = chooseClientByTypeAndLevel(chosenType, plan.level) || pickRandom(state.clients);
+      if (client) await selectClient(client, "amelioration");
+    }
+
     function renderClientTypeOptions() {
       const previous = state.clientType || "__all__";
       const types = Array.from(new Set(state.clients.map((c) => normalizeTypeLabel(c.segment)))).sort((a, b) =>
@@ -1164,10 +1352,7 @@
 
     function renderCards() {
       cards.innerHTML = "";
-      const visibleClients =
-        state.clientType === "__all__"
-          ? state.clients
-          : state.clients.filter((c) => normalizeTypeLabel(c.segment) === state.clientType);
+      const visibleClients = getVisibleClients();
 
       const randomBtn = document.createElement("button");
       randomBtn.className = "client-card";
@@ -1820,6 +2005,13 @@
     }
 
     document.getElementById("reloadClientsBtn").addEventListener("click", loadClients);
+    modeRandomBtn.addEventListener("click", () => setSimulationMode("random"));
+    modeImproveBtn.addEventListener("click", () => setSimulationMode("improve"));
+    modeCustomBtn.addEventListener("click", () => setSimulationMode("custom"));
+    modeActionBtn.addEventListener("click", async () => {
+      if (state.simulationMode === "random") await runRandomSimulation();
+      if (state.simulationMode === "improve") await runImprovementSimulation();
+    });
     clientTypeSelect.addEventListener("change", () => {
       state.clientType = clientTypeSelect.value || "__all__";
       renderCards();
@@ -1915,6 +2107,7 @@
 
     initDictation();
     updateVoiceControls();
+    setSimulationMode("custom");
     initAuth();
   </script>
 </body>
