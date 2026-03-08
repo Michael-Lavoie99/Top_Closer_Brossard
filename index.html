@@ -273,12 +273,15 @@
       overflow-y: hidden;
       padding: .2rem 2.7rem .45rem;
       scroll-snap-type: x mandatory;
-      scrollbar-width: thin;
+      scrollbar-width: none;
       -ms-overflow-style: none;
     }
 
     .cards::-webkit-scrollbar {
+      width: 0;
+      height: 0;
       display: none;
+      background: transparent;
     }
 
     .client-card {
@@ -316,6 +319,11 @@
       box-shadow: 0 8px 16px rgba(24, 18, 15, 0.12);
       font-size: .92rem;
       line-height: 1;
+    }
+
+    .carousel-arrow:hover:not(:disabled) {
+      transform: translateY(-50%);
+      box-shadow: 0 8px 16px rgba(24, 18, 15, 0.12);
     }
 
     #carouselLeftBtn {
