@@ -788,8 +788,6 @@
         </div>
       </header>
 
-      <div id="clientStrip" class="client-strip"></div>
-
       <div id="chatLog" class="chat-log"></div>
 
       <div class="composer">
@@ -1069,7 +1067,6 @@
     const chatView = document.getElementById("chatView");
     const chatTitle = document.getElementById("chatTitle");
     const statusPill = document.getElementById("statusPill");
-    const clientStrip = document.getElementById("clientStrip");
     const chatLog = document.getElementById("chatLog");
     const inputBox = document.getElementById("inputBox");
     const micBtn = document.getElementById("micBtn");
@@ -2088,15 +2085,6 @@
       statusPill.textContent = "Simulation active";
       chatLog.innerHTML = "";
       chatTitle.textContent = `Session - ${state.selectedClient.name}`;
-      clientStrip.textContent = [
-        `Client (${originLabel}): ${state.selectedClient.name} [${state.selectedClient.segment} | ${state.selectedClient.difficulty}]`,
-        `Persona: ${state.selectedClient.persona}`,
-        `Besoins: ${state.selectedClient.needs}`,
-        `Objections: ${state.selectedClient.objections}`,
-        `Budget: ${state.selectedClient.budget_range} | Urgence: ${state.selectedClient.urgency}`,
-        `Trade-in: ${state.selectedClient.trade_in} | Financement/Location: ${state.selectedClient.financing_preference}`
-      ].join("\n");
-
       openChatView();
 
       state.conversation.push({
