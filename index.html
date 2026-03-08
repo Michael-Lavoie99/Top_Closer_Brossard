@@ -667,10 +667,40 @@
       padding-left: .54rem;
     }
 
-    .history-item small {
+      .history-item small {
       display: block;
       color: #62586a;
       margin-top: .17rem;
+    }
+
+    .history-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: .12rem .52rem;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      border: 1px solid transparent;
+    }
+
+    .status-badge.in-progress {
+      background: #fff4da;
+      color: #7d4f00;
+      border-color: #f3d08a;
+    }
+
+    .status-badge.completed {
+      background: #e9f8ee;
+      color: #1f6a37;
+      border-color: #bde6c8;
     }
 
     .transcript-box {
@@ -795,6 +825,7 @@
         <textarea id="inputBox" placeholder="Ecris ta phrase de representant..."></textarea>
         <button id="micBtn" class="alt" type="button">Dicter</button>
         <button id="sendBtn">Envoyer</button>
+        <button id="pauseBtn" class="alt" type="button">Pause</button>
         <button id="endBtn" class="alt">Terminer</button>
       </div>
     </section>
@@ -916,6 +947,7 @@
           <p id="historyMeta" class="small"></p>
           <p id="historyScore" class="small"></p>
           <p id="historyResume" class="small"></p>
+          <button id="resumeSimulationBtn" class="alt tiny-btn hidden" type="button">Reprendre cette simulation</button>
           <h4 style="margin-top:.8rem">Transcript complet</h4>
           <div id="historyTranscript" class="transcript-box"></div>
         </section>
@@ -1031,6 +1063,7 @@
       users: [],
       simulations: [],
       selectedSimulationId: null,
+      currentSimulationId: null,
       active: false,
       busy: false,
       conversation: [],
@@ -1071,6 +1104,7 @@
     const inputBox = document.getElementById("inputBox");
     const micBtn = document.getElementById("micBtn");
     const sendBtn = document.getElementById("sendBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
     const endBtn = document.getElementById("endBtn");
     const voiceModeBtn = document.getElementById("voiceModeBtn");
     const stopVoiceBtn = document.getElementById("stopVoiceBtn");
@@ -1103,10 +1137,12 @@
     const historyScore = document.getElementById("historyScore");
     const historyResume = document.getElementById("historyResume");
     const historyTranscript = document.getElementById("historyTranscript");
+    const resumeSimulationBtn = document.getElementById("resumeSimulationBtn");
 
     function setBusy(isBusy) {
       state.busy = isBusy;
       sendBtn.disabled = isBusy;
+      pauseBtn.disabled = isBusy;
       endBtn.disabled = isBusy;
       micBtn.disabled = isBusy || !state.speechRecognitionSupported;
       document.getElementById("reloadClientsBtn").disabled = isBusy;
@@ -1161,6 +1197,7 @@
       state.users = [];
       state.simulations = [];
       state.selectedSimulationId = null;
+      state.currentSimulationId = null;
       state.selectedClient = null;
       state.active = false;
       localStorage.removeItem(AUTH_TOKEN_KEY);
@@ -1680,6 +1717,16 @@
       return d.toLocaleString("fr-CA");
     }
 
+    function getSimulationStatusLabel(simulation) {
+      const raw = String(simulation?.evaluation?.status || simulation?.outcome || "").toLowerCase();
+      if (raw === "in_progress") return "En cours";
+      return "Completee";
+    }
+
+    function getSimulationStatusClass(simulation) {
+      return getSimulationStatusLabel(simulation) === "En cours" ? "in-progress" : "completed";
+    }
+
     function renderSelectedSimulation() {
       const selected = state.simulations.find((s) => String(s.id) === String(state.selectedSimulationId));
       if (!selected) {
@@ -1687,14 +1734,17 @@
         historyScore.textContent = "";
         historyResume.textContent = "";
         historyTranscript.textContent = "";
+        resumeSimulationBtn.classList.add("hidden");
         return;
       }
 
       const score = Number.isFinite(selected?.evaluation?.score) ? selected.evaluation.score : "N/A";
       const verdict = selected?.evaluation?.verdict || "Sans verdict";
-      historyMeta.textContent = `${formatDate(selected.created_at)} | ${selected.client_name || "Client"} | Niveau: ${selected.level || "-"} | Objectif: ${selected.goal || "-"}`;
+      const statusLabel = getSimulationStatusLabel(selected);
+      historyMeta.textContent = `${formatDate(selected.created_at)} | ${selected.client_name || "Client"} | Statut: ${statusLabel} | Niveau: ${selected.level || "-"} | Objectif: ${selected.goal || "-"}`;
       historyScore.textContent = `Score: ${score} | Verdict: ${verdict}`;
       historyResume.textContent = selected?.evaluation?.resume || "";
+      resumeSimulationBtn.classList.toggle("hidden", statusLabel !== "En cours");
 
       const transcript = Array.isArray(selected.transcript) ? selected.transcript : [];
       historyTranscript.textContent = transcript
@@ -1719,8 +1769,13 @@
         btn.type = "button";
         btn.className = `history-item ${String(s.id) === String(state.selectedSimulationId) ? "active" : ""}`;
         const score = Number.isFinite(s?.evaluation?.score) ? s.evaluation.score : "N/A";
+        const statusLabel = getSimulationStatusLabel(s);
+        const statusClass = getSimulationStatusClass(s);
         btn.innerHTML = `
-          <strong>${s.client_name || "Client"}</strong>
+          <div class="history-row">
+            <strong>${s.client_name || "Client"}</strong>
+            <span class="status-badge ${statusClass}">${statusLabel}</span>
+          </div>
           <small>${formatDate(s.created_at)} | Score: ${score}</small>
         `;
         btn.addEventListener("click", () => {
@@ -1749,9 +1804,16 @@
       }
     }
 
-    async function saveSimulation(evaluation) {
+    async function saveSimulation(evaluation, status = "completed") {
+      const normalizedStatus = status === "in_progress" ? "in_progress" : "completed";
+      const mergedEvaluation = {
+        ...(evaluation && typeof evaluation === "object" ? evaluation : {}),
+        status: normalizedStatus
+      };
       try {
-        await callSimulationsApi("POST", {
+        const method = state.currentSimulationId ? "PATCH" : "POST";
+        const payload = {
+          ...(state.currentSimulationId ? { id: state.currentSimulationId } : {}),
           conversation: state.conversation,
           context: {
             level: state.level,
@@ -1759,11 +1821,61 @@
             client: state.selectedClient,
             outcome: state.outcome
           },
-          evaluation
-        });
+          evaluation: mergedEvaluation
+        };
+        const data = await callSimulationsApi(method, payload);
+        if (data?.simulation?.id) state.currentSimulationId = data.simulation.id;
       } catch (err) {
         addMessage("client", `Note: sauvegarde de simulation echouee (${err.message}).`);
       }
+    }
+
+    function resolveClientFromSimulation(simulation) {
+      const byName = state.clients.find((c) => String(c.name || "").toLowerCase() === String(simulation?.client_name || "").toLowerCase());
+      if (byName) return byName;
+      return {
+        name: simulation?.client_name || "Client",
+        segment: simulation?.client_segment || "General",
+        difficulty: simulation?.client_difficulty || "Intermediaire",
+        persona: "Profil non detaille.",
+        needs: "A clarifier.",
+        objections: "A clarifier.",
+        budget_range: "A definir",
+        urgency: "A definir",
+        trade_in: "A definir",
+        financing_preference: "A definir",
+        sales_strategy: ""
+      };
+    }
+
+    async function resumeSelectedSimulation() {
+      const selected = state.simulations.find((s) => String(s.id) === String(state.selectedSimulationId));
+      if (!selected) return;
+      if (getSimulationStatusLabel(selected) !== "En cours") return;
+
+      state.selectedClient = resolveClientFromSimulation(selected);
+      state.level = selected.level || state.level;
+      state.goal = selected.goal || state.goal;
+      levelSelect.value = state.level;
+      goalSelect.value = state.goal;
+      state.currentSimulationId = selected.id;
+      state.active = true;
+      state.outcome = String(selected.outcome || "in_progress");
+      state.conversation = Array.isArray(selected.transcript) ? selected.transcript : [];
+      state.positiveHits = 0;
+      state.negativeHits = 0;
+
+      statusPill.textContent = "Simulation reprise";
+      chatLog.innerHTML = "";
+      chatTitle.textContent = `Session - ${state.selectedClient.name}`;
+      openChatView();
+
+      for (const m of state.conversation) {
+        if (!m || typeof m.content !== "string") continue;
+        addMessage(m.role === "assistant" ? "client" : "rep", m.content);
+      }
+      historyModal.classList.add("hidden");
+      inputBox.focus();
     }
 
     async function openHistoryModal() {
@@ -2077,6 +2189,7 @@
       state.goal = goalSelect.value;
       state.active = true;
       state.conversation = [];
+      state.currentSimulationId = null;
       state.positiveHits = 0;
       state.negativeHits = 0;
       state.outcome = "manual";
@@ -2211,6 +2324,19 @@
       if (!state.active || state.busy) return;
       await endSimulation("Terminee manuellement", "manual");
     });
+
+    pauseBtn.addEventListener("click", async () => {
+      if (!state.active || state.busy) return;
+      state.active = false;
+      state.outcome = "in_progress";
+      statusPill.textContent = "En pause";
+      stopDictation();
+      stopSpeaking();
+      await saveSimulation({}, "in_progress");
+      openGalleryView();
+    });
+
+    resumeSimulationBtn.addEventListener("click", resumeSelectedSimulation);
 
     inputBox.addEventListener("keydown", (event) => {
       if (event.key === "Enter" && !event.shiftKey) {

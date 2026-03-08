@@ -85,8 +85,48 @@ async function createSimulation(config, user, body) {
   return Array.isArray(rows) ? rows[0] : null;
 }
 
+async function updateSimulation(config, user, body) {
+  const id = Number(body?.id);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("id de simulation invalide");
+  }
+
+  const context = body?.context && typeof body.context === "object" ? body.context : {};
+  const client = context?.client && typeof context.client === "object" ? context.client : {};
+  const payload = {
+    level: String(context.level || ""),
+    goal: String(context.goal || ""),
+    outcome: String(context.outcome || "manual"),
+    client_name: String(client.name || ""),
+    client_segment: String(client.segment || ""),
+    client_difficulty: String(client.difficulty || ""),
+    transcript: normalizeConversation(body?.conversation),
+    evaluation: normalizeEvaluation(body?.evaluation)
+  };
+
+  const endpoint = `${config.url}/rest/v1/simulation_runs?id=eq.${id}&user_email=eq.${encodeURIComponent(user.email)}`;
+  const response = await fetch(endpoint, {
+    method: "PATCH",
+    headers: {
+      apikey: config.key,
+      Authorization: `Bearer ${config.key}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(`Mise a jour simulation impossible: ${details}`);
+  }
+
+  const rows = await response.json();
+  return Array.isArray(rows) ? rows[0] : null;
+}
+
 module.exports = async (req, res) => {
-  setAuthCors(res, "GET, POST, OPTIONS");
+  setAuthCors(res, "GET, POST, PATCH, OPTIONS");
 
   if (req.method === "OPTIONS") return res.status(200).end();
   const user = requireAuth(req, res);
@@ -106,6 +146,12 @@ module.exports = async (req, res) => {
     if (req.method === "POST") {
       const body = typeof req.body === "object" && req.body !== null ? req.body : {};
       const simulation = await createSimulation(config, user, body);
+      return res.status(200).json({ simulation });
+    }
+
+    if (req.method === "PATCH") {
+      const body = typeof req.body === "object" && req.body !== null ? req.body : {};
+      const simulation = await updateSimulation(config, user, body);
       return res.status(200).json({ simulation });
     }
 
