@@ -657,6 +657,12 @@
             <option value="Financement/Location">Financement/Location</option>
           </select>
         </div>
+        <div class="field">
+          <label for="clientType">Type de client</label>
+          <select id="clientType">
+            <option value="__all__" selected>Tous les types</option>
+          </select>
+        </div>
       </div>
 
       <div id="cards" class="cards"></div>
@@ -910,6 +916,7 @@
     const state = {
       clients: [],
       selectedClient: null,
+      clientType: "__all__",
       level: "Intermediaire",
       goal: "Structure complete",
       authToken: "",
@@ -955,6 +962,7 @@
     const stopVoiceBtn = document.getElementById("stopVoiceBtn");
     const levelSelect = document.getElementById("level");
     const goalSelect = document.getElementById("goal");
+    const clientTypeSelect = document.getElementById("clientType");
 
     const resultModal = document.getElementById("resultModal");
     const scorePill = document.getElementById("scorePill");
@@ -1126,8 +1134,40 @@
       return null;
     }
 
+    function normalizeTypeLabel(value) {
+      return String(value || "").trim() || "Autre";
+    }
+
+    function renderClientTypeOptions() {
+      const previous = state.clientType || "__all__";
+      const types = Array.from(new Set(state.clients.map((c) => normalizeTypeLabel(c.segment)))).sort((a, b) =>
+        a.localeCompare(b, "fr-CA")
+      );
+
+      clientTypeSelect.innerHTML = "";
+      const allOpt = document.createElement("option");
+      allOpt.value = "__all__";
+      allOpt.textContent = "Tous les types";
+      clientTypeSelect.appendChild(allOpt);
+
+      types.forEach((type) => {
+        const opt = document.createElement("option");
+        opt.value = type;
+        opt.textContent = type;
+        clientTypeSelect.appendChild(opt);
+      });
+
+      if (types.includes(previous)) state.clientType = previous;
+      else state.clientType = "__all__";
+      clientTypeSelect.value = state.clientType;
+    }
+
     function renderCards() {
       cards.innerHTML = "";
+      const visibleClients =
+        state.clientType === "__all__"
+          ? state.clients
+          : state.clients.filter((c) => normalizeTypeLabel(c.segment) === state.clientType);
 
       const randomBtn = document.createElement("button");
       randomBtn.className = "client-card";
@@ -1139,13 +1179,13 @@
         <p class="small">Choisit un profil au hasard et ouvre directement le chat.</p>
       `;
       randomBtn.addEventListener("click", async () => {
-        if (!state.clients.length) return;
-        const idx = Math.floor(Math.random() * state.clients.length);
-        await selectClient(state.clients[idx], "aleatoire");
+        if (!visibleClients.length) return;
+        const idx = Math.floor(Math.random() * visibleClients.length);
+        await selectClient(visibleClients[idx], "aleatoire");
       });
       cards.appendChild(randomBtn);
 
-      state.clients.forEach((c) => {
+      visibleClients.forEach((c) => {
         const card = document.createElement("button");
         card.className = "client-card";
         card.innerHTML = `
@@ -1283,6 +1323,7 @@
       } catch {
         state.clients = BROWSER_FALLBACK_CLIENTS;
       }
+      renderClientTypeOptions();
       renderCards();
     }
 
@@ -1779,6 +1820,10 @@
     }
 
     document.getElementById("reloadClientsBtn").addEventListener("click", loadClients);
+    clientTypeSelect.addEventListener("change", () => {
+      state.clientType = clientTypeSelect.value || "__all__";
+      renderCards();
+    });
     historyBtn.addEventListener("click", openHistoryModal);
     refreshHistoryBtn.addEventListener("click", loadSimulations);
     document.getElementById("closeHistoryModalBtn").addEventListener("click", () => {
