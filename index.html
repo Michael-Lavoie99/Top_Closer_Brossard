@@ -303,26 +303,6 @@
       margin-top: .1rem;
     }
 
-    .launch-panel {
-      border: 1px solid #e7d8ca;
-      border-radius: 16px;
-      background: linear-gradient(160deg, #fff 0%, #fff7ef 100%);
-      min-height: 210px;
-      display: grid;
-      place-items: center;
-      padding: 1rem;
-      box-shadow: 0 8px 20px rgba(24, 19, 16, 0.08);
-    }
-
-    .launch-btn {
-      width: min(760px, 100%);
-      min-height: 120px;
-      border-radius: 18px;
-      font-size: 1.08rem;
-      letter-spacing: .02em;
-      box-shadow: 0 14px 26px rgba(138, 26, 23, 0.24);
-    }
-
     .carousel-arrow {
       position: absolute;
       top: 50%;
@@ -346,7 +326,13 @@
       box-shadow: 0 8px 16px rgba(24, 18, 15, 0.12);
     }
 
-    
+    #carouselLeftBtn {
+      left: .35rem;
+    }
+
+    #carouselRightBtn {
+      right: .35rem;
+    }
 
     .client-card:hover {
       border-color: #d7a685;
@@ -756,7 +742,7 @@
         </div>
         <div class="mode-meta">
           <p id="modeHint" class="small">Generation auto: niveau, objectif et type de client sont choisis aleatoirement.</p>
-          <button id="modeActionBtn" class="alt" type="button">Generer simulation aleatoire</button>
+          <button id="modeActionBtn" class="alt" type="button">Generer et lancer</button>
         </div>
       </section>
 
@@ -1368,18 +1354,20 @@
       modeImproveBtn.classList.toggle("active", mode === "improve");
       modeCustomBtn.classList.toggle("active", mode === "custom");
 
-      customControls.classList.remove("hidden");
-      profilesRegion.classList.toggle("hidden", mode !== "custom");
-      modeActionBtn.classList.toggle("hidden", mode === "custom");
+      const custom = mode === "custom";
+      customControls.classList.toggle("hidden", !custom);
+      modeActionBtn.classList.remove("hidden");
+      profilesRegion.classList.toggle("hidden", !custom);
 
       if (mode === "random") {
         modeHint.textContent = "Generation auto: niveau, objectif et type de client sont choisis aleatoirement.";
-        modeActionBtn.textContent = "Generer simulation aleatoire";
+        modeActionBtn.textContent = "Generer et lancer";
       } else if (mode === "improve") {
         modeHint.textContent = "Amelioration: selection adaptee selon les difficultes des simulations precedentes.";
-        modeActionBtn.textContent = "Lancer simulation d amelioration";
+        modeActionBtn.textContent = "Analyser et lancer";
       } else {
-        modeHint.textContent = "Mode personnalise: choisis niveau, objectif et type de client dans le carrousel.";
+        modeHint.textContent = "Mode personnalise: choisis niveau, objectif et type de client.";
+        modeActionBtn.textContent = "Lancer simulation";
       }
     }
 
@@ -1419,6 +1407,7 @@
 
       state.clientType = type;
       setLevelAndGoal(level, goal);
+      renderCards();
 
       const client = chooseClientByTypeAndLevel(type, level) || pickRandom(state.clients);
       if (client) await selectClient(client, "aleatoire");
@@ -1473,6 +1462,7 @@
 
       state.clientType = chosenType;
       setLevelAndGoal(plan.level, plan.goal);
+      renderCards();
 
       const client = chooseClientByTypeAndLevel(chosenType, plan.level) || pickRandom(state.clients);
       if (client) await selectClient(client, "amelioration");
@@ -1529,7 +1519,7 @@
     async function runCustomSimulation() {
       if (!state.clients.length || state.busy) return;
       if (!state.clientType) {
-        modeHint.textContent = "Selectionne d abord un type de client dans le carrousel.";
+        modeHint.textContent = "Selectionne d abord un type de client.";
         return;
       }
       const client = chooseClientByTypeAndLevel(state.clientType, levelSelect.value) || pickRandom(getVisibleClients());
@@ -2161,6 +2151,7 @@
     modeActionBtn.addEventListener("click", async () => {
       if (state.simulationMode === "random") await runRandomSimulation();
       if (state.simulationMode === "improve") await runImprovementSimulation();
+      if (state.simulationMode === "custom") await runCustomSimulation();
     });
     carouselLeftBtn.addEventListener("click", () => {
       cards.scrollBy({ left: -330, behavior: "smooth" });
@@ -2259,7 +2250,7 @@
 
     initDictation();
     updateVoiceControls();
-    setSimulationMode("custom");
+    setSimulationMode("random");
     initAuth();
   </script>
 </body>
