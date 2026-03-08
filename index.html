@@ -1256,17 +1256,24 @@
     }
 
     function getShortDescription(client, idx) {
-      const hints = [
-        "Recherche une orientation generale avant de prendre une decision.",
-        "Souhaite comprendre rapidement les options possibles.",
-        "A besoin d etre rassure sur un choix adapte a sa situation.",
-        "Veut avancer sans se sentir presse dans la discussion.",
-        "Cherche une solution pratique qui repond a son quotidien.",
-        "Est en phase de reflexion et veut clarifier ses priorites.",
-        "Veut une discussion simple pour mieux cadrer son projet.",
-        "Cherche un vehicule qui correspond a ses besoins globaux."
-      ];
-      return hints[idx % hints.length];
+      const goals = {
+        famille: "Objectif: trouver un vehicule familial securitaire et pratique pour le quotidien.",
+        solo: "Objectif: choisir un vehicule efficace et fiable pour les deplacements personnels.",
+        urgence: "Objectif: repartir rapidement avec un vehicule disponible sans complication.",
+        prix: "Objectif: obtenir un vehicule abordable avec un paiement mensuel maitrisable.",
+        confiance: "Objectif: trouver un vehicule en se sentant respecte et en confiance.",
+        "nouveau conducteur": "Objectif: choisir un premier vehicule simple, rassurant et adapte.",
+        fidelisation: "Objectif: remplacer son vehicule actuel par une option plus avantageuse.",
+        technologie: "Objectif: obtenir un vehicule moderne avec les technologies qui comptent.",
+        b2b: "Objectif: selectionner un vehicule fiable et rentable pour son activite.",
+        decision: "Objectif: clarifier ses options pour prendre une decision sans regret.",
+        "mobilite urbaine": "Objectif: trouver un vehicule economique et fiable pour rouler souvent.",
+        exploration: "Objectif: comparer les options pour identifier le bon vehicule a moyen terme.",
+        "temps limite": "Objectif: obtenir rapidement une vision claire avant de changer de vehicule."
+      };
+
+      const key = normalizeText(client.segment || "");
+      return goals[key] || "Objectif: trouver un vehicule qui repond a ses besoins principaux.";
     }
 
     function buildClientName(baseName, idx) {
