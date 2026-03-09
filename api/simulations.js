@@ -20,9 +20,21 @@ function normalizeConversation(conversation) {
 function normalizeEvaluation(evaluation) {
   if (!evaluation || typeof evaluation !== "object") return {};
   const score = Number.isFinite(evaluation.score) ? Math.max(0, Math.min(100, Math.round(evaluation.score))) : null;
+  const trackScoresSrc = evaluation.trackScores && typeof evaluation.trackScores === "object" ? evaluation.trackScores : {};
+  const toTrackScore = (value) => {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return null;
+    return Math.max(0, Math.min(100, Math.round(n)));
+  };
+  const trackScores = {
+    qualification: toTrackScore(trackScoresSrc.qualification),
+    presentationProduit: toTrackScore(trackScoresSrc.presentationProduit),
+    presentationPrix: toTrackScore(trackScoresSrc.presentationPrix)
+  };
   return {
     ...evaluation,
-    score
+    score,
+    trackScores
   };
 }
 

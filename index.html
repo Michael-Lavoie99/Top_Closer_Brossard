@@ -561,6 +561,33 @@
       box-shadow: 0 8px 20px rgba(149, 31, 24, 0.28);
     }
 
+    .track-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: .6rem;
+      margin-bottom: .82rem;
+    }
+
+    .track-pill {
+      border: 1px solid #e7d6ca;
+      border-radius: 12px;
+      background: #fff;
+      padding: .55rem .62rem;
+    }
+
+    .track-pill strong {
+      display: block;
+      font-size: .82rem;
+      color: #5f5263;
+      margin-bottom: .18rem;
+    }
+
+    .track-pill span {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: #1e2f47;
+    }
+
     .grid-2 {
       display: grid;
       gap: .82rem;
@@ -719,6 +746,7 @@
       .controls { grid-template-columns: 1fr; }
       .mode-options { grid-template-columns: 1fr; }
       .grid-2 { grid-template-columns: 1fr; }
+      .track-grid { grid-template-columns: 1fr; }
       .chat-view { height: calc(100vh - 1rem); min-height: 560px; }
       .session-user { max-width: 78vw; }
     }
@@ -838,6 +866,20 @@
         <span class="score-pill" id="scorePill">0 / 100</span>
         <strong id="verdictText">-</strong>
       </div>
+      <div class="track-grid">
+        <div class="track-pill">
+          <strong>Qualification</strong>
+          <span id="trackQualification">0 / 100</span>
+        </div>
+        <div class="track-pill">
+          <strong>Presentation produit</strong>
+          <span id="trackPresentationProduit">0 / 100</span>
+        </div>
+        <div class="track-pill">
+          <strong>Presentation prix</strong>
+          <span id="trackPresentationPrix">0 / 100</span>
+        </div>
+      </div>
       <p id="resumeText" class="sub" style="margin-top:0"></p>
 
       <div class="grid-2">
@@ -946,6 +988,7 @@
           <h4>Details</h4>
           <p id="historyMeta" class="small"></p>
           <p id="historyScore" class="small"></p>
+          <p id="historyTrackScores" class="small"></p>
           <p id="historyResume" class="small"></p>
           <button id="resumeSimulationBtn" class="alt tiny-btn hidden" type="button">Reprendre cette simulation</button>
           <h4 style="margin-top:.8rem">Transcript complet</h4>
@@ -1114,6 +1157,9 @@
     const resultModal = document.getElementById("resultModal");
     const scorePill = document.getElementById("scorePill");
     const verdictText = document.getElementById("verdictText");
+    const trackQualification = document.getElementById("trackQualification");
+    const trackPresentationProduit = document.getElementById("trackPresentationProduit");
+    const trackPresentationPrix = document.getElementById("trackPresentationPrix");
     const resumeText = document.getElementById("resumeText");
     const bonsCoups = document.getElementById("bonsCoups");
     const mauvaisCoups = document.getElementById("mauvaisCoups");
@@ -1135,6 +1181,7 @@
     const historyList = document.getElementById("historyList");
     const historyMeta = document.getElementById("historyMeta");
     const historyScore = document.getElementById("historyScore");
+    const historyTrackScores = document.getElementById("historyTrackScores");
     const historyResume = document.getElementById("historyResume");
     const historyTranscript = document.getElementById("historyTranscript");
     const resumeSimulationBtn = document.getElementById("resumeSimulationBtn");
@@ -1727,11 +1774,26 @@
       return getSimulationStatusLabel(simulation) === "En cours" ? "in-progress" : "completed";
     }
 
+    function normalizeTrackScores(trackScores) {
+      const src = trackScores && typeof trackScores === "object" ? trackScores : {};
+      const toScore = (value) => {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return 60;
+        return Math.max(0, Math.min(100, Math.round(n)));
+      };
+      return {
+        qualification: toScore(src.qualification),
+        presentationProduit: toScore(src.presentationProduit),
+        presentationPrix: toScore(src.presentationPrix)
+      };
+    }
+
     function renderSelectedSimulation() {
       const selected = state.simulations.find((s) => String(s.id) === String(state.selectedSimulationId));
       if (!selected) {
         historyMeta.textContent = "Selectionne une simulation pour voir les details.";
         historyScore.textContent = "";
+        historyTrackScores.textContent = "";
         historyResume.textContent = "";
         historyTranscript.textContent = "";
         resumeSimulationBtn.classList.add("hidden");
@@ -1740,9 +1802,14 @@
 
       const score = Number.isFinite(selected?.evaluation?.score) ? selected.evaluation.score : "N/A";
       const verdict = selected?.evaluation?.verdict || "Sans verdict";
+      const hasTrack = Boolean(selected?.evaluation?.trackScores);
+      const track = normalizeTrackScores(selected?.evaluation?.trackScores);
       const statusLabel = getSimulationStatusLabel(selected);
       historyMeta.textContent = `${formatDate(selected.created_at)} | ${selected.client_name || "Client"} | Statut: ${statusLabel} | Niveau: ${selected.level || "-"} | Objectif: ${selected.goal || "-"}`;
       historyScore.textContent = `Score: ${score} | Verdict: ${verdict}`;
+      historyTrackScores.textContent = hasTrack
+        ? `Track - Qualification: ${track.qualification}/100 | Presentation produit: ${track.presentationProduit}/100 | Presentation prix: ${track.presentationPrix}/100`
+        : "Track - en attente (simulation non completee).";
       historyResume.textContent = selected?.evaluation?.resume || "";
       resumeSimulationBtn.classList.toggle("hidden", statusLabel !== "En cours");
 
@@ -2027,8 +2094,12 @@
 
     function showResultModal(evaluation) {
       const score = Number.isFinite(evaluation?.score) ? Math.max(0, Math.min(100, Math.round(evaluation.score))) : 60;
+      const track = normalizeTrackScores(evaluation?.trackScores);
       scorePill.textContent = `${score} / 100`;
       verdictText.textContent = evaluation?.verdict || "Resultat de session";
+      trackQualification.textContent = `${track.qualification} / 100`;
+      trackPresentationProduit.textContent = `${track.presentationProduit} / 100`;
+      trackPresentationPrix.textContent = `${track.presentationPrix} / 100`;
       resumeText.textContent = evaluation?.resume || "Evaluation disponible.";
       nextObjective.textContent = evaluation?.nextObjective || "Definir un objectif concret pour la prochaine simulation.";
 
@@ -2149,6 +2220,11 @@
       } catch (err) {
         const fallbackEvaluation = {
           score: outcome === "very_unsatisfied" ? 45 : outcome === "very_satisfied" ? 82 : 60,
+          trackScores: {
+            qualification: outcome === "very_unsatisfied" ? 42 : 64,
+            presentationProduit: outcome === "very_unsatisfied" ? 46 : 66,
+            presentationPrix: outcome === "very_unsatisfied" ? 40 : 62
+          },
           verdict: "Bilan rapide",
           resume: `Evaluation detaillee indisponible (${err.message}).`,
           bonsCoups: ["Session completee", "Maintien du dialogue", "Structure de base presente"],
