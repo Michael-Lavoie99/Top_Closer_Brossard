@@ -671,6 +671,36 @@
       background: #fff;
     }
 
+    #historyModal .modal {
+      width: min(1120px, 100%);
+      height: min(88vh, 860px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #historyModal .grid-2 {
+      flex: 1;
+      min-height: 0;
+    }
+
+    #historyModal .card {
+      min-height: 0;
+    }
+
+    #historyListCard {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    #historyList {
+      flex: 1;
+      min-height: 0;
+      max-height: none;
+      overflow-y: auto;
+    }
+
     .history-item {
       width: 100%;
       border: 0;
@@ -812,6 +842,12 @@
       .track-grid { grid-template-columns: 1fr; }
       .chat-view { height: calc(100vh - 1rem); min-height: 560px; }
       .session-user { max-width: 78vw; }
+      #historyModal .modal {
+        height: min(92vh, 860px);
+      }
+      #historyList {
+        max-height: 280px;
+      }
     }
 
     @media (max-width: 760px) {
@@ -946,7 +982,7 @@
       <p id="resumeText" class="sub" style="margin-top:0"></p>
 
       <div class="grid-2">
-        <section class="card">
+        <section id="historyListCard" class="card">
           <h4>Bons coups</h4>
           <ul id="bonsCoups" class="list"></ul>
         </section>
