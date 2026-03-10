@@ -760,10 +760,21 @@
       border-color: #bde6c8;
     }
 
-    .history-detail-date {
-      font-size: .92rem;
-      color: #54495b;
+    .details-title {
+      display: flex;
+      align-items: baseline;
+      gap: .48rem;
+      flex-wrap: wrap;
       margin: 0 0 .5rem;
+    }
+
+    .details-title .history-inline-meta {
+      font-size: .9rem;
+      color: #5b5061;
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      font-weight: 500;
+      line-height: 1.25;
+      word-break: break-word;
     }
 
     .history-global-score {
@@ -1084,11 +1095,9 @@
         </section>
 
         <section class="card">
-          <h4>Details</h4>
-          <p id="historyDateLine" class="history-detail-date"></p>
+          <h4 class="details-title">Details <span id="historyDateLine" class="history-inline-meta"></span></h4>
           <div id="historyGlobalScore" class="history-global-score"></div>
           <div id="historyTrackDetails" class="track-detail-list"></div>
-          <p id="historyResume" class="small"></p>
           <div class="footer-actions" style="margin-top:.65rem">
             <button id="downloadTranscriptBtn" class="alt tiny-btn" type="button">Telecharger le script PDF</button>
             <button id="resumeSimulationBtn" class="alt tiny-btn hidden" type="button">Reprendre cette simulation</button>
@@ -1283,7 +1292,6 @@
     const historyDateLine = document.getElementById("historyDateLine");
     const historyGlobalScore = document.getElementById("historyGlobalScore");
     const historyTrackDetails = document.getElementById("historyTrackDetails");
-    const historyResume = document.getElementById("historyResume");
     const downloadTranscriptBtn = document.getElementById("downloadTranscriptBtn");
     const resumeSimulationBtn = document.getElementById("resumeSimulationBtn");
 
@@ -1980,7 +1988,6 @@
         historyDateLine.textContent = "Selectionne une simulation pour voir les details.";
         historyGlobalScore.innerHTML = "";
         historyTrackDetails.innerHTML = "";
-        historyResume.textContent = "";
         downloadTranscriptBtn.disabled = true;
         resumeSimulationBtn.classList.add("hidden");
         return;
@@ -1991,14 +1998,13 @@
       const track = normalizeTrackScores(selected?.evaluation?.trackScores);
       const trackFeedback = normalizeTrackFeedback(selected?.evaluation?.trackFeedback);
       const statusLabel = getSimulationStatusLabel(selected);
-      historyDateLine.textContent = `${formatLongDate(selected.created_at)} | ${selected.client_name || "Client"} | Statut: ${statusLabel} | Niveau: ${selected.level || "-"} | Objectif: ${selected.goal || "-"}`;
+      historyDateLine.textContent = `${formatLongDate(selected.created_at)} | ${selected.client_name || "Client"} | Niveau: ${selected.level || "-"}`;
       historyGlobalScore.innerHTML = `
         <span class="label">Score global</span>
         <span class="value">${score === "N/A" ? "N/A" : `${score}/100`}</span>
         <div class="meta">${verdict}</div>
       `;
       renderTrackDetailLines(track, trackFeedback);
-      historyResume.textContent = selected?.evaluation?.resume || "";
       downloadTranscriptBtn.disabled = false;
       resumeSimulationBtn.classList.toggle("hidden", statusLabel !== "En cours");
     }
