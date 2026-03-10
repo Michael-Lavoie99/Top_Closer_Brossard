@@ -682,10 +682,12 @@
     #historyModal .grid-2 {
       flex: 1;
       min-height: 0;
+      overflow: hidden;
     }
 
     #historyModal .card {
       min-height: 0;
+      overflow: hidden;
     }
 
     #historyListCard {
@@ -694,11 +696,33 @@
       min-height: 0;
     }
 
+    #historyDetailsCard {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
     #historyList {
       flex: 1;
       min-height: 0;
       max-height: none;
       overflow-y: auto;
+    }
+
+    .history-top-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .82rem;
+      align-items: center;
+      margin-bottom: .7rem;
+    }
+
+    .history-top-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .5rem;
     }
 
     .history-item {
@@ -832,6 +856,7 @@
       font-size: .84rem;
       color: #5f5263;
       line-height: 1.35;
+      overflow-wrap: anywhere;
     }
 
     .transcript-box {
@@ -855,6 +880,12 @@
       .session-user { max-width: 78vw; }
       #historyModal .modal {
         height: min(92vh, 860px);
+      }
+      .history-top-row {
+        grid-template-columns: 1fr;
+      }
+      .history-top-actions {
+        justify-content: flex-start;
       }
       #historyList {
         max-height: 280px;
@@ -1083,9 +1114,12 @@
   <div id="historyModal" class="modal-backdrop hidden">
     <div class="modal">
       <h3>Mes simulations</h3>
-      <div class="users-toolbar">
+      <div class="history-top-row">
         <p id="historyMessage" class="auth-msg" style="margin:0"></p>
-        <button id="refreshHistoryBtn" class="alt tiny-btn" type="button">Rafraichir</button>
+        <div class="history-top-actions">
+          <button id="downloadTranscriptBtn" class="alt tiny-btn" type="button">Telecharger le script PDF</button>
+          <button id="refreshHistoryBtn" class="alt tiny-btn" type="button">Rafraichir</button>
+        </div>
       </div>
 
       <div class="grid-2">
@@ -1094,12 +1128,11 @@
           <div id="historyList" class="history-list"></div>
         </section>
 
-        <section class="card">
+        <section id="historyDetailsCard" class="card">
           <h4 class="details-title">Details <span id="historyDateLine" class="history-inline-meta"></span></h4>
           <div id="historyGlobalScore" class="history-global-score"></div>
           <div id="historyTrackDetails" class="track-detail-list"></div>
           <div class="footer-actions" style="margin-top:.65rem">
-            <button id="downloadTranscriptBtn" class="alt tiny-btn" type="button">Telecharger le script PDF</button>
             <button id="resumeSimulationBtn" class="alt tiny-btn hidden" type="button">Reprendre cette simulation</button>
           </div>
         </section>
