@@ -730,6 +730,69 @@
       border-color: #bde6c8;
     }
 
+    .history-detail-date {
+      font-size: .92rem;
+      color: #54495b;
+      margin: 0 0 .5rem;
+    }
+
+    .history-global-score {
+      border: 1px solid #ead3bf;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #fff8f1, #fff);
+      padding: .65rem .72rem;
+      margin-bottom: .65rem;
+    }
+
+    .history-global-score .label {
+      display: block;
+      font-size: .78rem;
+      color: #7a6b62;
+      margin-bottom: .14rem;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .history-global-score .value {
+      display: block;
+      font-size: 1.8rem;
+      font-weight: 900;
+      line-height: 1.05;
+      color: #7f2418;
+    }
+
+    .history-global-score .meta {
+      margin-top: .2rem;
+      color: #5e5161;
+      font-size: .85rem;
+    }
+
+    .track-detail-list {
+      display: grid;
+      gap: .52rem;
+    }
+
+    .track-detail-item {
+      border: 1px solid #e8d8ca;
+      border-radius: 11px;
+      background: #fff;
+      padding: .54rem .62rem;
+    }
+
+    .track-detail-item h5 {
+      margin: 0 0 .24rem;
+      font-size: .93rem;
+      font-family: "Outfit", "IBM Plex Sans", sans-serif;
+      color: #1f2b3c;
+    }
+
+    .track-detail-item p {
+      margin: .14rem 0;
+      font-size: .84rem;
+      color: #5f5263;
+      line-height: 1.35;
+    }
+
     .transcript-box {
       border: 1px solid #e7d6ca;
       border-radius: 10px;
@@ -986,13 +1049,14 @@
 
         <section class="card">
           <h4>Details</h4>
-          <p id="historyMeta" class="small"></p>
-          <p id="historyScore" class="small"></p>
-          <p id="historyTrackScores" class="small"></p>
+          <p id="historyDateLine" class="history-detail-date"></p>
+          <div id="historyGlobalScore" class="history-global-score"></div>
+          <div id="historyTrackDetails" class="track-detail-list"></div>
           <p id="historyResume" class="small"></p>
-          <button id="resumeSimulationBtn" class="alt tiny-btn hidden" type="button">Reprendre cette simulation</button>
-          <h4 style="margin-top:.8rem">Transcript complet</h4>
-          <div id="historyTranscript" class="transcript-box"></div>
+          <div class="footer-actions" style="margin-top:.65rem">
+            <button id="downloadTranscriptBtn" class="alt tiny-btn" type="button">Telecharger le script PDF</button>
+            <button id="resumeSimulationBtn" class="alt tiny-btn hidden" type="button">Reprendre cette simulation</button>
+          </div>
         </section>
       </div>
 
@@ -1003,6 +1067,7 @@
   </div>
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script>
     const BROWSER_FALLBACK_CLIENTS = [
       {
@@ -1179,11 +1244,11 @@
     const historyMessage = document.getElementById("historyMessage");
     const refreshHistoryBtn = document.getElementById("refreshHistoryBtn");
     const historyList = document.getElementById("historyList");
-    const historyMeta = document.getElementById("historyMeta");
-    const historyScore = document.getElementById("historyScore");
-    const historyTrackScores = document.getElementById("historyTrackScores");
+    const historyDateLine = document.getElementById("historyDateLine");
+    const historyGlobalScore = document.getElementById("historyGlobalScore");
+    const historyTrackDetails = document.getElementById("historyTrackDetails");
     const historyResume = document.getElementById("historyResume");
-    const historyTranscript = document.getElementById("historyTranscript");
+    const downloadTranscriptBtn = document.getElementById("downloadTranscriptBtn");
     const resumeSimulationBtn = document.getElementById("resumeSimulationBtn");
 
     function setBusy(isBusy) {
@@ -1764,6 +1829,26 @@
       return d.toLocaleString("fr-CA");
     }
 
+    function formatLongDate(value) {
+      const d = value ? new Date(value) : null;
+      if (!d || Number.isNaN(d.getTime())) return "-";
+      return d.toLocaleDateString("fr-CA", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    function formatElapsedHoursMinutes(value) {
+      const d = value ? new Date(value) : null;
+      if (!d || Number.isNaN(d.getTime())) return "-";
+      const diffMs = Math.max(0, Date.now() - d.getTime());
+      const totalMinutes = Math.floor(diffMs / 60000);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return `${hours}H ${String(minutes).padStart(2, "0")}M`;
+    }
+
     function getSimulationStatusLabel(simulation) {
       const raw = String(simulation?.evaluation?.status || simulation?.outcome || "").toLowerCase();
       if (raw === "in_progress") return "En cours";
@@ -1788,35 +1873,98 @@
       };
     }
 
+    function normalizeTrackFeedback(trackFeedback) {
+      const src = trackFeedback && typeof trackFeedback === "object" ? trackFeedback : {};
+      const toItem = (item, defaultHighlight, defaultImprovement) => {
+        const value = item && typeof item === "object" ? item : {};
+        const pointMarquant = typeof value.pointMarquant === "string" && value.pointMarquant.trim()
+          ? value.pointMarquant.trim()
+          : defaultHighlight;
+        const pisteAmelioration = typeof value.pisteAmelioration === "string" && value.pisteAmelioration.trim()
+          ? value.pisteAmelioration.trim()
+          : defaultImprovement;
+        return { pointMarquant, pisteAmelioration };
+      };
+
+      return {
+        qualification: toItem(
+          src.qualification,
+          "Bonne base de qualification observee.",
+          "Creuser plus le besoin, le budget et le delai reel."
+        ),
+        presentationProduit: toItem(
+          src.presentationProduit,
+          "Lien produit-besoin partiellement etabli.",
+          "Montrer plus de valeur concrete via walk around ou essai."
+        ),
+        presentationPrix: toItem(
+          src.presentationPrix,
+          "Prix aborde avec un scenario principal.",
+          "Mieux relier la valeur, les options et la gestion des objections."
+        )
+      };
+    }
+
+    function renderTrackDetailLines(trackScores, trackFeedback) {
+      const rows = [
+        {
+          key: "qualification",
+          label: "Qualification client",
+          score: trackScores.qualification
+        },
+        {
+          key: "presentationProduit",
+          label: "Presentation du produit",
+          score: trackScores.presentationProduit
+        },
+        {
+          key: "presentationPrix",
+          label: "Presentation des prix",
+          score: trackScores.presentationPrix
+        }
+      ];
+
+      historyTrackDetails.innerHTML = "";
+      rows.forEach((row) => {
+        const feedback = trackFeedback[row.key];
+        const item = document.createElement("div");
+        item.className = "track-detail-item";
+        item.innerHTML = `
+          <h5>${row.label} - ${row.score}/100</h5>
+          <p><strong>Point marquant:</strong> ${feedback.pointMarquant}</p>
+          <p><strong>Piste d amelioration:</strong> ${feedback.pisteAmelioration}</p>
+        `;
+        historyTrackDetails.appendChild(item);
+      });
+    }
+
     function renderSelectedSimulation() {
       const selected = state.simulations.find((s) => String(s.id) === String(state.selectedSimulationId));
       if (!selected) {
-        historyMeta.textContent = "Selectionne une simulation pour voir les details.";
-        historyScore.textContent = "";
-        historyTrackScores.textContent = "";
+        historyDateLine.textContent = "Selectionne une simulation pour voir les details.";
+        historyGlobalScore.innerHTML = "";
+        historyTrackDetails.innerHTML = "";
         historyResume.textContent = "";
-        historyTranscript.textContent = "";
+        downloadTranscriptBtn.disabled = true;
         resumeSimulationBtn.classList.add("hidden");
         return;
       }
 
       const score = Number.isFinite(selected?.evaluation?.score) ? selected.evaluation.score : "N/A";
       const verdict = selected?.evaluation?.verdict || "Sans verdict";
-      const hasTrack = Boolean(selected?.evaluation?.trackScores);
       const track = normalizeTrackScores(selected?.evaluation?.trackScores);
+      const trackFeedback = normalizeTrackFeedback(selected?.evaluation?.trackFeedback);
       const statusLabel = getSimulationStatusLabel(selected);
-      historyMeta.textContent = `${formatDate(selected.created_at)} | ${selected.client_name || "Client"} | Statut: ${statusLabel} | Niveau: ${selected.level || "-"} | Objectif: ${selected.goal || "-"}`;
-      historyScore.textContent = `Score: ${score} | Verdict: ${verdict}`;
-      historyTrackScores.textContent = hasTrack
-        ? `Track - Qualification: ${track.qualification}/100 | Presentation produit: ${track.presentationProduit}/100 | Presentation prix: ${track.presentationPrix}/100`
-        : "Track - en attente (simulation non completee).";
+      historyDateLine.textContent = `${formatLongDate(selected.created_at)} | ${selected.client_name || "Client"} | Statut: ${statusLabel} | Niveau: ${selected.level || "-"} | Objectif: ${selected.goal || "-"}`;
+      historyGlobalScore.innerHTML = `
+        <span class="label">Score global</span>
+        <span class="value">${score === "N/A" ? "N/A" : `${score}/100`}</span>
+        <div class="meta">${verdict}</div>
+      `;
+      renderTrackDetailLines(track, trackFeedback);
       historyResume.textContent = selected?.evaluation?.resume || "";
+      downloadTranscriptBtn.disabled = false;
       resumeSimulationBtn.classList.toggle("hidden", statusLabel !== "En cours");
-
-      const transcript = Array.isArray(selected.transcript) ? selected.transcript : [];
-      historyTranscript.textContent = transcript
-        .map((m) => `${m.role === "assistant" ? "Client" : "Representant"}: ${m.content || ""}`)
-        .join("\n\n");
     }
 
     function renderSimulationList() {
@@ -1843,7 +1991,7 @@
             <strong>${s.client_name || "Client"}</strong>
             <span class="status-badge ${statusClass}">${statusLabel}</span>
           </div>
-          <small>${formatDate(s.created_at)} | Score: ${score}</small>
+          <small>${formatElapsedHoursMinutes(s.created_at)} | Score: ${score}</small>
         `;
         btn.addEventListener("click", () => {
           state.selectedSimulationId = s.id;
@@ -1943,6 +2091,51 @@
       }
       historyModal.classList.add("hidden");
       inputBox.focus();
+    }
+
+    function buildTranscriptText(simulation) {
+      const transcript = Array.isArray(simulation?.transcript) ? simulation.transcript : [];
+      if (!transcript.length) return "Aucun transcript disponible.";
+      return transcript
+        .map((m) => `${m.role === "assistant" ? "Client" : "Representant"}: ${m.content || ""}`)
+        .join("\n\n");
+    }
+
+    function downloadSelectedTranscriptPdf() {
+      const selected = state.simulations.find((s) => String(s.id) === String(state.selectedSimulationId));
+      if (!selected) return;
+      const pdfApi = window.jspdf?.jsPDF;
+      if (!pdfApi) {
+        setHistoryMessage("Bibliotheque PDF non chargee. Recharge la page.", true);
+        return;
+      }
+
+      const doc = new pdfApi({ unit: "pt", format: "a4" });
+      const title = `Simulation - ${selected.client_name || "Client"}`;
+      const header = [
+        title,
+        `Date: ${formatLongDate(selected.created_at)}`,
+        `Niveau: ${selected.level || "-"}`,
+        `Objectif: ${selected.goal || "-"}`,
+        ""
+      ];
+      const body = buildTranscriptText(selected);
+      const lines = doc.splitTextToSize(`${header.join("\n")}${body}`, 520);
+      let y = 44;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      for (const line of lines) {
+        if (y > 790) {
+          doc.addPage();
+          y = 44;
+        }
+        doc.text(line, 36, y);
+        y += 15;
+      }
+
+      const safeDate = (selected.created_at || "").slice(0, 10) || "simulation";
+      doc.save(`transcript-${safeDate}-${selected.id}.pdf`);
+      setHistoryMessage("");
     }
 
     async function openHistoryModal() {
@@ -2225,6 +2418,20 @@
             presentationProduit: outcome === "very_unsatisfied" ? 46 : 66,
             presentationPrix: outcome === "very_unsatisfied" ? 40 : 62
           },
+          trackFeedback: {
+            qualification: {
+              pointMarquant: "Des questions de base ont ete posees sur le contexte du client.",
+              pisteAmelioration: "Aller plus en profondeur sur le besoin reel, le budget et le delai."
+            },
+            presentationProduit: {
+              pointMarquant: "Le representant a tente de relier le vehicule au contexte client.",
+              pisteAmelioration: "Ajouter des elements de walk around et d essai routier avec benefices concrets."
+            },
+            presentationPrix: {
+              pointMarquant: "Le volet prix a ete aborde avec un premier scenario.",
+              pisteAmelioration: "Renforcer la valeur derriere le prix et mieux traiter les objections."
+            }
+          },
           verdict: "Bilan rapide",
           resume: `Evaluation detaillee indisponible (${err.message}).`,
           bonsCoups: ["Session completee", "Maintien du dialogue", "Structure de base presente"],
@@ -2412,6 +2619,7 @@
       openGalleryView();
     });
 
+    downloadTranscriptBtn.addEventListener("click", downloadSelectedTranscriptPdf);
     resumeSimulationBtn.addEventListener("click", resumeSelectedSimulation);
 
     inputBox.addEventListener("keydown", (event) => {

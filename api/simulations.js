@@ -31,10 +31,24 @@ function normalizeEvaluation(evaluation) {
     presentationProduit: toTrackScore(trackScoresSrc.presentationProduit),
     presentationPrix: toTrackScore(trackScoresSrc.presentationPrix)
   };
+  const feedbackSrc = evaluation.trackFeedback && typeof evaluation.trackFeedback === "object" ? evaluation.trackFeedback : {};
+  const normalizeFeedback = (item) => {
+    const src = item && typeof item === "object" ? item : {};
+    return {
+      pointMarquant: typeof src.pointMarquant === "string" ? src.pointMarquant.slice(0, 400) : "",
+      pisteAmelioration: typeof src.pisteAmelioration === "string" ? src.pisteAmelioration.slice(0, 400) : ""
+    };
+  };
+  const trackFeedback = {
+    qualification: normalizeFeedback(feedbackSrc.qualification),
+    presentationProduit: normalizeFeedback(feedbackSrc.presentationProduit),
+    presentationPrix: normalizeFeedback(feedbackSrc.presentationPrix)
+  };
   return {
     ...evaluation,
     score,
-    trackScores
+    trackScores,
+    trackFeedback
   };
 }
 

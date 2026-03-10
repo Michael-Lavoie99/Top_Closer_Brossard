@@ -38,6 +38,38 @@ function computeGlobalScore(trackScores, fallbackScore = 60) {
   return clampScore(blended, 60);
 }
 
+function normalizeFeedbackItem(item, defaultHighlight, defaultImprovement) {
+  const src = item && typeof item === "object" ? item : {};
+  const pointMarquant = typeof src.pointMarquant === "string" && src.pointMarquant.trim()
+    ? src.pointMarquant.trim()
+    : defaultHighlight;
+  const pisteAmelioration = typeof src.pisteAmelioration === "string" && src.pisteAmelioration.trim()
+    ? src.pisteAmelioration.trim()
+    : defaultImprovement;
+  return { pointMarquant, pisteAmelioration };
+}
+
+function normalizeTrackFeedback(trackFeedback) {
+  const src = trackFeedback && typeof trackFeedback === "object" ? trackFeedback : {};
+  return {
+    qualification: normalizeFeedbackItem(
+      src.qualification,
+      "Qualification de base observee pendant la discussion.",
+      "Creuser davantage les besoins, contraintes et criteres de decision."
+    ),
+    presentationProduit: normalizeFeedbackItem(
+      src.presentationProduit,
+      "Presentation produit amorcee avec certains liens au besoin client.",
+      "Ajouter plus d elements emotionnels et une demonstration orientee usage."
+    ),
+    presentationPrix: normalizeFeedbackItem(
+      src.presentationPrix,
+      "Presentation du prix abordee avec un premier scenario.",
+      "Mieux relier la valeur, les options et le traitement des objections."
+    )
+  };
+}
+
 function buildPrompt(context) {
   const level = context?.level || "Intermediaire";
   const goal = context?.goal || "Structure complete";
@@ -64,6 +96,11 @@ function buildPrompt(context) {
     '    "presentationProduit": number,',
     '    "presentationPrix": number',
     "  },",
+    '  "trackFeedback": {',
+    '    "qualification": { "pointMarquant": "string", "pisteAmelioration": "string" },',
+    '    "presentationProduit": { "pointMarquant": "string", "pisteAmelioration": "string" },',
+    '    "presentationPrix": { "pointMarquant": "string", "pisteAmelioration": "string" }',
+    "  },",
     '  "verdict": "string",',
     '  "resume": "string",',
     '  "bonsCoups": ["string", "string", "string"],',
@@ -79,6 +116,8 @@ function buildPrompt(context) {
     "  2) presentation du produit (walk around, essai routier, lien emotionnel + rationnel avec besoins)",
     "  3) presentation des prix (valeur vs prix, scenarios, produits connexes, gestion objections/negociation)",
     "- trackScores.<etape> entre 0 et 100",
+    "- trackFeedback.<etape>.pointMarquant = exemple concret observe (approche, phrase cle, action)",
+    "- trackFeedback.<etape>.pisteAmelioration = action precise et praticable",
     "- Le score global doit representer la probabilite de generer une vente",
     "- Le score global doit tenir compte des lacunes dans une etape, meme si la vente semble avancer",
     "- Utilise une logique proche de: qualification 40%, presentation produit 30%, presentation prix 30%, avec penalite si une etape est faible",
@@ -147,6 +186,7 @@ module.exports = async (req, res) => {
     }
 
     parsed.trackScores = normalizeTrackScores(parsed.trackScores);
+    parsed.trackFeedback = normalizeTrackFeedback(parsed.trackFeedback);
     parsed.score = computeGlobalScore(parsed.trackScores, parsed.score);
 
     return res.status(200).json({ evaluation: parsed, model: data.model || DEFAULT_MODEL });
