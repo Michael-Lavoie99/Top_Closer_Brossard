@@ -44,11 +44,45 @@ function normalizeEvaluation(evaluation) {
     presentationProduit: normalizeFeedback(feedbackSrc.presentationProduit),
     presentationPrix: normalizeFeedback(feedbackSrc.presentationPrix)
   };
+  const checklistSrc = evaluation.qualificationChecklist && typeof evaluation.qualificationChecklist === "object"
+    ? evaluation.qualificationChecklist
+    : {};
+  const normalizeLevel = (value) => {
+    const raw = String(value || "").toLowerCase();
+    if (raw === "faible" || raw === "partiel" || raw === "solide") return raw;
+    return "partiel";
+  };
+  const infosGenerales = checklistSrc.infosGenerales && typeof checklistSrc.infosGenerales === "object"
+    ? checklistSrc.infosGenerales
+    : {};
+  const infosTechniques = checklistSrc.infosTechniques && typeof checklistSrc.infosTechniques === "object"
+    ? checklistSrc.infosTechniques
+    : {};
+  const profondeurRaw = Number(checklistSrc.profondeurQualification);
+  const qualificationChecklist = {
+    infosGenerales: {
+      motivationAchat: normalizeLevel(infosGenerales.motivationAchat),
+      raisonVisite: normalizeLevel(infosGenerales.raisonVisite),
+      optionsClientDifferenciation: normalizeLevel(infosGenerales.optionsClientDifferenciation),
+      pourquoiNous: normalizeLevel(infosGenerales.pourquoiNous)
+    },
+    infosTechniques: {
+      vehiculeActuelEtContexte: normalizeLevel(infosTechniques.vehiculeActuelEtContexte),
+      vehiculeRechercheEtUsage: normalizeLevel(infosTechniques.vehiculeRechercheEtUsage),
+      budgetFinancementDelais: normalizeLevel(infosTechniques.budgetFinancementDelais),
+      criteresEtEquipements: normalizeLevel(infosTechniques.criteresEtEquipements)
+    },
+    profondeurQualification: Number.isFinite(profondeurRaw)
+      ? Math.max(0, Math.min(100, Math.round(profondeurRaw)))
+      : 60,
+    clarteBesoinsFinaux: normalizeLevel(checklistSrc.clarteBesoinsFinaux)
+  };
   return {
     ...evaluation,
     score,
     trackScores,
-    trackFeedback
+    trackFeedback,
+    qualificationChecklist
   };
 }
 

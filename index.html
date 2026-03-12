@@ -859,6 +859,71 @@
       overflow-wrap: anywhere;
     }
 
+    .qualification-checklist {
+      border: 1px solid #e8d8ca;
+      border-radius: 11px;
+      background: #fff;
+      padding: .58rem .64rem;
+      margin-bottom: .6rem;
+    }
+
+    .qualification-checklist h5 {
+      margin: 0 0 .38rem;
+      font-size: .9rem;
+      color: #1f2b3c;
+      font-family: "Outfit", "IBM Plex Sans", sans-serif;
+    }
+
+    .check-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: .28rem;
+    }
+
+    .check-row {
+      display: flex;
+      justify-content: space-between;
+      gap: .5rem;
+      border-bottom: 1px dashed #efe2d8;
+      padding-bottom: .2rem;
+      font-size: .82rem;
+      color: #5f5263;
+    }
+
+    .check-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .check-badge {
+      border-radius: 999px;
+      font-size: .72rem;
+      font-weight: 700;
+      padding: .06rem .44rem;
+      border: 1px solid #dccfbe;
+      color: #6a5c56;
+      background: #fffaf5;
+      white-space: nowrap;
+    }
+
+    .check-badge.faible {
+      color: #8a2f20;
+      background: #fff1ef;
+      border-color: #efc6c1;
+    }
+
+    .check-badge.partiel {
+      color: #7f5a11;
+      background: #fff8e9;
+      border-color: #ecd79c;
+    }
+
+    .check-badge.solide {
+      color: #23623a;
+      background: #edf9f1;
+      border-color: #bfe1cb;
+    }
+
     .transcript-box {
       border: 1px solid #e7d6ca;
       border-radius: 10px;
@@ -1021,10 +1086,14 @@
           <span id="trackPresentationPrix">0 / 100</span>
         </div>
       </div>
+      <section class="qualification-checklist">
+        <h5>Checklist Qualification (Apercu)</h5>
+        <div id="resultQualificationChecklist" class="check-grid"></div>
+      </section>
       <p id="resumeText" class="sub" style="margin-top:0"></p>
 
       <div class="grid-2">
-        <section id="historyListCard" class="card">
+        <section class="card">
           <h4>Bons coups</h4>
           <ul id="bonsCoups" class="list"></ul>
         </section>
@@ -1131,6 +1200,10 @@
         <section id="historyDetailsCard" class="card">
           <h4 class="details-title">Details <span id="historyDateLine" class="history-inline-meta"></span></h4>
           <div id="historyGlobalScore" class="history-global-score"></div>
+          <section class="qualification-checklist">
+            <h5>Checklist Qualification (Apercu)</h5>
+            <div id="historyQualificationChecklist" class="check-grid"></div>
+          </section>
           <div id="historyTrackDetails" class="track-detail-list"></div>
           <div class="footer-actions" style="margin-top:.65rem">
             <button id="resumeSimulationBtn" class="alt tiny-btn hidden" type="button">Reprendre cette simulation</button>
@@ -1303,6 +1376,7 @@
     const trackQualification = document.getElementById("trackQualification");
     const trackPresentationProduit = document.getElementById("trackPresentationProduit");
     const trackPresentationPrix = document.getElementById("trackPresentationPrix");
+    const resultQualificationChecklist = document.getElementById("resultQualificationChecklist");
     const resumeText = document.getElementById("resumeText");
     const bonsCoups = document.getElementById("bonsCoups");
     const mauvaisCoups = document.getElementById("mauvaisCoups");
@@ -1324,6 +1398,7 @@
     const historyList = document.getElementById("historyList");
     const historyDateLine = document.getElementById("historyDateLine");
     const historyGlobalScore = document.getElementById("historyGlobalScore");
+    const historyQualificationChecklist = document.getElementById("historyQualificationChecklist");
     const historyTrackDetails = document.getElementById("historyTrackDetails");
     const downloadTranscriptBtn = document.getElementById("downloadTranscriptBtn");
     const resumeSimulationBtn = document.getElementById("resumeSimulationBtn");
@@ -1982,6 +2057,79 @@
       };
     }
 
+    function normalizeQualificationChecklist(checklist) {
+      const src = checklist && typeof checklist === "object" ? checklist : {};
+      const general = src.infosGenerales && typeof src.infosGenerales === "object" ? src.infosGenerales : {};
+      const technical = src.infosTechniques && typeof src.infosTechniques === "object" ? src.infosTechniques : {};
+      const toLevel = (value) => {
+        const v = String(value || "").toLowerCase();
+        if (v === "faible" || v === "partiel" || v === "solide") return v;
+        return "partiel";
+      };
+      const toDepth = (value) => {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return 60;
+        return Math.max(0, Math.min(100, Math.round(n)));
+      };
+      return {
+        infosGenerales: {
+          motivationAchat: toLevel(general.motivationAchat),
+          raisonVisite: toLevel(general.raisonVisite),
+          optionsClientDifferenciation: toLevel(general.optionsClientDifferenciation),
+          pourquoiNous: toLevel(general.pourquoiNous)
+        },
+        infosTechniques: {
+          vehiculeActuelEtContexte: toLevel(technical.vehiculeActuelEtContexte),
+          vehiculeRechercheEtUsage: toLevel(technical.vehiculeRechercheEtUsage),
+          budgetFinancementDelais: toLevel(technical.budgetFinancementDelais),
+          criteresEtEquipements: toLevel(technical.criteresEtEquipements)
+        },
+        profondeurQualification: toDepth(src.profondeurQualification),
+        clarteBesoinsFinaux: toLevel(src.clarteBesoinsFinaux)
+      };
+    }
+
+    function labelLevel(level) {
+      if (level === "faible") return "Faible";
+      if (level === "solide") return "Solide";
+      return "Partiel";
+    }
+
+    function renderQualificationChecklist(targetEl, checklist) {
+      if (!targetEl) return;
+      const c = normalizeQualificationChecklist(checklist);
+      const rows = [
+        ["Motivation d achat", c.infosGenerales.motivationAchat],
+        ["Raison de la visite", c.infosGenerales.raisonVisite],
+        ["Options et differenciation", c.infosGenerales.optionsClientDifferenciation],
+        ["Pourquoi nous", c.infosGenerales.pourquoiNous],
+        ["Vehicule actuel et contexte", c.infosTechniques.vehiculeActuelEtContexte],
+        ["Vehicule recherche et usage", c.infosTechniques.vehiculeRechercheEtUsage],
+        ["Budget / financement / delais", c.infosTechniques.budgetFinancementDelais],
+        ["Criteres et equipements", c.infosTechniques.criteresEtEquipements],
+        ["Clarte besoins finaux", c.clarteBesoinsFinaux]
+      ];
+
+      targetEl.innerHTML = "";
+      rows.forEach(([label, level]) => {
+        const row = document.createElement("div");
+        row.className = "check-row";
+        row.innerHTML = `
+          <span>${label}</span>
+          <span class="check-badge ${level}">${labelLevel(level)}</span>
+        `;
+        targetEl.appendChild(row);
+      });
+
+      const depthRow = document.createElement("div");
+      depthRow.className = "check-row";
+      depthRow.innerHTML = `
+        <span>Profondeur qualification</span>
+        <span class="check-badge">${c.profondeurQualification}/100</span>
+      `;
+      targetEl.appendChild(depthRow);
+    }
+
     function renderTrackDetailLines(trackScores, trackFeedback) {
       const rows = [
         {
@@ -2020,6 +2168,7 @@
       if (!selected) {
         historyDateLine.textContent = "Selectionne une simulation pour voir les details.";
         historyGlobalScore.innerHTML = "";
+        historyQualificationChecklist.innerHTML = "";
         historyTrackDetails.innerHTML = "";
         downloadTranscriptBtn.disabled = true;
         resumeSimulationBtn.classList.add("hidden");
@@ -2030,6 +2179,7 @@
       const verdict = selected?.evaluation?.verdict || "Sans verdict";
       const track = normalizeTrackScores(selected?.evaluation?.trackScores);
       const trackFeedback = normalizeTrackFeedback(selected?.evaluation?.trackFeedback);
+      const qualificationChecklist = selected?.evaluation?.qualificationChecklist || {};
       const statusLabel = getSimulationStatusLabel(selected);
       historyDateLine.textContent = `${formatLongDate(selected.created_at)} | ${selected.client_name || "Client"} | Niveau: ${selected.level || "-"}`;
       historyGlobalScore.innerHTML = `
@@ -2037,6 +2187,7 @@
         <span class="value">${score === "N/A" ? "N/A" : `${score}/100`}</span>
         <div class="meta">${verdict}</div>
       `;
+      renderQualificationChecklist(historyQualificationChecklist, qualificationChecklist);
       renderTrackDetailLines(track, trackFeedback);
       downloadTranscriptBtn.disabled = false;
       resumeSimulationBtn.classList.toggle("hidden", statusLabel !== "En cours");
@@ -2363,11 +2514,13 @@
     function showResultModal(evaluation) {
       const score = Number.isFinite(evaluation?.score) ? Math.max(0, Math.min(100, Math.round(evaluation.score))) : 60;
       const track = normalizeTrackScores(evaluation?.trackScores);
+      const qualificationChecklist = evaluation?.qualificationChecklist || {};
       scorePill.textContent = `${score} / 100`;
       verdictText.textContent = evaluation?.verdict || "Resultat de session";
       trackQualification.textContent = `${track.qualification} / 100`;
       trackPresentationProduit.textContent = `${track.presentationProduit} / 100`;
       trackPresentationPrix.textContent = `${track.presentationPrix} / 100`;
+      renderQualificationChecklist(resultQualificationChecklist, qualificationChecklist);
       resumeText.textContent = evaluation?.resume || "Evaluation disponible.";
       nextObjective.textContent = evaluation?.nextObjective || "Definir un objectif concret pour la prochaine simulation.";
 
@@ -2506,6 +2659,22 @@
               pointMarquant: "Le volet prix a ete aborde avec un premier scenario.",
               pisteAmelioration: "Renforcer la valeur derriere le prix et mieux traiter les objections."
             }
+          },
+          qualificationChecklist: {
+            infosGenerales: {
+              motivationAchat: "partiel",
+              raisonVisite: "partiel",
+              optionsClientDifferenciation: "faible",
+              pourquoiNous: "faible"
+            },
+            infosTechniques: {
+              vehiculeActuelEtContexte: "partiel",
+              vehiculeRechercheEtUsage: "partiel",
+              budgetFinancementDelais: "partiel",
+              criteresEtEquipements: "faible"
+            },
+            profondeurQualification: outcome === "very_unsatisfied" ? 38 : 58,
+            clarteBesoinsFinaux: outcome === "very_unsatisfied" ? "faible" : "partiel"
           },
           verdict: "Bilan rapide",
           resume: `Evaluation detaillee indisponible (${err.message}).`,
