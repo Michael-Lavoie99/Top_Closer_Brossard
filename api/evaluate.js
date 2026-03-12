@@ -31,11 +31,17 @@ function computeGlobalScore(trackScores, fallbackScore = 60) {
   const q = clampScore(trackScores?.qualification, 60);
   const p = clampScore(trackScores?.presentationProduit, 60);
   const pr = clampScore(trackScores?.presentationPrix, 60);
-  const weighted = q * 0.4 + p * 0.3 + pr * 0.3;
+  const weighted = q * 0.5 + p * 0.25 + pr * 0.25;
   const floor = Math.min(q, p, pr);
-  const penalized = weighted - Math.max(0, 55 - floor) * 0.35;
+  const basePenalty = Math.max(0, 55 - floor) * 0.35;
+  const qualificationPenalty = Math.max(0, 70 - q) * 0.55;
+  const penalized = weighted - basePenalty - qualificationPenalty;
   const blended = (penalized * 0.8) + (clampScore(fallbackScore, 60) * 0.2);
-  return clampScore(blended, 60);
+  let finalScore = clampScore(blended, 60);
+  if (q < 60) finalScore = Math.min(finalScore, 69);
+  if (q < 50) finalScore = Math.min(finalScore, 59);
+  if (q < 40) finalScore = Math.min(finalScore, 49);
+  return finalScore;
 }
 
 function normalizeFeedbackItem(item, defaultHighlight, defaultImprovement) {
@@ -70,6 +76,34 @@ function normalizeTrackFeedback(trackFeedback) {
   };
 }
 
+function normalizeChecklistLevel(value, fallback = "partiel") {
+  const raw = String(value || "").toLowerCase();
+  if (raw === "faible" || raw === "partiel" || raw === "solide") return raw;
+  return fallback;
+}
+
+function normalizeQualificationChecklist(checklist) {
+  const src = checklist && typeof checklist === "object" ? checklist : {};
+  const general = src.infosGenerales && typeof src.infosGenerales === "object" ? src.infosGenerales : {};
+  const technical = src.infosTechniques && typeof src.infosTechniques === "object" ? src.infosTechniques : {};
+  return {
+    infosGenerales: {
+      motivationAchat: normalizeChecklistLevel(general.motivationAchat),
+      raisonVisite: normalizeChecklistLevel(general.raisonVisite),
+      optionsClientDifferenciation: normalizeChecklistLevel(general.optionsClientDifferenciation),
+      pourquoiNous: normalizeChecklistLevel(general.pourquoiNous)
+    },
+    infosTechniques: {
+      vehiculeActuelEtContexte: normalizeChecklistLevel(technical.vehiculeActuelEtContexte),
+      vehiculeRechercheEtUsage: normalizeChecklistLevel(technical.vehiculeRechercheEtUsage),
+      budgetFinancementDelais: normalizeChecklistLevel(technical.budgetFinancementDelais),
+      criteresEtEquipements: normalizeChecklistLevel(technical.criteresEtEquipements)
+    },
+    profondeurQualification: clampScore(src.profondeurQualification, 60),
+    clarteBesoinsFinaux: normalizeChecklistLevel(src.clarteBesoinsFinaux)
+  };
+}
+
 function buildPrompt(context) {
   const level = context?.level || "Intermediaire";
   const goal = context?.goal || "Structure complete";
@@ -101,6 +135,22 @@ function buildPrompt(context) {
     '    "presentationProduit": { "pointMarquant": "string", "pisteAmelioration": "string" },',
     '    "presentationPrix": { "pointMarquant": "string", "pisteAmelioration": "string" }',
     "  },",
+    '  "qualificationChecklist": {',
+    '    "infosGenerales": {',
+    '      "motivationAchat": "faible|partiel|solide",',
+    '      "raisonVisite": "faible|partiel|solide",',
+    '      "optionsClientDifferenciation": "faible|partiel|solide",',
+    '      "pourquoiNous": "faible|partiel|solide"',
+    "    },",
+    '    "infosTechniques": {',
+    '      "vehiculeActuelEtContexte": "faible|partiel|solide",',
+    '      "vehiculeRechercheEtUsage": "faible|partiel|solide",',
+    '      "budgetFinancementDelais": "faible|partiel|solide",',
+    '      "criteresEtEquipements": "faible|partiel|solide"',
+    "    },",
+    '    "profondeurQualification": number,',
+    '    "clarteBesoinsFinaux": "faible|partiel|solide"',
+    "  },",
     '  "verdict": "string",',
     '  "resume": "string",',
     '  "bonsCoups": ["string", "string", "string"],',
@@ -115,12 +165,32 @@ function buildPrompt(context) {
     "  1) qualification du client (qualite des questions, profondeur, budget/delai/criteres, validation besoins)",
     "  2) presentation du produit (walk around, essai routier, lien emotionnel + rationnel avec besoins)",
     "  3) presentation des prix (valeur vs prix, scenarios, produits connexes, gestion objections/negociation)",
+    "",
+    "Regles SPECIFIQUES pour la qualification (priorite absolue):",
+    "- Une bonne qualification couvre des informations generales ET techniques, avec profondeur.",
+    "- Informations generales attendues:",
+    "  a) Motivation d achat (point d inconfort: accident, nouveaux besoins, ajout vehicule, etc.)",
+    "  b) Raison concrete de la visite aujourd hui (voir, essayer, chiffrer, negocier, acheter)",
+    "  c) Options du client et alternatives (garder vehicule, multi-marques, neuf vs usage, contraintes)",
+    "  d) Pourquoi la concession/marque/vehicule est consideree",
+    "- Le vendeur doit demontrer une capacite de differenciation face aux options du client.",
+    "- Informations techniques attendues (fiches Honda/Toyota):",
+    "  a) Vehicule actuel, contexte et historique (annee/km/usage, echange, infos utiles)",
+    "  b) Vehicule recherche et usage futur (modele/categorie, km-an, conducteur principal/secondaire)",
+    "  c) Parametres d achat (budget, mise de fonds, mensualite, financement/location, delais)",
+    "  d) Criteres/quipements (importants vs souhaites, securite, confort, cout d entretien, etc.)",
+    "- profondeurQualification (0-100): mesure la qualite des questions de relance et la precision obtenue.",
+    "- clarteBesoinsFinaux = 'solide' seulement si besoins + desirs + contraintes sont clairement etablis.",
+    "- Si la qualification est incomplete/floue, trackScores.qualification doit etre basse (souvent < 60).",
+    "- Si le representant n a PAS une idee claire des besoins/desirs/contraintes, la qualification est consideree non reussie.",
+    "- Le score global doit rester limite meme si les autres etapes sont bonnes quand la qualification est faible.",
     "- trackScores.<etape> entre 0 et 100",
     "- trackFeedback.<etape>.pointMarquant = exemple concret observe (approche, phrase cle, action)",
     "- trackFeedback.<etape>.pisteAmelioration = action precise et praticable",
+    "- qualificationChecklist.profondeurQualification entre 0 et 100",
     "- Le score global doit representer la probabilite de generer une vente",
     "- Le score global doit tenir compte des lacunes dans une etape, meme si la vente semble avancer",
-    "- Utilise une logique proche de: qualification 40%, presentation produit 30%, presentation prix 30%, avec penalite si une etape est faible",
+    "- Utilise une logique proche de: qualification 50%, presentation produit 25%, presentation prix 25%, avec penalite forte si qualification faible",
     "- score entre 0 et 100",
     "- Maximum 2 phrases dans resume",
     "- Bons coups et mauvais coups relies au transcript",
@@ -187,6 +257,7 @@ module.exports = async (req, res) => {
 
     parsed.trackScores = normalizeTrackScores(parsed.trackScores);
     parsed.trackFeedback = normalizeTrackFeedback(parsed.trackFeedback);
+    parsed.qualificationChecklist = normalizeQualificationChecklist(parsed.qualificationChecklist);
     parsed.score = computeGlobalScore(parsed.trackScores, parsed.score);
 
     return res.status(200).json({ evaluation: parsed, model: data.model || DEFAULT_MODEL });
