@@ -700,7 +700,8 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
     #historyList {
@@ -865,6 +866,24 @@
       background: #fff;
       padding: .58rem .64rem;
       margin-bottom: .6rem;
+    }
+
+    .checklist-toggle-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid #d9c7b4;
+      border-radius: 11px;
+      background: linear-gradient(180deg, #fffdfb, #fff6ef);
+      color: #2c3548;
+      font-weight: 700;
+      font-family: "Outfit", "IBM Plex Sans", sans-serif;
+      padding: .52rem .64rem;
+      margin-bottom: .46rem;
+      cursor: pointer;
+    }
+
+    .checklist-toggle-btn:hover {
+      border-color: #cba786;
     }
 
     .qualification-checklist h5 {
@@ -1200,7 +1219,10 @@
         <section id="historyDetailsCard" class="card">
           <h4 class="details-title">Details <span id="historyDateLine" class="history-inline-meta"></span></h4>
           <div id="historyGlobalScore" class="history-global-score"></div>
-          <section class="qualification-checklist">
+          <button id="historyChecklistToggleBtn" class="checklist-toggle-btn" type="button" aria-expanded="false">
+            Afficher checklist qualification
+          </button>
+          <section id="historyChecklistPanel" class="qualification-checklist hidden">
             <h5>Checklist Qualification (Apercu)</h5>
             <div id="historyQualificationChecklist" class="check-grid"></div>
           </section>
@@ -1398,10 +1420,21 @@
     const historyList = document.getElementById("historyList");
     const historyDateLine = document.getElementById("historyDateLine");
     const historyGlobalScore = document.getElementById("historyGlobalScore");
+    const historyChecklistToggleBtn = document.getElementById("historyChecklistToggleBtn");
+    const historyChecklistPanel = document.getElementById("historyChecklistPanel");
     const historyQualificationChecklist = document.getElementById("historyQualificationChecklist");
     const historyTrackDetails = document.getElementById("historyTrackDetails");
     const downloadTranscriptBtn = document.getElementById("downloadTranscriptBtn");
     const resumeSimulationBtn = document.getElementById("resumeSimulationBtn");
+
+    function setHistoryChecklistExpanded(expanded) {
+      const isExpanded = Boolean(expanded);
+      historyChecklistPanel.classList.toggle("hidden", !isExpanded);
+      historyChecklistToggleBtn.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+      historyChecklistToggleBtn.textContent = isExpanded
+        ? "Masquer checklist qualification"
+        : "Afficher checklist qualification";
+    }
 
     function setBusy(isBusy) {
       state.busy = isBusy;
@@ -2170,6 +2203,7 @@
         historyGlobalScore.innerHTML = "";
         historyQualificationChecklist.innerHTML = "";
         historyTrackDetails.innerHTML = "";
+        setHistoryChecklistExpanded(false);
         downloadTranscriptBtn.disabled = true;
         resumeSimulationBtn.classList.add("hidden");
         return;
@@ -2189,6 +2223,7 @@
       `;
       renderQualificationChecklist(historyQualificationChecklist, qualificationChecklist);
       renderTrackDetailLines(track, trackFeedback);
+      setHistoryChecklistExpanded(false);
       downloadTranscriptBtn.disabled = false;
       resumeSimulationBtn.classList.toggle("hidden", statusLabel !== "En cours");
     }
@@ -2864,6 +2899,10 @@
     });
 
     downloadTranscriptBtn.addEventListener("click", downloadSelectedTranscriptPdf);
+    historyChecklistToggleBtn.addEventListener("click", () => {
+      const expanded = historyChecklistToggleBtn.getAttribute("aria-expanded") === "true";
+      setHistoryChecklistExpanded(!expanded);
+    });
     resumeSimulationBtn.addEventListener("click", resumeSelectedSimulation);
 
     inputBox.addEventListener("keydown", (event) => {
