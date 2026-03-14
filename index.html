@@ -1922,7 +1922,47 @@
         if (hit) return hit;
       }
 
-      return available[0];
+      return "";
+    }
+
+    function normalizeLoose(value) {
+      return normalizeText(String(value || "")).replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+    }
+
+    function getScenarioCandidates(scenarioKey) {
+      const rows = Array.isArray(state.clients) ? state.clients : [];
+      const textFor = (c) => normalizeLoose(`${c.segment || ""} ${c.name || ""} ${c.persona || ""} ${c.needs || ""}`);
+      const hasAll = (text, words) => words.every((w) => text.includes(w));
+
+      if (scenarioKey === "uber") {
+        return rows.filter((c) => {
+          const t = textFor(c);
+          return t.includes("uber") || t.includes("mobilite urbaine") || t.includes("mobilite");
+        });
+      }
+
+      if (scenarioKey === "taschereau") {
+        return rows.filter((c) => {
+          const t = textFor(c);
+          return t.includes("taschereau") || t.includes("exploration");
+        });
+      }
+
+      if (scenarioKey === "nouvel-arrivant") {
+        return rows.filter((c) => {
+          const t = textFor(c);
+          return t.includes("nouvel arrivant") || hasAll(t, ["nouvel", "arrivant"]);
+        });
+      }
+
+      if (scenarioKey === "honda-vs-toyota") {
+        return rows.filter((c) => {
+          const t = textFor(c);
+          return t.includes("honda vs toyota") || (t.includes("honda") && t.includes("toyota"));
+        });
+      }
+
+      return [];
     }
 
     async function runFrequentScenario(scenarioKey) {
@@ -1953,12 +1993,24 @@
       const preset = presets[scenarioKey];
       if (!preset) return;
 
+      const scenarioCandidates = getScenarioCandidates(scenarioKey);
       const chosenType = findAvailableType(preset.types);
-      state.clientType = chosenType;
+      const byTypeCandidates = chosenType
+        ? state.clients.filter((c) => normalizeTypeLabel(c.segment) === chosenType)
+        : [];
+      const combinedCandidates = scenarioCandidates.length ? scenarioCandidates : byTypeCandidates;
+
+      if (!combinedCandidates.length) {
+        modeHint.textContent = "Aucun client correspondant a ce scenario frequent. Ajoute le type dans Supabase puis relance.";
+        return;
+      }
+
+      state.clientType = normalizeTypeLabel(combinedCandidates[0].segment);
       setLevelAndGoal(preset.level, preset.goal);
       renderCards();
 
-      const client = chooseClientByTypeAndLevel(chosenType, preset.level) || pickRandom(state.clients);
+      const levelCandidates = combinedCandidates.filter((c) => normalizeDifficultyLabel(c.difficulty) === preset.level);
+      const client = pickRandom(levelCandidates.length ? levelCandidates : combinedCandidates);
       if (client) await selectClient(client, `scenario ${scenarioKey}`);
     }
 
