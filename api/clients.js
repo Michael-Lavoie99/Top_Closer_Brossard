@@ -183,6 +183,63 @@ const FALLBACK_CLIENTS = [
     financing_preference: "IndÃ©cis",
     sales_strategy: "Qualifier en 3 questions prioritaires, proposer mini-plan et prise de rendez-vous court."
   }
+  ,
+  {
+    id: 14,
+    name: "Chauffeur Uber operationnel",
+    segment: "Uber",
+    difficulty: "IntermÃƒÂ©diaire",
+    persona: "Chauffeur Uber qui doit travailler avec un vehicule conforme et rentable.",
+    needs: "Paiement entre 300 et 500 CAD/mois, fiabilite, confort passagers, vehicule admissible Uber.",
+    objections: "Peur d'avoir une equite negative et de depasser le budget mensuel.",
+    budget_range: "300-500 CAD/mois",
+    urgency: "2-6 semaines",
+    trade_in: "Vehicule actuel potentiellement limite par l age",
+    financing_preference: "Financement",
+    sales_strategy: "Qualifier budget et mise de fonds, verifier admissibilite Uber, proposer option fiable sans equite negative."
+  },
+  {
+    id: 15,
+    name: "Magasinage boulevard Taschereau",
+    segment: "Taschereau",
+    difficulty: "AvancÃƒÂ©",
+    persona: "Client reserve qui compare plusieurs concessions sur Taschereau.",
+    needs: "Developper confiance rapidement, comprendre son besoin reel, avancer le processus d achat.",
+    objections: "Ne veut pas donner ses infos trop vite et craint la pression.",
+    budget_range: "Variable",
+    urgency: "1-3 mois",
+    trade_in: "A determiner",
+    financing_preference: "Indecis",
+    sales_strategy: "Approche douce, forte ecoute, differenciation service et prochaine etape planifiee."
+  },
+  {
+    id: 16,
+    name: "Nouvel arrivant finance restreint",
+    segment: "Nouvel Arrivant",
+    difficulty: "AvancÃƒÂ©",
+    persona: "Nouveau resident avec historique de credit limite et contraintes de financement.",
+    needs: "Trouver un vehicule financable malgre restrictions et budget cible souvent sous 10 000 CAD.",
+    objections: "Inquiet de l approbation credit, mise de fonds et paiement mensuel.",
+    budget_range: "Sous 10 000 CAD (ou paiement equivalent)",
+    urgency: "2-8 semaines",
+    trade_in: "Aucun",
+    financing_preference: "Financement adapte",
+    sales_strategy: "Qualification finance precise (statut, revenu, permis, dossier), puis option realiste admissible."
+  },
+  {
+    id: 17,
+    name: "Comparatif Honda vs Toyota",
+    segment: "Honda vs Toyota",
+    difficulty: "IntermÃƒÂ©diaire",
+    persona: "Client qui compare les marques les plus fiables (Honda, Toyota, parfois Subaru).",
+    needs: "Voir clairement les forces Honda selon ses priorites reelles.",
+    objections: "Hesite entre marques et demande des preuves concretes.",
+    budget_range: "450-850 CAD/mois",
+    urgency: "2-6 semaines",
+    trade_in: "Variable",
+    financing_preference: "Achat ou location",
+    sales_strategy: "Qualifier priorites, relier aux avantages Honda (confort, insonorisation, valeur revente, delais)."
+  }
 ];
 
 async function loadClientsFromSupabase() {

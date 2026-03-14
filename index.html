@@ -194,6 +194,51 @@
       margin: 1rem 0 1.05rem;
     }
 
+    .frequent-scenarios {
+      border: 1px solid #e8d7ca;
+      border-radius: 14px;
+      background: linear-gradient(160deg, #fffefb 0%, #fff6ef 100%);
+      padding: .68rem;
+      margin: .65rem 0 .55rem;
+      display: grid;
+      gap: .52rem;
+    }
+
+    .scenario-title {
+      margin: 0;
+      font-size: .92rem;
+      color: #3e2e36;
+      font-family: "Outfit", "IBM Plex Sans", sans-serif;
+    }
+
+    .scenario-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      gap: .48rem;
+    }
+
+    .scenario-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid #dfcdbf;
+      border-radius: 11px;
+      background: #fff;
+      color: #3a2d38;
+      font-weight: 700;
+      padding: .5rem .62rem;
+      box-shadow: none;
+      transform: none;
+      cursor: pointer;
+    }
+
+    .scenario-btn small {
+      display: block;
+      margin-top: .16rem;
+      color: #6a5b66;
+      font-weight: 500;
+      font-size: .78rem;
+    }
+
     .mode-strip {
       border: 1px solid #e7d8ca;
       border-radius: 14px;
@@ -985,6 +1030,7 @@
 
     @media (max-width: 980px) {
       .controls { grid-template-columns: 1fr; }
+      .scenario-list { grid-template-columns: 1fr; }
       .mode-options { grid-template-columns: 1fr; }
       .grid-2 { grid-template-columns: 1fr; }
       .track-grid { grid-template-columns: 1fr; }
@@ -1078,6 +1124,28 @@
           </select>
         </div>
       </div>
+
+      <section id="frequentScenarios" class="frequent-scenarios">
+        <h3 class="scenario-title">Scenarios frequents</h3>
+        <div class="scenario-list">
+          <button class="scenario-btn" type="button" data-scenario="uber">
+            Uber
+            <small>Paiement 300-500 CAD/mois + admissibilite travail</small>
+          </button>
+          <button class="scenario-btn" type="button" data-scenario="taschereau">
+            Taschereau
+            <small>Debut de magasinage, client reserve, confiance rapide</small>
+          </button>
+          <button class="scenario-btn" type="button" data-scenario="nouvel-arrivant">
+            Nouvel Arrivant
+            <small>Restrictions financement, qualification credit precise</small>
+          </button>
+          <button class="scenario-btn" type="button" data-scenario="honda-vs-toyota">
+            Honda vs Toyota
+            <small>Comparaison marques, differencier les forces Honda</small>
+          </button>
+        </div>
+      </section>
 
       <section id="profilesRegion" class="profiles-region">
         <button id="carouselLeftBtn" class="carousel-arrow" type="button" aria-label="Types precedents">◀</button>
@@ -1356,6 +1424,62 @@
         trade_in: "Vehicule actuel inconnu",
         financing_preference: "Indecis",
         sales_strategy: "Qualifier en 3 questions prioritaires, proposer mini-plan et prise de rendez-vous court."
+      },
+      {
+        id: 14,
+        name: "Chauffeur Uber operationnel",
+        segment: "Uber",
+        difficulty: "Intermediaire",
+        persona: "Chauffeur Uber qui doit travailler avec un vehicule conforme et rentable.",
+        needs: "Paiement entre 300 et 500 CAD/mois, fiabilite, confort passagers, vehicule admissible Uber.",
+        objections: "Peur d'avoir une equite negative et de depasser le budget mensuel.",
+        budget_range: "300-500 CAD/mois",
+        urgency: "2-6 semaines",
+        trade_in: "Vehicule actuel potentiellement limite par l age",
+        financing_preference: "Financement",
+        sales_strategy: "Qualifier budget et mise de fonds, verifier admissibilite Uber, proposer option fiable sans equite negative."
+      },
+      {
+        id: 15,
+        name: "Magasinage boulevard Taschereau",
+        segment: "Taschereau",
+        difficulty: "Avance",
+        persona: "Client reserve qui compare plusieurs concessions sur Taschereau.",
+        needs: "Developper confiance rapidement, comprendre son besoin reel, avancer le processus d achat.",
+        objections: "Ne veut pas donner ses infos trop vite et craint la pression.",
+        budget_range: "Variable",
+        urgency: "1-3 mois",
+        trade_in: "A determiner",
+        financing_preference: "Indecis",
+        sales_strategy: "Approche douce, forte ecoute, differenciation service et prochaine etape planifiee."
+      },
+      {
+        id: 16,
+        name: "Nouvel arrivant finance restreint",
+        segment: "Nouvel Arrivant",
+        difficulty: "Avance",
+        persona: "Nouveau resident avec historique de credit limite et contraintes de financement.",
+        needs: "Trouver un vehicule financable malgre restrictions et budget cible souvent sous 10 000 CAD.",
+        objections: "Inquiet de l approbation credit, mise de fonds et paiement mensuel.",
+        budget_range: "Sous 10 000 CAD (ou paiement equivalent)",
+        urgency: "2-8 semaines",
+        trade_in: "Aucun",
+        financing_preference: "Financement adapte",
+        sales_strategy: "Qualification finance precise (statut, revenu, permis, dossier), puis option realiste admissible."
+      },
+      {
+        id: 17,
+        name: "Comparatif Honda vs Toyota",
+        segment: "Honda vs Toyota",
+        difficulty: "Intermediaire",
+        persona: "Client qui compare les marques les plus fiables (Honda, Toyota, parfois Subaru).",
+        needs: "Voir clairement les forces Honda selon ses priorites reelles.",
+        objections: "Hesite entre marques et demande des preuves concretes.",
+        budget_range: "450-850 CAD/mois",
+        urgency: "2-6 semaines",
+        trade_in: "Variable",
+        financing_preference: "Achat ou location",
+        sales_strategy: "Qualifier priorites, relier aux avantages Honda (confort, insonorisation, valeur revente, delais)."
       }
     ];
 
@@ -1401,6 +1525,8 @@
     const modeHint = document.getElementById("modeHint");
     const modeActionBtn = document.getElementById("modeActionBtn");
     const customControls = document.getElementById("customControls");
+    const frequentScenarios = document.getElementById("frequentScenarios");
+    const frequentScenarioBtns = Array.from(document.querySelectorAll("[data-scenario]"));
     const profilesRegion = document.getElementById("profilesRegion");
     const carouselLeftBtn = document.getElementById("carouselLeftBtn");
     const carouselRightBtn = document.getElementById("carouselRightBtn");
@@ -1649,7 +1775,11 @@
         decision: "Clarifier ses options pour prendre une decision sans regret.",
         "mobilite urbaine": "Trouver un vehicule economique et fiable pour rouler souvent.",
         exploration: "Comparer les options pour identifier le bon vehicule a moyen terme.",
-        "temps limite": "Obtenir rapidement une vision claire avant de changer de vehicule."
+        "temps limite": "Obtenir rapidement une vision claire avant de changer de vehicule.",
+        uber: "Trouver un vehicule rentable, admissible Uber et confortable pour les passagers.",
+        taschereau: "Comparer plusieurs concessionnaires et etablir la confiance sans pression.",
+        "nouvel arrivant": "Identifier une option financable malgre un historique de credit limite.",
+        "honda vs toyota": "Comparer les marques fiables et valider les avantages Honda decisifs."
       };
 
       const key = normalizeText(client.segment || "");
@@ -1716,7 +1846,9 @@
       modeCustomBtn.classList.toggle("active", mode === "custom");
 
       const custom = mode === "custom";
+      const random = mode === "random";
       customControls.classList.toggle("hidden", !custom);
+      frequentScenarios.classList.toggle("hidden", !random);
       modeActionBtn.classList.remove("hidden");
       profilesRegion.classList.toggle("hidden", !custom);
 
@@ -1772,6 +1904,62 @@
 
       const client = chooseClientByTypeAndLevel(type, level) || pickRandom(state.clients);
       if (client) await selectClient(client, "aleatoire");
+    }
+
+    function findAvailableType(preferredTypes = []) {
+      const available = Array.from(new Set(state.clients.map((c) => normalizeTypeLabel(c.segment))));
+      if (!available.length) return "";
+      const byNorm = new Map(available.map((t) => [normalizeText(t), t]));
+
+      for (const pref of preferredTypes) {
+        const key = normalizeText(pref);
+        if (byNorm.has(key)) return byNorm.get(key);
+      }
+
+      for (const pref of preferredTypes) {
+        const key = normalizeText(pref);
+        const hit = available.find((t) => normalizeText(t).includes(key) || key.includes(normalizeText(t)));
+        if (hit) return hit;
+      }
+
+      return available[0];
+    }
+
+    async function runFrequentScenario(scenarioKey) {
+      if (!state.clients.length || state.busy) return;
+      const presets = {
+        uber: {
+          types: ["Uber", "Mobilite urbaine"],
+          level: "Intermediaire",
+          goal: "Gestion du prix"
+        },
+        taschereau: {
+          types: ["Taschereau", "Exploration"],
+          level: "Avance",
+          goal: "Decouverte"
+        },
+        "nouvel-arrivant": {
+          types: ["Nouvel Arrivant"],
+          level: "Avance",
+          goal: "Financement/Location"
+        },
+        "honda-vs-toyota": {
+          types: ["Honda vs Toyota", "Exploration"],
+          level: "Intermediaire",
+          goal: "Objections"
+        }
+      };
+
+      const preset = presets[scenarioKey];
+      if (!preset) return;
+
+      const chosenType = findAvailableType(preset.types);
+      state.clientType = chosenType;
+      setLevelAndGoal(preset.level, preset.goal);
+      renderCards();
+
+      const client = chooseClientByTypeAndLevel(chosenType, preset.level) || pickRandom(state.clients);
+      if (client) await selectClient(client, `scenario ${scenarioKey}`);
     }
 
     function buildImprovementPlan() {
@@ -2837,6 +3025,12 @@
       if (state.simulationMode === "random") await runRandomSimulation();
       if (state.simulationMode === "improve") await runImprovementSimulation();
       if (state.simulationMode === "custom") await runCustomSimulation();
+    });
+    frequentScenarioBtns.forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const key = btn.getAttribute("data-scenario");
+        await runFrequentScenario(key || "");
+      });
     });
     carouselLeftBtn.addEventListener("click", () => {
       cards.scrollBy({ left: -330, behavior: "smooth" });
