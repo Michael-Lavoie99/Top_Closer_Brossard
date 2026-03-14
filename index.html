@@ -700,8 +700,30 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
-      overflow-y: auto;
+      overflow-y: scroll;
       overflow-x: hidden;
+      scrollbar-gutter: stable both-edges;
+      scrollbar-width: auto;
+      scrollbar-color: #8c7f88 #f0e6dc;
+    }
+
+    #historyDetailsCard::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    #historyDetailsCard::-webkit-scrollbar-track {
+      background: #f0e6dc;
+      border-radius: 10px;
+    }
+
+    #historyDetailsCard::-webkit-scrollbar-thumb {
+      background: #8c7f88;
+      border-radius: 10px;
+      border: 2px solid #f0e6dc;
+    }
+
+    #historyDetailsCard::-webkit-scrollbar-thumb:hover {
+      background: #756876;
     }
 
     #historyList {
