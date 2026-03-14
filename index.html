@@ -683,6 +683,8 @@
       flex: 1;
       min-height: 0;
       overflow: hidden;
+      grid-template-rows: minmax(0, 1fr);
+      align-items: stretch;
     }
 
     #historyModal .card {
@@ -697,32 +699,36 @@
     }
 
     #historyDetailsCard {
-      display: flex;
-      flex-direction: column;
       min-height: 0;
+      overflow: hidden;
+    }
+
+    #historyDetailsScroll {
+      height: 100%;
       overflow-y: scroll;
       overflow-x: hidden;
       scrollbar-gutter: stable both-edges;
       scrollbar-width: auto;
       scrollbar-color: #8c7f88 #f0e6dc;
+      padding-right: .2rem;
     }
 
-    #historyDetailsCard::-webkit-scrollbar {
+    #historyDetailsScroll::-webkit-scrollbar {
       width: 12px;
     }
 
-    #historyDetailsCard::-webkit-scrollbar-track {
+    #historyDetailsScroll::-webkit-scrollbar-track {
       background: #f0e6dc;
       border-radius: 10px;
     }
 
-    #historyDetailsCard::-webkit-scrollbar-thumb {
+    #historyDetailsScroll::-webkit-scrollbar-thumb {
       background: #8c7f88;
       border-radius: 10px;
       border: 2px solid #f0e6dc;
     }
 
-    #historyDetailsCard::-webkit-scrollbar-thumb:hover {
+    #historyDetailsScroll::-webkit-scrollbar-thumb:hover {
       background: #756876;
     }
 
@@ -1239,18 +1245,20 @@
         </section>
 
         <section id="historyDetailsCard" class="card">
-          <h4 class="details-title">Details <span id="historyDateLine" class="history-inline-meta"></span></h4>
-          <div id="historyGlobalScore" class="history-global-score"></div>
-          <button id="historyChecklistToggleBtn" class="checklist-toggle-btn" type="button" aria-expanded="false">
-            Afficher checklist qualification
-          </button>
-          <section id="historyChecklistPanel" class="qualification-checklist hidden">
-            <h5>Checklist Qualification (Apercu)</h5>
-            <div id="historyQualificationChecklist" class="check-grid"></div>
-          </section>
-          <div id="historyTrackDetails" class="track-detail-list"></div>
-          <div class="footer-actions" style="margin-top:.65rem">
-            <button id="resumeSimulationBtn" class="alt tiny-btn hidden" type="button">Reprendre cette simulation</button>
+          <div id="historyDetailsScroll">
+            <h4 class="details-title">Details <span id="historyDateLine" class="history-inline-meta"></span></h4>
+            <div id="historyGlobalScore" class="history-global-score"></div>
+            <button id="historyChecklistToggleBtn" class="checklist-toggle-btn" type="button" aria-expanded="false">
+              Afficher checklist qualification
+            </button>
+            <section id="historyChecklistPanel" class="qualification-checklist hidden">
+              <h5>Checklist Qualification (Apercu)</h5>
+              <div id="historyQualificationChecklist" class="check-grid"></div>
+            </section>
+            <div id="historyTrackDetails" class="track-detail-list"></div>
+            <div class="footer-actions" style="margin-top:.65rem">
+              <button id="resumeSimulationBtn" class="alt tiny-btn hidden" type="button">Reprendre cette simulation</button>
+            </div>
           </div>
         </section>
       </div>
