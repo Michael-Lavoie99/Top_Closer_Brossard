@@ -692,6 +692,17 @@
       vertical-align: top;
     }
 
+    .users-table select {
+      width: 100%;
+      min-width: 130px;
+      border: 1px solid #e2d3c6;
+      border-radius: 8px;
+      background: #fff;
+      color: #2f2a34;
+      padding: .34rem .45rem;
+      font-size: .84rem;
+    }
+
     .users-form {
       margin-top: .8rem;
       display: grid;
@@ -1251,8 +1262,9 @@
             <tr>
               <th>Courriel</th>
               <th>Nom</th>
-              <th>Role</th>
+              <th>Role (modifiable)</th>
               <th>Statut</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="usersTableBody"></tbody>
@@ -2679,7 +2691,7 @@
       const rows = Array.isArray(state.users) ? state.users : [];
       if (!rows.length) {
         const tr = document.createElement("tr");
-        tr.innerHTML = '<td colspan="4">Aucun utilisateur configure.</td>';
+        tr.innerHTML = '<td colspan="5">Aucun utilisateur configure.</td>';
         usersTableBody.appendChild(tr);
         return;
       }
@@ -2687,12 +2699,61 @@
       rows.forEach((u) => {
         const tr = document.createElement("tr");
         const status = u.is_active === false ? "Desactive" : "Actif";
-        tr.innerHTML = `
-          <td>${u.email || "-"}</td>
-          <td>${u.full_name || "-"}</td>
-          <td>${u.role || "representant"}</td>
-          <td>${status}</td>
-        `;
+        const emailCell = document.createElement("td");
+        emailCell.textContent = u.email || "-";
+
+        const nameCell = document.createElement("td");
+        nameCell.textContent = u.full_name || "-";
+
+        const roleCell = document.createElement("td");
+        const roleSelectInline = document.createElement("select");
+        ["representant", "manager", "admin"].forEach((role) => {
+          const opt = document.createElement("option");
+          opt.value = role;
+          opt.textContent = role;
+          roleSelectInline.appendChild(opt);
+        });
+        roleSelectInline.value = String(u.role || "representant").toLowerCase();
+        roleCell.appendChild(roleSelectInline);
+
+        const statusCell = document.createElement("td");
+        statusCell.textContent = status;
+
+        const actionCell = document.createElement("td");
+        const saveBtn = document.createElement("button");
+        saveBtn.type = "button";
+        saveBtn.className = "alt tiny-btn";
+        saveBtn.textContent = "Sauvegarder";
+        saveBtn.addEventListener("click", async () => {
+          if (!u.email) return;
+          saveBtn.disabled = true;
+          const previousLabel = saveBtn.textContent;
+          saveBtn.textContent = "Sauvegarde...";
+          setUsersMessage(`Mise a jour du role pour ${u.email}...`);
+          try {
+            await callAdminUsersApi("POST", {
+              email: u.email,
+              fullName: u.full_name || "",
+              role: roleSelectInline.value,
+              isActive: u.is_active !== false
+            });
+            u.role = roleSelectInline.value;
+            setUsersMessage(`Role mis a jour pour ${u.email}.`);
+            await loadUsersAdmin();
+          } catch (err) {
+            setUsersMessage(err.message || "Mise a jour du role impossible", true);
+          } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = previousLabel;
+          }
+        });
+        actionCell.appendChild(saveBtn);
+
+        tr.appendChild(emailCell);
+        tr.appendChild(nameCell);
+        tr.appendChild(roleCell);
+        tr.appendChild(statusCell);
+        tr.appendChild(actionCell);
         usersTableBody.appendChild(tr);
       });
     }
