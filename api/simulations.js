@@ -87,7 +87,10 @@ function normalizeEvaluation(evaluation) {
 }
 
 async function listSimulations(config, user) {
-  const endpoint = `${config.url}/rest/v1/simulation_runs?select=id,user_email,user_name,level,goal,outcome,client_name,client_segment,client_difficulty,transcript,evaluation,created_at&user_email=eq.${encodeURIComponent(user.email)}&order=created_at.desc&limit=100`;
+  const isManagerOrAdmin = String(user?.role || "").toLowerCase() === "admin" || String(user?.role || "").toLowerCase() === "manager";
+  const filter = isManagerOrAdmin ? "" : `&user_email=eq.${encodeURIComponent(user.email)}`;
+  const limit = isManagerOrAdmin ? 500 : 100;
+  const endpoint = `${config.url}/rest/v1/simulation_runs?select=id,user_email,user_name,level,goal,outcome,client_name,client_segment,client_difficulty,transcript,evaluation,created_at${filter}&order=created_at.desc&limit=${limit}`;
   const response = await fetch(endpoint, {
     method: "GET",
     headers: {

@@ -810,6 +810,23 @@
       gap: .5rem;
     }
 
+    .history-owner-filter {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      font-size: .84rem;
+      color: #4b4050;
+    }
+
+    .history-owner-filter select {
+      border: 1px solid #e2d3c6;
+      border-radius: 8px;
+      background: #fff;
+      color: #2f2a34;
+      padding: .32rem .45rem;
+      min-width: 220px;
+    }
+
     .history-item {
       width: 100%;
       border: 0;
@@ -1311,7 +1328,15 @@
     <div class="modal">
       <h3>Mes simulations</h3>
       <div class="history-top-row">
-        <p id="historyMessage" class="auth-msg" style="margin:0"></p>
+        <div>
+          <p id="historyMessage" class="auth-msg" style="margin:0"></p>
+          <div id="historyOwnerFilterWrap" class="history-owner-filter hidden">
+            <label for="historyOwnerFilter">Representant:</label>
+            <select id="historyOwnerFilter">
+              <option value="all">Tous</option>
+            </select>
+          </div>
+        </div>
         <div class="history-top-actions">
           <button id="downloadTranscriptBtn" class="alt tiny-btn" type="button">Telecharger le script PDF</button>
           <button id="refreshHistoryBtn" class="alt tiny-btn" type="button">Rafraichir</button>
@@ -1509,7 +1534,9 @@
       googleClientId: "",
       users: [],
       simulations: [],
+      allSimulations: [],
       selectedSimulationId: null,
+      historyOwnerFilter: "all",
       currentSimulationId: null,
       active: false,
       busy: false,
@@ -1584,6 +1611,8 @@
     const usersMessage = document.getElementById("usersMessage");
     const historyModal = document.getElementById("historyModal");
     const historyMessage = document.getElementById("historyMessage");
+    const historyOwnerFilterWrap = document.getElementById("historyOwnerFilterWrap");
+    const historyOwnerFilter = document.getElementById("historyOwnerFilter");
     const refreshHistoryBtn = document.getElementById("refreshHistoryBtn");
     const historyList = document.getElementById("historyList");
     const historyDateLine = document.getElementById("historyDateLine");
@@ -1633,6 +1662,11 @@
       return String(state.user?.role || "").toLowerCase() === "admin";
     }
 
+    function isManagerOrAdminUser() {
+      const role = String(state.user?.role || "").toLowerCase();
+      return role === "admin" || role === "manager";
+    }
+
     function getAuthHeaders(baseHeaders = {}) {
       const headers = { ...baseHeaders };
       if (state.authToken) {
@@ -1661,7 +1695,9 @@
       state.clients = [];
       state.users = [];
       state.simulations = [];
+      state.allSimulations = [];
       state.selectedSimulationId = null;
+      state.historyOwnerFilter = "all";
       state.currentSimulationId = null;
       state.selectedClient = null;
       state.active = false;
@@ -2372,6 +2408,54 @@
       };
     }
 
+    function populateHistoryOwnerFilter() {
+      if (!isManagerOrAdminUser()) {
+        historyOwnerFilterWrap.classList.add("hidden");
+        return;
+      }
+
+      historyOwnerFilterWrap.classList.remove("hidden");
+      const current = state.historyOwnerFilter || "all";
+      const owners = Array.from(
+        new Map(
+          (state.allSimulations || [])
+            .map((s) => {
+              const email = String(s?.user_email || "").trim().toLowerCase();
+              const name = String(s?.user_name || "").trim();
+              return [email, { email, name }];
+            })
+            .filter((entry) => entry[0])
+        ).values()
+      ).sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email, "fr-CA"));
+
+      historyOwnerFilter.innerHTML = "";
+      const allOpt = document.createElement("option");
+      allOpt.value = "all";
+      allOpt.textContent = "Tous";
+      historyOwnerFilter.appendChild(allOpt);
+
+      owners.forEach((owner) => {
+        const opt = document.createElement("option");
+        opt.value = owner.email;
+        opt.textContent = owner.name ? `${owner.name} (${owner.email})` : owner.email;
+        historyOwnerFilter.appendChild(opt);
+      });
+
+      const validValues = new Set(["all", ...owners.map((o) => o.email)]);
+      state.historyOwnerFilter = validValues.has(current) ? current : "all";
+      historyOwnerFilter.value = state.historyOwnerFilter;
+    }
+
+    function applyHistoryOwnerFilter() {
+      const all = Array.isArray(state.allSimulations) ? state.allSimulations : [];
+      if (!isManagerOrAdminUser() || state.historyOwnerFilter === "all") {
+        state.simulations = all.slice();
+      } else {
+        const target = String(state.historyOwnerFilter || "").toLowerCase();
+        state.simulations = all.filter((s) => String(s?.user_email || "").toLowerCase() === target);
+      }
+    }
+
     function normalizeQualificationChecklist(checklist) {
       const src = checklist && typeof checklist === "object" ? checklist : {};
       const general = src.infosGenerales && typeof src.infosGenerales === "object" ? src.infosGenerales : {};
@@ -2497,7 +2581,8 @@
       const trackFeedback = normalizeTrackFeedback(selected?.evaluation?.trackFeedback);
       const qualificationChecklist = selected?.evaluation?.qualificationChecklist || {};
       const statusLabel = getSimulationStatusLabel(selected);
-      historyDateLine.textContent = `${formatLongDate(selected.created_at)} | ${selected.client_name || "Client"} | Niveau: ${selected.level || "-"}`;
+      const ownerLabel = selected.user_name || selected.user_email || "-";
+      historyDateLine.textContent = `${formatLongDate(selected.created_at)} | ${selected.client_name || "Client"} | Rep: ${ownerLabel} | Niveau: ${selected.level || "-"}`;
       historyGlobalScore.innerHTML = `
         <span class="label">Score global</span>
         <span class="value">${score === "N/A" ? "N/A" : `${score}/100`}</span>
@@ -2507,7 +2592,8 @@
       renderTrackDetailLines(track, trackFeedback);
       setHistoryChecklistExpanded(false);
       downloadTranscriptBtn.disabled = false;
-      resumeSimulationBtn.classList.toggle("hidden", statusLabel !== "En cours");
+      const canResume = statusLabel === "En cours" && String(selected.user_email || "").toLowerCase() === String(state.user?.email || "").toLowerCase();
+      resumeSimulationBtn.classList.toggle("hidden", !canResume);
     }
 
     function renderSimulationList() {
@@ -2529,12 +2615,13 @@
         const score = Number.isFinite(s?.evaluation?.score) ? s.evaluation.score : "N/A";
         const statusLabel = getSimulationStatusLabel(s);
         const statusClass = getSimulationStatusClass(s);
+        const ownerLabel = s.user_name || s.user_email || "-";
         btn.innerHTML = `
           <div class="history-row">
             <strong>${s.client_name || "Client"}</strong>
             <span class="status-badge ${statusClass}">${statusLabel}</span>
           </div>
-          <small>${formatElapsedHoursMinutes(s.created_at)} | Score: ${score}</small>
+          <small>${ownerLabel} | ${formatElapsedHoursMinutes(s.created_at)} | Score: ${score}</small>
         `;
         btn.addEventListener("click", () => {
           state.selectedSimulationId = s.id;
@@ -2551,7 +2638,9 @@
       setHistoryMessage("Chargement...");
       try {
         const data = await callSimulationsApi("GET");
-        state.simulations = Array.isArray(data.simulations) ? data.simulations : [];
+        state.allSimulations = Array.isArray(data.simulations) ? data.simulations : [];
+        populateHistoryOwnerFilter();
+        applyHistoryOwnerFilter();
         if (!state.simulations.some((s) => String(s.id) === String(state.selectedSimulationId))) {
           state.selectedSimulationId = state.simulations[0]?.id || null;
         }
@@ -3153,6 +3242,14 @@
     });
     historyBtn.addEventListener("click", openHistoryModal);
     refreshHistoryBtn.addEventListener("click", loadSimulations);
+    historyOwnerFilter.addEventListener("change", () => {
+      state.historyOwnerFilter = historyOwnerFilter.value || "all";
+      applyHistoryOwnerFilter();
+      if (!state.simulations.some((s) => String(s.id) === String(state.selectedSimulationId))) {
+        state.selectedSimulationId = state.simulations[0]?.id || null;
+      }
+      renderSimulationList();
+    });
     document.getElementById("closeHistoryModalBtn").addEventListener("click", () => {
       historyModal.classList.add("hidden");
       setHistoryMessage("");
