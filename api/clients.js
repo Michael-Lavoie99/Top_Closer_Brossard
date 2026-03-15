@@ -242,6 +242,34 @@ const FALLBACK_CLIENTS = [
   }
 ];
 
+function normalizeKeyPart(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function clientKey(client) {
+  return `${normalizeKeyPart(client?.segment)}::${normalizeKeyPart(client?.name)}`;
+}
+
+function mergeWithFallback(rows) {
+  const source = Array.isArray(rows) ? rows : [];
+  const merged = [...source];
+  const seen = new Set(source.map(clientKey));
+
+  for (const fallbackClient of FALLBACK_CLIENTS) {
+    const key = clientKey(fallbackClient);
+    if (seen.has(key)) continue;
+    merged.push(fallbackClient);
+    seen.add(key);
+  }
+
+  return merged;
+}
+
 async function loadClientsFromSupabase() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return FALLBACK_CLIENTS;
@@ -267,7 +295,7 @@ async function loadClientsFromSupabase() {
     return FALLBACK_CLIENTS;
   }
 
-  return data;
+  return mergeWithFallback(data);
 }
 
 module.exports = async (req, res) => {
