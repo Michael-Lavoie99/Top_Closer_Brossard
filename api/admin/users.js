@@ -48,7 +48,7 @@ async function upsertUser(config, body) {
   }
 
   const payload = [{ email, full_name: fullName || null, role, is_active: isActive }];
-  const endpoint = `${config.url}/rest/v1/app_users`;
+  const endpoint = `${config.url}/rest/v1/app_users?on_conflict=email`;
 
   const response = await fetch(endpoint, {
     method: "POST",
