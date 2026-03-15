@@ -1555,7 +1555,11 @@
       voiceConversationMode: false,
       conversationListening: false,
       conversationProcessing: false,
-      speakingClient: false
+      speakingClient: false,
+      preferredSpeechVoice: null,
+      conversationDraftFinal: "",
+      conversationDraftInterim: "",
+      conversationSendTimer: null
     };
 
     const authView = document.getElementById("authView");
@@ -3049,6 +3053,28 @@
       state.speakingClient = false;
     }
 
+    function pickPreferredFrenchVoice() {
+      if (!state.speechSynthesisSupported) return null;
+      const voices = window.speechSynthesis.getVoices() || [];
+      if (!voices.length) return null;
+
+      const scoreVoice = (v) => {
+        const name = String(v?.name || "").toLowerCase();
+        const lang = String(v?.lang || "").toLowerCase();
+        let score = 0;
+        if (lang.startsWith("fr-ca")) score += 80;
+        else if (lang.startsWith("fr")) score += 60;
+        if (/google|microsoft|natural|premium|enhanced|siri|amelie|thomas/.test(name)) score += 25;
+        if (/desktop|compact|old|legacy/.test(name)) score -= 10;
+        return score;
+      };
+
+      const frenchVoices = voices.filter((v) => String(v?.lang || "").toLowerCase().startsWith("fr"));
+      if (!frenchVoices.length) return null;
+      frenchVoices.sort((a, b) => scoreVoice(b) - scoreVoice(a));
+      return frenchVoices[0] || null;
+    }
+
     function speakClientMessage(text) {
       if (!state.voiceOutputEnabled || !state.speechSynthesisSupported) return Promise.resolve();
       const clean = (text || "").trim();
@@ -3058,8 +3084,15 @@
       return new Promise((resolve) => {
         const utterance = new SpeechSynthesisUtterance(clean);
         utterance.lang = "fr-CA";
-        utterance.rate = 0.97;
-        utterance.pitch = 1;
+        utterance.rate = 0.95;
+        utterance.pitch = 0.98;
+        if (!state.preferredSpeechVoice) {
+          state.preferredSpeechVoice = pickPreferredFrenchVoice();
+        }
+        if (state.preferredSpeechVoice) {
+          utterance.voice = state.preferredSpeechVoice;
+          utterance.lang = state.preferredSpeechVoice.lang || utterance.lang;
+        }
         state.speakingClient = true;
         utterance.onend = () => {
           state.speakingClient = false;
@@ -3117,37 +3150,64 @@
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
       recognition.lang = "fr-CA";
-      recognition.interimResults = false;
-      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.continuous = true;
 
-      recognition.onresult = async (event) => {
-        const transcript = String(event?.results?.[0]?.[0]?.transcript || "").trim();
-        state.conversationListening = false;
-        updateVoiceControls();
-        if (!state.voiceConversationMode || !state.active || !transcript) {
-          if (state.voiceConversationMode && state.active && !state.busy) {
-            setTimeout(() => startVoiceConversationListening(), 180);
-          }
-          return;
-        }
-
-        if (state.conversationProcessing || state.busy) {
-          setTimeout(() => startVoiceConversationListening(), 180);
-          return;
-        }
-
-        state.conversationProcessing = true;
-        try {
-          await sendRepMessage(transcript);
-        } finally {
-          state.conversationProcessing = false;
-          if (state.voiceConversationMode && state.active && !state.speakingClient && !state.busy) {
-            setTimeout(() => startVoiceConversationListening(), 220);
-          }
+      const clearConversationSendTimer = () => {
+        if (state.conversationSendTimer) {
+          clearTimeout(state.conversationSendTimer);
+          state.conversationSendTimer = null;
         }
       };
 
+      const scheduleVoiceConversationSend = () => {
+        clearConversationSendTimer();
+        state.conversationSendTimer = setTimeout(async () => {
+          const text = `${state.conversationDraftFinal} ${state.conversationDraftInterim}`.trim();
+          state.conversationDraftFinal = "";
+          state.conversationDraftInterim = "";
+          if (!state.voiceConversationMode || !state.active || !text) {
+            if (state.voiceConversationMode && state.active && !state.busy) {
+              setTimeout(() => startVoiceConversationListening(), 180);
+            }
+            return;
+          }
+
+          if (state.conversationProcessing || state.busy) {
+            return;
+          }
+
+          stopVoiceConversationListening();
+          state.conversationProcessing = true;
+          try {
+            await sendRepMessage(text);
+          } finally {
+            state.conversationProcessing = false;
+            if (state.voiceConversationMode && state.active && !state.speakingClient && !state.busy) {
+              setTimeout(() => startVoiceConversationListening(), 260);
+            }
+          }
+        }, 1100); // short silence after rep speech before sending
+      };
+
+      recognition.onresult = async (event) => {
+        if (!state.voiceConversationMode || !state.active) return;
+        let interimText = "";
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const chunk = String(event.results[i]?.[0]?.transcript || "").trim();
+          if (!chunk) continue;
+          if (event.results[i].isFinal) {
+            state.conversationDraftFinal = `${state.conversationDraftFinal} ${chunk}`.trim();
+          } else {
+            interimText = `${interimText} ${chunk}`.trim();
+          }
+        }
+        state.conversationDraftInterim = interimText;
+        scheduleVoiceConversationSend();
+      };
+
       recognition.onerror = () => {
+        clearConversationSendTimer();
         state.conversationListening = false;
         updateVoiceControls();
         if (state.voiceConversationMode && state.active && !state.busy) {
@@ -3156,8 +3216,12 @@
       };
 
       recognition.onend = () => {
+        clearConversationSendTimer();
         state.conversationListening = false;
         updateVoiceControls();
+        if (state.voiceConversationMode && state.active && !state.conversationProcessing && !state.busy && !state.speakingClient) {
+          setTimeout(() => startVoiceConversationListening(), 240);
+        }
       };
 
       state.conversationRecognition = recognition;
@@ -3180,6 +3244,12 @@
     function stopVoiceConversationListening() {
       if (!state.conversationRecognition) return;
       state.conversationListening = false;
+      state.conversationDraftFinal = "";
+      state.conversationDraftInterim = "";
+      if (state.conversationSendTimer) {
+        clearTimeout(state.conversationSendTimer);
+        state.conversationSendTimer = null;
+      }
       updateVoiceControls();
       try {
         state.conversationRecognition.stop();
@@ -3507,6 +3577,14 @@
 
     initDictation();
     initVoiceConversationRecognition();
+    if (state.speechSynthesisSupported) {
+      state.preferredSpeechVoice = pickPreferredFrenchVoice();
+      if ("onvoiceschanged" in window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          state.preferredSpeechVoice = pickPreferredFrenchVoice();
+        };
+      }
+    }
     updateVoiceControls();
     setSimulationMode("random");
     initAuth();
