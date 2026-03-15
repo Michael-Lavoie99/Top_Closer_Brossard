@@ -1802,18 +1802,10 @@
 
     function updateOutcomeFromClientReply(reply) {
       const t = normalizeText(reply);
-
-      const positive = [
-        "je le prends", "je la prends", "on avance", "on signe", "allons-y", "ca me va", "c est bon", "faisons le depot"
-      ];
       const negative = [
         "je quitte", "je vais ailleurs", "pas interesse", "on arrete", "j abandonne", "c est non", "trop cher pour moi", "je n ai plus confiance"
       ];
-
-      if (listHasAny(t, positive)) state.positiveHits += 1;
       if (listHasAny(t, negative)) state.negativeHits += 1;
-
-      if (state.positiveHits >= 1) return "very_satisfied";
       if (state.negativeHits >= 1) return "very_unsatisfied";
       return null;
     }
@@ -3449,8 +3441,6 @@
         const autoOutcome = updateOutcomeFromClientReply(reply);
         if (autoOutcome === "very_unsatisfied") {
           await endSimulation("Client tres insatisfait", "very_unsatisfied");
-        } else if (autoOutcome === "very_satisfied") {
-          await endSimulation("Client pret a acheter", "very_satisfied");
         }
       } catch (err) {
         pushClient(`Erreur: ${err.message}`);
