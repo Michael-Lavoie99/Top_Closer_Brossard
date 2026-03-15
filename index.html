@@ -1189,6 +1189,7 @@
           <h2 id="chatTitle" class="head-title">Session</h2>
         </div>
         <div class="head-right">
+          <button id="voiceConversationBtn" class="alt tiny-btn" type="button">Discussion vocale: off</button>
           <button id="voiceModeBtn" class="alt tiny-btn" type="button">Client: ecrit seulement</button>
           <button id="stopVoiceBtn" class="alt tiny-btn" type="button">Couper voix</button>
           <span id="statusPill" class="status">Simulation active</span>
@@ -1198,7 +1199,7 @@
       <div id="chatLog" class="chat-log"></div>
 
       <div class="composer">
-        <div class="hint">Entree envoie. Shift+Entree fait une nouvelle ligne. Bouton micro = dictee.</div>
+        <div class="hint">Entree envoie. Shift+Entree fait une nouvelle ligne. Micro = dictee. Active "Discussion vocale" pour parler en continu.</div>
         <textarea id="inputBox" placeholder="Ecris ta phrase de representant..."></textarea>
         <button id="micBtn" class="alt" type="button">Dicter</button>
         <button id="sendBtn">Envoyer</button>
@@ -1548,8 +1549,13 @@
       speechSynthesisSupported: "speechSynthesis" in window,
       speechRecognitionSupported: Boolean(window.SpeechRecognition || window.webkitSpeechRecognition),
       speechRecognition: null,
+      conversationRecognition: null,
       dictating: false,
-      dictationBase: ""
+      dictationBase: "",
+      voiceConversationMode: false,
+      conversationListening: false,
+      conversationProcessing: false,
+      speakingClient: false
     };
 
     const authView = document.getElementById("authView");
@@ -1582,6 +1588,7 @@
     const sendBtn = document.getElementById("sendBtn");
     const pauseBtn = document.getElementById("pauseBtn");
     const endBtn = document.getElementById("endBtn");
+    const voiceConversationBtn = document.getElementById("voiceConversationBtn");
     const voiceModeBtn = document.getElementById("voiceModeBtn");
     const stopVoiceBtn = document.getElementById("stopVoiceBtn");
     const levelSelect = document.getElementById("level");
@@ -1643,6 +1650,22 @@
       sendBtn.textContent = isBusy ? "Envoi..." : "Envoyer";
     }
 
+    function setVoiceConversationMode(enabled) {
+      const canUse = state.speechRecognitionSupported && state.speechSynthesisSupported;
+      if (!canUse) {
+        state.voiceConversationMode = false;
+      } else {
+        state.voiceConversationMode = Boolean(enabled);
+      }
+
+      if (state.voiceConversationMode) {
+        state.voiceOutputEnabled = true;
+      } else {
+        stopVoiceConversationListening();
+      }
+      updateVoiceControls();
+    }
+
     function setAuthMessage(message, isError = false) {
       authMessage.textContent = message || "";
       authMessage.classList.toggle("bad", Boolean(isError));
@@ -1701,8 +1724,11 @@
       state.currentSimulationId = null;
       state.selectedClient = null;
       state.active = false;
+      state.voiceConversationMode = false;
+      state.conversationProcessing = false;
       localStorage.removeItem(AUTH_TOKEN_KEY);
       stopDictation();
+      stopVoiceConversationListening();
       stopSpeaking();
       chatLog.innerHTML = "";
       cards.innerHTML = "";
@@ -1735,6 +1761,7 @@
         return;
       }
       stopDictation();
+      stopVoiceConversationListening();
       stopSpeaking();
       chatView.classList.add("hidden");
       galleryView.classList.remove("hidden");
@@ -1756,7 +1783,7 @@
     function pushClient(text) {
       addMessage("client", text);
       state.conversation.push({ role: "assistant", content: text });
-      speakClientMessage(text);
+      return speakClientMessage(text);
     }
 
     function normalizeText(t) {
@@ -2992,6 +3019,19 @@
       voiceModeBtn.textContent = outputLabel;
       voiceModeBtn.classList.toggle("active", state.voiceOutputEnabled);
 
+      const canConversation = state.speechRecognitionSupported && state.speechSynthesisSupported;
+      if (!canConversation) {
+        voiceConversationBtn.textContent = "Discussion vocale non supportee";
+        voiceConversationBtn.disabled = true;
+      } else {
+        const modeText = state.voiceConversationMode
+          ? (state.conversationListening ? "Discussion vocale: ecoute..." : "Discussion vocale: active")
+          : "Discussion vocale: off";
+        voiceConversationBtn.textContent = modeText;
+        voiceConversationBtn.disabled = false;
+        voiceConversationBtn.classList.toggle("active", state.voiceConversationMode);
+      }
+
       if (!state.speechRecognitionSupported) {
         micBtn.textContent = "Dictee non supportee";
         micBtn.disabled = true;
@@ -3006,19 +3046,34 @@
     function stopSpeaking() {
       if (!state.speechSynthesisSupported) return;
       window.speechSynthesis.cancel();
+      state.speakingClient = false;
     }
 
     function speakClientMessage(text) {
-      if (!state.voiceOutputEnabled || !state.speechSynthesisSupported) return;
+      if (!state.voiceOutputEnabled || !state.speechSynthesisSupported) return Promise.resolve();
       const clean = (text || "").trim();
-      if (!clean) return;
+      if (!clean) return Promise.resolve();
 
       stopSpeaking();
-      const utterance = new SpeechSynthesisUtterance(clean);
-      utterance.lang = "fr-CA";
-      utterance.rate = 0.97;
-      utterance.pitch = 1;
-      window.speechSynthesis.speak(utterance);
+      return new Promise((resolve) => {
+        const utterance = new SpeechSynthesisUtterance(clean);
+        utterance.lang = "fr-CA";
+        utterance.rate = 0.97;
+        utterance.pitch = 1;
+        state.speakingClient = true;
+        utterance.onend = () => {
+          state.speakingClient = false;
+          if (state.voiceConversationMode && state.active && !state.busy && !state.conversationProcessing) {
+            setTimeout(() => startVoiceConversationListening(), 220);
+          }
+          resolve();
+        };
+        utterance.onerror = () => {
+          state.speakingClient = false;
+          resolve();
+        };
+        window.speechSynthesis.speak(utterance);
+      });
     }
 
     function initDictation() {
@@ -3057,8 +3112,85 @@
       state.speechRecognition = recognition;
     }
 
+    function initVoiceConversationRecognition() {
+      if (!state.speechRecognitionSupported) return;
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = "fr-CA";
+      recognition.interimResults = false;
+      recognition.continuous = false;
+
+      recognition.onresult = async (event) => {
+        const transcript = String(event?.results?.[0]?.[0]?.transcript || "").trim();
+        state.conversationListening = false;
+        updateVoiceControls();
+        if (!state.voiceConversationMode || !state.active || !transcript) {
+          if (state.voiceConversationMode && state.active && !state.busy) {
+            setTimeout(() => startVoiceConversationListening(), 180);
+          }
+          return;
+        }
+
+        if (state.conversationProcessing || state.busy) {
+          setTimeout(() => startVoiceConversationListening(), 180);
+          return;
+        }
+
+        state.conversationProcessing = true;
+        try {
+          await sendRepMessage(transcript);
+        } finally {
+          state.conversationProcessing = false;
+          if (state.voiceConversationMode && state.active && !state.speakingClient && !state.busy) {
+            setTimeout(() => startVoiceConversationListening(), 220);
+          }
+        }
+      };
+
+      recognition.onerror = () => {
+        state.conversationListening = false;
+        updateVoiceControls();
+        if (state.voiceConversationMode && state.active && !state.busy) {
+          setTimeout(() => startVoiceConversationListening(), 500);
+        }
+      };
+
+      recognition.onend = () => {
+        state.conversationListening = false;
+        updateVoiceControls();
+      };
+
+      state.conversationRecognition = recognition;
+    }
+
+    function startVoiceConversationListening() {
+      if (!state.voiceConversationMode || !state.active) return;
+      if (!state.conversationRecognition || state.conversationListening) return;
+      if (state.busy || state.dictating || state.speakingClient || state.conversationProcessing) return;
+      try {
+        state.conversationListening = true;
+        updateVoiceControls();
+        state.conversationRecognition.start();
+      } catch {
+        state.conversationListening = false;
+        updateVoiceControls();
+      }
+    }
+
+    function stopVoiceConversationListening() {
+      if (!state.conversationRecognition) return;
+      state.conversationListening = false;
+      updateVoiceControls();
+      try {
+        state.conversationRecognition.stop();
+      } catch {}
+    }
+
     function startDictation() {
       if (!state.speechRecognition || state.dictating) return;
+      if (state.voiceConversationMode) {
+        setVoiceConversationMode(false);
+      }
       state.dictationBase = inputBox.value.trim();
       state.dictating = true;
       updateVoiceControls();
@@ -3084,6 +3216,8 @@
       state.active = false;
       state.outcome = outcome;
       stopDictation();
+      stopVoiceConversationListening();
+      setVoiceConversationMode(false);
       stopSpeaking();
       statusPill.textContent = `Terminee - ${reason}`;
       addMessage("client", `Simulation terminee: ${reason}. Preparation de ton bilan...`);
@@ -3151,7 +3285,10 @@
       setBusy(true);
       try {
         const reply = await callChatApi();
-        pushClient(reply);
+        const speakingPromise = pushClient(reply);
+        if (state.voiceConversationMode) {
+          await speakingPromise;
+        }
 
         const autoOutcome = updateOutcomeFromClientReply(reply);
         if (autoOutcome === "very_unsatisfied") {
@@ -3203,6 +3340,9 @@
       }
 
       inputBox.focus();
+      if (state.voiceConversationMode) {
+        setTimeout(() => startVoiceConversationListening(), 220);
+      }
     }
 
     async function selectClient(client, origin = "galerie") {
@@ -3309,9 +3449,19 @@
 
     sendBtn.addEventListener("click", handleSend);
     micBtn.addEventListener("click", toggleDictation);
+    voiceConversationBtn.addEventListener("click", () => {
+      if (!state.active && !state.voiceConversationMode) return;
+      setVoiceConversationMode(!state.voiceConversationMode);
+      if (state.voiceConversationMode) {
+        setTimeout(() => startVoiceConversationListening(), 180);
+      }
+    });
     voiceModeBtn.addEventListener("click", () => {
       state.voiceOutputEnabled = !state.voiceOutputEnabled;
-      if (!state.voiceOutputEnabled) stopSpeaking();
+      if (!state.voiceOutputEnabled) {
+        if (state.voiceConversationMode) setVoiceConversationMode(false);
+        stopSpeaking();
+      }
       updateVoiceControls();
     });
     stopVoiceBtn.addEventListener("click", stopSpeaking);
@@ -3356,6 +3506,7 @@
     });
 
     initDictation();
+    initVoiceConversationRecognition();
     updateVoiceControls();
     setSimulationMode("random");
     initAuth();
