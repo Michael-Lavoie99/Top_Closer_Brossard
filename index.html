@@ -1557,6 +1557,8 @@
       conversationProcessing: false,
       speakingClient: false,
       preferredSpeechVoice: null,
+      clientVoice: "alloy",
+      ttsAudio: null,
       conversationDraftFinal: "",
       conversationDraftInterim: "",
       conversationSendTimer: null
@@ -1655,7 +1657,7 @@
     }
 
     function setVoiceConversationMode(enabled) {
-      const canUse = state.speechRecognitionSupported && state.speechSynthesisSupported;
+      const canUse = state.speechRecognitionSupported;
       if (!canUse) {
         state.voiceConversationMode = false;
       } else {
@@ -1818,6 +1820,22 @@
 
     function normalizeTypeLabel(value) {
       return String(value || "").trim() || "Autre";
+    }
+
+    const TTS_VOICE_BANK = {
+      default: ["alloy", "nova", "shimmer"],
+      uber: ["onyx", "echo"],
+      taschereau: ["shimmer", "fable"],
+      "nouvel arrivant": ["alloy", "nova"],
+      "honda vs toyota": ["echo", "fable"],
+      exploration: ["fable", "shimmer"],
+      "mobilite urbaine": ["onyx", "echo"]
+    };
+
+    function pickSimulationVoice(client) {
+      const typeKey = normalizeText(normalizeTypeLabel(client?.segment || ""));
+      const pool = TTS_VOICE_BANK[typeKey] || TTS_VOICE_BANK.default;
+      return pool[Math.floor(Math.random() * pool.length)] || "alloy";
     }
 
     function normalizeDifficultyLabel(value) {
@@ -2739,6 +2757,7 @@
       state.currentSimulationId = selected.id;
       state.active = true;
       state.outcome = String(selected.outcome || "in_progress");
+      state.clientVoice = pickSimulationVoice(state.selectedClient);
       state.conversation = Array.isArray(selected.transcript) ? selected.transcript : [];
       state.positiveHits = 0;
       state.negativeHits = 0;
@@ -3023,7 +3042,7 @@
       voiceModeBtn.textContent = outputLabel;
       voiceModeBtn.classList.toggle("active", state.voiceOutputEnabled);
 
-      const canConversation = state.speechRecognitionSupported && state.speechSynthesisSupported;
+      const canConversation = state.speechRecognitionSupported;
       if (!canConversation) {
         voiceConversationBtn.textContent = "Discussion vocale non supportee";
         voiceConversationBtn.disabled = true;
@@ -3044,12 +3063,20 @@
         micBtn.classList.toggle("active", state.dictating);
       }
 
-      stopVoiceBtn.disabled = !state.speechSynthesisSupported;
+      stopVoiceBtn.disabled = false;
     }
 
     function stopSpeaking() {
-      if (!state.speechSynthesisSupported) return;
-      window.speechSynthesis.cancel();
+      if (state.ttsAudio) {
+        try {
+          state.ttsAudio.pause();
+          state.ttsAudio.src = "";
+        } catch {}
+        state.ttsAudio = null;
+      }
+      if (state.speechSynthesisSupported) {
+        window.speechSynthesis.cancel();
+      }
       state.speakingClient = false;
     }
 
@@ -3075,38 +3102,97 @@
       return frenchVoices[0] || null;
     }
 
+    async function callTtsApi(text, voice) {
+      const response = await fetch("/api/tts", {
+        method: "POST",
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({
+          text,
+          voice
+        })
+      });
+
+      if (response.status === 401) {
+        clearSession("Session expiree. Reconnecte-toi.");
+        throw new Error("Session invalide");
+      }
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.details || err?.error || `Erreur TTS (${response.status})`);
+      }
+
+      return response.blob();
+    }
+
+    function playTtsBlob(blob) {
+      return new Promise((resolve) => {
+        const audio = new Audio(URL.createObjectURL(blob));
+        state.ttsAudio = audio;
+        state.speakingClient = true;
+        audio.onended = () => {
+          try {
+            URL.revokeObjectURL(audio.src);
+          } catch {}
+          if (state.ttsAudio === audio) state.ttsAudio = null;
+          state.speakingClient = false;
+          resolve();
+        };
+        audio.onerror = () => {
+          try {
+            URL.revokeObjectURL(audio.src);
+          } catch {}
+          if (state.ttsAudio === audio) state.ttsAudio = null;
+          state.speakingClient = false;
+          resolve();
+        };
+        audio.play().catch(() => {
+          if (state.ttsAudio === audio) state.ttsAudio = null;
+          state.speakingClient = false;
+          resolve();
+        });
+      });
+    }
+
     function speakClientMessage(text) {
-      if (!state.voiceOutputEnabled || !state.speechSynthesisSupported) return Promise.resolve();
+      if (!state.voiceOutputEnabled) return Promise.resolve();
       const clean = (text || "").trim();
       if (!clean) return Promise.resolve();
 
       stopSpeaking();
-      return new Promise((resolve) => {
-        const utterance = new SpeechSynthesisUtterance(clean);
-        utterance.lang = "fr-CA";
-        utterance.rate = 0.95;
-        utterance.pitch = 0.98;
-        if (!state.preferredSpeechVoice) {
-          state.preferredSpeechVoice = pickPreferredFrenchVoice();
+      return (async () => {
+        try {
+          const blob = await callTtsApi(clean, state.clientVoice);
+          await playTtsBlob(blob);
+        } catch {
+          await new Promise((resolve) => {
+            const utterance = new SpeechSynthesisUtterance(clean);
+            utterance.lang = "fr-CA";
+            utterance.rate = 0.95;
+            utterance.pitch = 0.98;
+            if (!state.preferredSpeechVoice) {
+              state.preferredSpeechVoice = pickPreferredFrenchVoice();
+            }
+            if (state.preferredSpeechVoice) {
+              utterance.voice = state.preferredSpeechVoice;
+              utterance.lang = state.preferredSpeechVoice.lang || utterance.lang;
+            }
+            state.speakingClient = true;
+            utterance.onend = () => {
+              state.speakingClient = false;
+              resolve();
+            };
+            utterance.onerror = () => {
+              state.speakingClient = false;
+              resolve();
+            };
+            window.speechSynthesis.speak(utterance);
+          });
         }
-        if (state.preferredSpeechVoice) {
-          utterance.voice = state.preferredSpeechVoice;
-          utterance.lang = state.preferredSpeechVoice.lang || utterance.lang;
+        if (state.voiceConversationMode && state.active && !state.busy && !state.conversationProcessing) {
+          setTimeout(() => startVoiceConversationListening(), 220);
         }
-        state.speakingClient = true;
-        utterance.onend = () => {
-          state.speakingClient = false;
-          if (state.voiceConversationMode && state.active && !state.busy && !state.conversationProcessing) {
-            setTimeout(() => startVoiceConversationListening(), 220);
-          }
-          resolve();
-        };
-        utterance.onerror = () => {
-          state.speakingClient = false;
-          resolve();
-        };
-        window.speechSynthesis.speak(utterance);
-      });
+      })();
     }
 
     function initDictation() {
@@ -3382,6 +3468,7 @@
       state.positiveHits = 0;
       state.negativeHits = 0;
       state.outcome = "manual";
+      state.clientVoice = pickSimulationVoice(state.selectedClient);
       stopSpeaking();
 
       statusPill.textContent = "Simulation active";
