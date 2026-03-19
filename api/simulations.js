@@ -1,20 +1,11 @@
 const { requireAuth, setAuthCors } = require("./_auth");
+const { normalizeConversation, runEvaluation } = require("./_evaluation");
 
 function getSupabaseConfig() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
   return { url, key };
-}
-
-function normalizeConversation(conversation) {
-  if (!Array.isArray(conversation)) return [];
-  return conversation
-    .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
-    .map((m) => ({
-      role: m.role,
-      content: m.content.slice(0, 8000)
-    }));
 }
 
 function normalizeEvaluation(evaluation) {
@@ -82,7 +73,9 @@ function normalizeEvaluation(evaluation) {
     score,
     trackScores,
     trackFeedback,
-    qualificationChecklist
+    qualificationChecklist,
+    presentationProduitAutoFail: evaluation.presentationProduitAutoFail === true,
+    presentationPrixAutoFail: evaluation.presentationPrixAutoFail === true
   };
 }
 
@@ -188,6 +181,90 @@ async function updateSimulation(config, user, body) {
   return Array.isArray(rows) ? rows[0] : null;
 }
 
+async function updateSimulationById(config, id, payload) {
+  const endpoint = `${config.url}/rest/v1/simulation_runs?id=eq.${id}`;
+  const response = await fetch(endpoint, {
+    method: "PATCH",
+    headers: {
+      apikey: config.key,
+      Authorization: `Bearer ${config.key}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(`Mise a jour simulation impossible: ${details}`);
+  }
+
+  const rows = await response.json();
+  return Array.isArray(rows) ? rows[0] : null;
+}
+
+function canManageAllSimulations(user) {
+  const role = String(user?.role || "").toLowerCase();
+  return role === "admin" || role === "manager";
+}
+
+async function reevaluateSimulations(config, user, body) {
+  const ids = Array.isArray(body?.ids)
+    ? body.ids.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
+    : [];
+
+  if (!ids.length) {
+    throw new Error("Aucune simulation a reevaluer");
+  }
+
+  const visibleSimulations = await listSimulations(config, user);
+  const allowed = canManageAllSimulations(user)
+    ? visibleSimulations
+    : visibleSimulations.filter((row) => String(row?.user_email || "").toLowerCase() === String(user?.email || "").toLowerCase());
+
+  const selected = allowed.filter((row) => ids.includes(Number(row.id)));
+  if (!selected.length) {
+    throw new Error("Aucune simulation autorisee a reevaluer");
+  }
+
+  const results = [];
+  for (const row of selected) {
+    const conversation = normalizeConversation(row.transcript || []);
+    const context = {
+      level: row.level || "",
+      goal: row.goal || "",
+      client: {
+        name: row.client_name || "",
+        segment: row.client_segment || "",
+        difficulty: row.client_difficulty || "",
+        sales_strategy: ""
+      },
+      outcome: row.outcome || ""
+    };
+
+    const { evaluation } = await runEvaluation({
+      context,
+      conversation,
+      apiKey: process.env.OPENAI_API_KEY
+    });
+
+    const updated = await updateSimulationById(config, row.id, {
+      level: String(row.level || ""),
+      goal: String(row.goal || ""),
+      outcome: String(row.outcome || "manual"),
+      client_name: String(row.client_name || ""),
+      client_segment: String(row.client_segment || ""),
+      client_difficulty: String(row.client_difficulty || ""),
+      transcript: conversation,
+      evaluation: normalizeEvaluation(evaluation)
+    });
+
+    if (updated) results.push(updated);
+  }
+
+  return results;
+}
+
 module.exports = async (req, res) => {
   setAuthCors(res, "GET, POST, PATCH, OPTIONS");
 
@@ -208,6 +285,10 @@ module.exports = async (req, res) => {
 
     if (req.method === "POST") {
       const body = typeof req.body === "object" && req.body !== null ? req.body : {};
+      if (body.action === "reevaluate") {
+        const simulations = await reevaluateSimulations(config, user, body);
+        return res.status(200).json({ simulations, reevaluated: simulations.length });
+      }
       const simulation = await createSimulation(config, user, body);
       return res.status(200).json({ simulation });
     }

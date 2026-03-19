@@ -21,6 +21,7 @@
       --bad: #b2203a;
       --shadow-lg: 0 20px 50px rgba(26, 20, 14, 0.16);
       --shadow-md: 0 10px 24px rgba(26, 20, 14, 0.1);
+      --mobile-session-h: 56px;
     }
 
     * { box-sizing: border-box; }
@@ -35,6 +36,7 @@
         radial-gradient(900px 420px at 95% -8%, #fff1cf 0%, transparent 58%),
         linear-gradient(180deg, #f8f1ea 0%, #f3ece4 55%, #efe7de 100%);
       background-attachment: fixed;
+      overscroll-behavior: none;
     }
 
     body::before {
@@ -633,6 +635,21 @@
       color: #1e2f47;
     }
 
+    .auto-fail-badge {
+      display: inline-flex;
+      align-items: center;
+      margin-left: .45rem;
+      padding: .1rem .5rem;
+      border-radius: 999px;
+      border: 1px solid #efb7ad;
+      background: #fff1ef;
+      color: #8a2d20;
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .01em;
+      white-space: nowrap;
+    }
+
     .grid-2 {
       display: grid;
       gap: .82rem;
@@ -1079,12 +1096,197 @@
     }
 
     @media (max-width: 760px) {
-      .app { padding: .7rem; }
-      .gallery-head { grid-template-columns: 1fr; }
-      .composer { grid-template-columns: 1fr; }
+      html, body {
+        height: 100dvh;
+        overflow: hidden;
+      }
+
+      body::before {
+        opacity: 0.12;
+      }
+
+      .app {
+        padding: 0;
+        min-height: 100dvh;
+        max-width: none;
+        height: 100dvh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        overflow: hidden;
+      }
+
+      .view {
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        box-shadow: none;
+      }
+
+      .session-bar {
+        position: sticky;
+        top: 0;
+        z-index: 8;
+        background: rgba(255, 252, 247, 0.92);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid #ebdacd;
+        margin: 0;
+        padding: .55rem .7rem;
+        min-height: var(--mobile-session-h);
+      }
+
+      .session-user {
+        max-width: 68vw;
+      }
+
+      .auth-view {
+        margin: 0;
+        border-radius: 0;
+        min-height: 100dvh;
+        display: grid;
+        align-content: center;
+        padding: 1rem .9rem;
+      }
+
+      .gallery-view {
+        border-radius: 0;
+        min-height: calc(100dvh - var(--mobile-session-h));
+        height: calc(100dvh - var(--mobile-session-h));
+        overflow: auto;
+        padding: .72rem;
+        scrollbar-gutter: stable;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .gallery-head {
+        grid-template-columns: 1fr;
+        margin-bottom: .7rem;
+      }
+
+      .gallery-head > div:last-child {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: .42rem;
+      }
+
+      .gallery-head > div:last-child button {
+        width: 100%;
+        min-height: 44px;
+      }
+
+      .title {
+        font-size: 1.38rem;
+      }
+
+      .sub {
+        font-size: .9rem;
+      }
+
+      .chat-view {
+        height: calc(100dvh - var(--mobile-session-h));
+        min-height: calc(100dvh - var(--mobile-session-h));
+        border-radius: 0;
+      }
+
+      .chat-head {
+        padding: .62rem .7rem;
+        position: sticky;
+        top: 0;
+        z-index: 3;
+      }
+
+      .head-right {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .head-right .tiny-btn,
+      .head-right .status {
+        flex: 0 0 auto;
+      }
+
+      .head-title { font-size: .98rem; }
+
+      .chat-log {
+        padding: .72rem;
+        scrollbar-gutter: stable;
+      }
+
       .msg { max-width: 95%; }
-      .head-right { justify-content: flex-start; }
+
+      .composer {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .44rem;
+        padding: .62rem .62rem calc(.62rem + env(safe-area-inset-bottom, 0px));
+        position: sticky;
+        bottom: 0;
+        z-index: 4;
+      }
+
+      .composer .hint,
+      .composer textarea {
+        grid-column: 1 / -1;
+      }
+
+      .composer textarea {
+        min-height: 84px;
+        max-height: 34dvh;
+      }
+
+      .hint {
+        font-size: .74rem;
+      }
+
+      .composer button {
+        min-height: 44px;
+        width: 100%;
+      }
+
       .users-form { grid-template-columns: 1fr; }
+
+      #usersModal .card {
+        overflow-x: auto;
+      }
+
+      .users-table {
+        min-width: 680px;
+      }
+
+      .modal-backdrop {
+        padding: 0;
+      }
+
+      .modal {
+        width: 100vw;
+        height: 100dvh;
+        max-height: 100dvh;
+        border-radius: 0;
+        border: 0;
+        padding: .8rem;
+      }
+
+      #historyModal .modal {
+        width: 100vw;
+        height: 100dvh;
+      }
+
+      #historyModal .history-top-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      #historyModal .history-top-actions button {
+        flex: 1 1 auto;
+        min-height: 42px;
+      }
+
+      #historyModal .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(170px, 42dvh) minmax(0, 1fr);
+        gap: .6rem;
+      }
     }
   </style>
 </head>
@@ -1224,6 +1426,7 @@
         <div class="track-pill">
           <strong>Presentation produit</strong>
           <span id="trackPresentationProduit">0 / 100</span>
+          <span id="trackPresentationProduitAutoFailBadge" class="auto-fail-badge hidden">Echec auto</span>
         </div>
         <div class="track-pill">
           <strong>Presentation prix</strong>
@@ -1339,6 +1542,7 @@
           </div>
         </div>
         <div class="history-top-actions">
+          <button id="reevaluateHistoryBtn" class="alt tiny-btn" type="button">Reevaluer</button>
           <button id="downloadTranscriptBtn" class="alt tiny-btn" type="button">Telecharger le script PDF</button>
           <button id="refreshHistoryBtn" class="alt tiny-btn" type="button">Rafraichir</button>
         </div>
@@ -1605,6 +1809,7 @@
     const verdictText = document.getElementById("verdictText");
     const trackQualification = document.getElementById("trackQualification");
     const trackPresentationProduit = document.getElementById("trackPresentationProduit");
+    const trackPresentationProduitAutoFailBadge = document.getElementById("trackPresentationProduitAutoFailBadge");
     const trackPresentationPrix = document.getElementById("trackPresentationPrix");
     const resultQualificationChecklist = document.getElementById("resultQualificationChecklist");
     const resumeText = document.getElementById("resumeText");
@@ -1627,6 +1832,7 @@
     const historyOwnerFilterWrap = document.getElementById("historyOwnerFilterWrap");
     const historyOwnerFilter = document.getElementById("historyOwnerFilter");
     const refreshHistoryBtn = document.getElementById("refreshHistoryBtn");
+    const reevaluateHistoryBtn = document.getElementById("reevaluateHistoryBtn");
     const historyList = document.getElementById("historyList");
     const historyDateLine = document.getElementById("historyDateLine");
     const historyGlobalScore = document.getElementById("historyGlobalScore");
@@ -2449,6 +2655,15 @@
       };
     }
 
+    function hasPresentationProduitAutoFail(evaluation, trackFeedback) {
+      if (evaluation?.presentationProduitAutoFail === true) return true;
+      const productTrackScore = Number(evaluation?.trackScores?.presentationProduit);
+      const fallbackByScore = Number.isFinite(productTrackScore) && productTrackScore <= 45;
+      const feedbackText = String(trackFeedback?.presentationProduit?.pisteAmelioration || "").toLowerCase();
+      const fallbackByFeedback = feedbackText.includes("echec automatique") && feedbackText.includes("essai routier");
+      return fallbackByScore || fallbackByFeedback;
+    }
+
     function populateHistoryOwnerFilter() {
       if (!isManagerOrAdminUser()) {
         historyOwnerFilterWrap.classList.add("hidden");
@@ -2570,7 +2785,7 @@
       targetEl.appendChild(depthRow);
     }
 
-    function renderTrackDetailLines(trackScores, trackFeedback) {
+    function renderTrackDetailLines(trackScores, trackFeedback, presentationProduitAutoFail = false) {
       const rows = [
         {
           key: "qualification",
@@ -2592,10 +2807,13 @@
       historyTrackDetails.innerHTML = "";
       rows.forEach((row) => {
         const feedback = trackFeedback[row.key];
+        const autoFailBadge = row.key === "presentationProduit" && presentationProduitAutoFail
+          ? '<span class="auto-fail-badge">Echec auto</span>'
+          : "";
         const item = document.createElement("div");
         item.className = "track-detail-item";
         item.innerHTML = `
-          <h5>${row.label} - ${row.score}/100</h5>
+          <h5>${row.label} - ${row.score}/100 ${autoFailBadge}</h5>
           <p><strong>Point marquant:</strong> ${feedback.pointMarquant}</p>
           <p><strong>Piste d amelioration:</strong> ${feedback.pisteAmelioration}</p>
         `;
@@ -2620,6 +2838,7 @@
       const verdict = selected?.evaluation?.verdict || "Sans verdict";
       const track = normalizeTrackScores(selected?.evaluation?.trackScores);
       const trackFeedback = normalizeTrackFeedback(selected?.evaluation?.trackFeedback);
+      const presentationProduitAutoFail = hasPresentationProduitAutoFail(selected?.evaluation, trackFeedback);
       const qualificationChecklist = selected?.evaluation?.qualificationChecklist || {};
       const statusLabel = getSimulationStatusLabel(selected);
       const ownerLabel = selected.user_name || selected.user_email || "-";
@@ -2630,7 +2849,7 @@
         <div class="meta">${verdict}</div>
       `;
       renderQualificationChecklist(historyQualificationChecklist, qualificationChecklist);
-      renderTrackDetailLines(track, trackFeedback);
+      renderTrackDetailLines(track, trackFeedback, presentationProduitAutoFail);
       setHistoryChecklistExpanded(false);
       downloadTranscriptBtn.disabled = false;
       const canResume = statusLabel === "En cours" && String(selected.user_email || "").toLowerCase() === String(state.user?.email || "").toLowerCase();
@@ -2715,6 +2934,36 @@
         if (data?.simulation?.id) state.currentSimulationId = data.simulation.id;
       } catch (err) {
         addMessage("client", `Note: sauvegarde de simulation echouee (${err.message}).`);
+      }
+    }
+
+    async function reevaluateVisibleSimulations() {
+      const ids = (state.simulations || [])
+        .map((s) => Number(s?.id))
+        .filter((id) => Number.isFinite(id) && id > 0);
+
+      if (!ids.length) {
+        setHistoryMessage("Aucune simulation a reevaluer.", true);
+        return;
+      }
+
+      setHistoryMessage("Reevaluation en cours...");
+      reevaluateHistoryBtn.disabled = true;
+      refreshHistoryBtn.disabled = true;
+
+      try {
+        const data = await callSimulationsApi("POST", {
+          action: "reevaluate",
+          ids
+        });
+        const count = Number(data?.reevaluated || 0);
+        await loadSimulations();
+        setHistoryMessage(`${count} simulation(s) reevaluee(s) avec les nouveaux criteres.`);
+      } catch (err) {
+        setHistoryMessage(err.message || "Impossible de reevaluer les simulations", true);
+      } finally {
+        reevaluateHistoryBtn.disabled = false;
+        refreshHistoryBtn.disabled = false;
       }
     }
 
@@ -3011,11 +3260,14 @@
     function showResultModal(evaluation) {
       const score = Number.isFinite(evaluation?.score) ? Math.max(0, Math.min(100, Math.round(evaluation.score))) : 60;
       const track = normalizeTrackScores(evaluation?.trackScores);
+      const trackFeedback = normalizeTrackFeedback(evaluation?.trackFeedback);
+      const presentationProduitAutoFail = hasPresentationProduitAutoFail(evaluation, trackFeedback);
       const qualificationChecklist = evaluation?.qualificationChecklist || {};
       scorePill.textContent = `${score} / 100`;
       verdictText.textContent = evaluation?.verdict || "Resultat de session";
       trackQualification.textContent = `${track.qualification} / 100`;
       trackPresentationProduit.textContent = `${track.presentationProduit} / 100`;
+      trackPresentationProduitAutoFailBadge.classList.toggle("hidden", !presentationProduitAutoFail);
       trackPresentationPrix.textContent = `${track.presentationPrix} / 100`;
       renderQualificationChecklist(resultQualificationChecklist, qualificationChecklist);
       resumeText.textContent = evaluation?.resume || "Evaluation disponible.";
@@ -3529,6 +3781,7 @@
     });
     historyBtn.addEventListener("click", openHistoryModal);
     refreshHistoryBtn.addEventListener("click", loadSimulations);
+    reevaluateHistoryBtn.addEventListener("click", reevaluateVisibleSimulations);
     historyOwnerFilter.addEventListener("change", () => {
       state.historyOwnerFilter = historyOwnerFilter.value || "all";
       applyHistoryOwnerFilter();
