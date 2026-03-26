@@ -1,4 +1,5 @@
 const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const { getModuleTopicBySlug, normalizeModuleLevel } = require("./_moduleTopics");
 
 function normalizeConversation(conversation) {
   if (!Array.isArray(conversation)) return [];
@@ -362,7 +363,170 @@ async function runEvaluation({ context, conversation, apiKey }) {
   return { evaluation: parsed, model: data.model || DEFAULT_MODEL };
 }
 
+function normalizeModuleRating(value, fallback = 60) {
+  const raw = Number(value);
+  if (!Number.isFinite(raw)) return fallback;
+  return Math.max(0, Math.min(100, Math.round(raw)));
+}
+
+function normalizeModuleFeedbackMap(value) {
+  const src = value && typeof value === "object" ? value : {};
+  return {
+    clarte: typeof src.clarte === "string" && src.clarte.trim()
+      ? src.clarte.trim()
+      : "Clarte correcte dans l ensemble.",
+    precision: typeof src.precision === "string" && src.precision.trim()
+      ? src.precision.trim()
+      : "Precision acceptable avec marge d amelioration.",
+    credibilite: typeof src.credibilite === "string" && src.credibilite.trim()
+      ? src.credibilite.trim()
+      : "Credibilite globalement maintenue.",
+    venteConseil: typeof src.venteConseil === "string" && src.venteConseil.trim()
+      ? src.venteConseil.trim()
+      : "Bonne posture de conseil, a raffiner."
+  };
+}
+
+function normalizeModuleTextList(value, fallback) {
+  const items = Array.isArray(value) ? value : [];
+  const cleaned = items
+    .map((item) => String(item || "").trim())
+    .filter(Boolean)
+    .slice(0, 6);
+  return cleaned.length ? cleaned : fallback;
+}
+
+function buildModulePrompt(context) {
+  const level = normalizeModuleLevel(context?.level);
+  const topic = context?.moduleTopic || getModuleTopicBySlug(context?.topicSlug);
+  if (!topic) throw new Error("Sujet de module invalide");
+  const roleplayNotes = Array.isArray(topic.roleplayNotes) ? topic.roleplayNotes : [];
+  const coachingFocus = Array.isArray(topic.coachingFocus) ? topic.coachingFocus : [];
+
+  return [
+    "Tu es directeur des ventes et formateur senior en concession automobile.",
+    "Langue: francais quebecois professionnel.",
+    "Tu evalues un representant dans un module de formation interactif.",
+    "",
+    "Contexte du module:",
+    `- Sujet: ${topic.title}`,
+    `- Categorie: ${topic.category}`,
+    `- Niveau choisi: ${level}`,
+    `- Resume: ${topic.summary}`,
+    `- Profil client: ${topic.customerProfile}`,
+    `- Mise en contexte de depart: ${context?.contextSummary || "Non fournie"}`,
+    "",
+    "Critères de reussite du module:",
+    ...topic.successCriteria.map((item) => `- ${item}`),
+    "",
+    "Points de vigilance du scenario:",
+    ...roleplayNotes.map((item) => `- ${item}`),
+    "",
+    "Comportements attendus du representant:",
+    ...coachingFocus.map((item) => `- ${item}`),
+    "",
+    "Retourne UNIQUEMENT un JSON valide avec cette structure exacte:",
+    "{",
+    '  "score": number,',
+    '  "verdict": "string",',
+    '  "summary": "string",',
+    '  "strengths": ["string", "string", "string"],',
+    '  "improvements": ["string", "string", "string"],',
+    '  "inaccuracies": ["string", "string"],',
+    '  "corrections": ["string", "string"],',
+    '  "qualityRatings": {',
+    '    "clarte": number,',
+    '    "precision": number,',
+    '    "credibilite": number,',
+    '    "venteConseil": number',
+    "  },",
+    '  "qualityFeedback": {',
+    '    "clarte": "string",',
+    '    "precision": "string",',
+    '    "credibilite": "string",',
+    '    "venteConseil": "string"',
+    "  },",
+    '  "nextObjective": "string"',
+    "}",
+    "",
+    "Regles d evaluation:",
+    "- La note globale doit refleter la qualite reelle de la conversation vendeur-client sur ce sujet.",
+    "- strengths = ce que le representant a bien fait concretement.",
+    "- improvements = points a ameliorer en priorite.",
+    "- inaccuracies = informations fausses, floues, trompeuses ou techniquement risquées.",
+    "- corrections = reformulations ou corrections precises a apporter si une mauvaise information a ete donnee.",
+    "- qualityRatings evalue: clarte, precision, credibilite, qualite de vente/conseil.",
+    "- Si aucune erreur factuelle importante n est relevee, inaccuracies peut le dire explicitement.",
+    "- summary doit etre court et utile.",
+    "- Aucun markdown, aucun texte hors JSON."
+  ].join("\n");
+}
+
+async function runModuleEvaluation({ context, conversation, apiKey }) {
+  if (!apiKey) throw new Error("OPENAI_API_KEY is missing");
+
+  const messages = [
+    { role: "system", content: buildModulePrompt(context || {}) },
+    ...normalizeConversation(conversation || []),
+    { role: "user", content: "Fais maintenant l evaluation JSON du module." }
+  ];
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: DEFAULT_MODEL,
+      messages,
+      temperature: 0.2,
+      max_tokens: 1200
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`OpenAI request failed: ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data?.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error("Empty reply from model");
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      parsed = JSON.parse(text.slice(start, end + 1));
+    } else {
+      throw new Error("Invalid JSON from model");
+    }
+  }
+
+  parsed.score = normalizeModuleRating(parsed.score);
+  parsed.verdict = String(parsed.verdict || "Evaluation de module");
+  parsed.summary = String(parsed.summary || "Evaluation disponible.");
+  parsed.strengths = normalizeModuleTextList(parsed.strengths, ["Bonne base observee pendant le module."]);
+  parsed.improvements = normalizeModuleTextList(parsed.improvements, ["Preciser davantage la structure de reponse et la valeur client."]);
+  parsed.inaccuracies = normalizeModuleTextList(parsed.inaccuracies, ["Aucune inexactitude majeure relevee."]);
+  parsed.corrections = normalizeModuleTextList(parsed.corrections, ["Aucune correction critique requise."]);
+  parsed.qualityRatings = {
+    clarte: normalizeModuleRating(parsed?.qualityRatings?.clarte),
+    precision: normalizeModuleRating(parsed?.qualityRatings?.precision),
+    credibilite: normalizeModuleRating(parsed?.qualityRatings?.credibilite),
+    venteConseil: normalizeModuleRating(parsed?.qualityRatings?.venteConseil)
+  };
+  parsed.qualityFeedback = normalizeModuleFeedbackMap(parsed.qualityFeedback);
+  parsed.nextObjective = String(parsed.nextObjective || "Refaire un module en corrigeant les points d amelioration.");
+  return { evaluation: parsed, model: data.model || DEFAULT_MODEL };
+}
+
 module.exports = {
   normalizeConversation,
-  runEvaluation
+  runEvaluation,
+  runModuleEvaluation
 };

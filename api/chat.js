@@ -1,7 +1,8 @@
 const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 const { requireAuth, setAuthCors } = require("./_auth");
+const { getModuleTopicBySlug, normalizeModuleLevel } = require("./_moduleTopics");
 
-function buildSystemPrompt(context) {
+function buildSimulationSystemPrompt(context) {
   const level = context?.level || "Intermediaire";
   const goal = context?.goal || "Structure complete";
   const client = context?.client || {};
@@ -70,6 +71,70 @@ function buildSystemPrompt(context) {
   ].join("\n");
 }
 
+function buildModuleSystemPrompt(context) {
+  const level = normalizeModuleLevel(context?.level);
+  const topic = context?.moduleTopic || getModuleTopicBySlug(context?.topicSlug);
+  if (!topic) throw new Error("Sujet de module invalide");
+
+  const knowledgeBase = topic.knowledgeBase || {};
+  const levelKey = level === "Debutant" ? "beginner" : level === "Avance" ? "advanced" : "intermediate";
+  const teachingPoints = Array.isArray(knowledgeBase[levelKey]) ? knowledgeBase[levelKey] : [];
+  const roleplayNotes = Array.isArray(topic.roleplayNotes) ? topic.roleplayNotes : [];
+  const coachingFocus = Array.isArray(topic.coachingFocus) ? topic.coachingFocus : [];
+
+  return [
+    "Tu es CoachVente Honda Brossard.",
+    "Langue: francais quebecois professionnel.",
+    "Contexte: module de formation interactif en vente automobile.",
+    "",
+    "SUJET DU MODULE:",
+    `- Titre: ${topic.title}`,
+    `- Categorie: ${topic.category}`,
+    `- Niveau choisi: ${level}`,
+    `- Resume pedagogique: ${topic.summary}`,
+    `- Profil client simule: ${topic.customerProfile}`,
+    "",
+    "CRITERES DE REUSSITE:",
+    ...topic.successCriteria.map((item) => `- ${item}`),
+    "",
+    "POINTS DE VIGILANCE POUR LE ROLEPLAY CLIENT:",
+    ...roleplayNotes.map((item) => `- ${item}`),
+    "",
+    "CE QUE LE REPRESENTANT DEVRAIT DEMONTRER:",
+    ...coachingFocus.map((item) => `- ${item}`),
+    "",
+    "NOTIONS A TRANSMETTRE AU REPRESENTANT:",
+    ...teachingPoints.map((item) => `- ${item}`),
+    "",
+    "FORMAT ATTENDU:",
+    "- S il n y a encore aucune reponse assistant dans la conversation, ta PREMIERE reponse doit contenir 4 sections courtes:",
+    "  1) Contexte",
+    "  2) Informations utiles pour reussir",
+    "  3) Explication du sujet selon le niveau choisi",
+    "  4) Debut de l echange",
+    `- Dans la section 'Debut de l echange', termine par la premiere replique client suivante ou une variante tres proche: ${topic.clientOpening}`,
+    "- Apres cette premiere reponse, tu incarnes UNIQUEMENT le client dans la conversation.",
+    "- Une fois le module lance, tu ne donnes plus de coaching, plus de correction, plus de recap intermediaire.",
+    "- Comme client, tu peux objecter, demander des precisions, comparer, hesiter ou demander de justifier la recommandation.",
+    "- Reste coherent avec le sujet du module. Si le representant sort du sujet, ramene la conversation vers la situation client.",
+    "- N invente pas de chiffres, programmes ou politiques specifiques si tu n en es pas certain.",
+    "",
+    "AUTO-CONTROLE:",
+    "1) Si c est la premiere reponse assistant, est-ce que je respecte les 4 sections?",
+    "2) Sinon, est-ce que je parle uniquement comme client?",
+    "3) Est-ce que mes objections restent plausibles pour ce sujet?",
+    "4) Est-ce que j aide a evaluer la maitrise du representant sans lui donner la reponse?"
+  ].join("\n");
+}
+
+function buildSystemPrompt(context) {
+  const mode = String(context?.mode || "simulation").toLowerCase();
+  if (mode === "module") {
+    return buildModuleSystemPrompt(context);
+  }
+  return buildSimulationSystemPrompt(context);
+}
+
 function normalizeConversation(conversation) {
   if (!Array.isArray(conversation)) return [];
   return conversation
@@ -89,11 +154,11 @@ module.exports = async (req, res) => {
   try {
     const body = typeof req.body === "object" && req.body !== null ? req.body : {};
     const context = body.context || {};
-    const mode = "simulation";
+    const mode = String(context?.mode || "simulation").toLowerCase() === "module" ? "module" : "simulation";
     const conversation = normalizeConversation(body.conversation || []);
 
     const messages = [{ role: "system", content: buildSystemPrompt({ ...context, mode }) }, ...conversation];
-    const maxTokens = 650;
+    const maxTokens = mode === "module" ? 900 : 650;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

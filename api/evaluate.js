@@ -1,5 +1,5 @@
 const { requireAuth, setAuthCors } = require("./_auth");
-const { normalizeConversation, runEvaluation } = require("./_evaluation");
+const { normalizeConversation, runEvaluation, runModuleEvaluation } = require("./_evaluation");
 
 module.exports = async (req, res) => {
   setAuthCors(res, "POST, OPTIONS");
@@ -14,7 +14,8 @@ module.exports = async (req, res) => {
     const body = typeof req.body === "object" && req.body !== null ? req.body : {};
     const context = body.context || {};
     const conversation = normalizeConversation(body.conversation || []);
-    const result = await runEvaluation({
+    const evaluator = String(context?.mode || "").toLowerCase() === "module" ? runModuleEvaluation : runEvaluation;
+    const result = await evaluator({
       context,
       conversation,
       apiKey: process.env.OPENAI_API_KEY

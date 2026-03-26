@@ -56,3 +56,10 @@ Variables ajoutees :
 - Chaque simulation est enregistree dans `public.simulation_runs` (transcript complet + evaluation).
 - Endpoint backend: `api/simulations.js`.
 - Setup SQL requis: executer `supabase/seed_simulations.sql` dans Supabase SQL Editor.
+
+## Modules de formation
+- La section `2. Axe sur amelioration` propose maintenant des modules interactifs par sujet et par niveau.
+- Les sujets sont centralises dans `api/_moduleTopics.js` pour faciliter l ajout de nouveaux modules.
+- Chaque module est enregistre dans `public.training_module_runs` (script + evaluation + corrections).
+- Endpoint backend: `api/modules.js`.
+- Setup SQL requis: executer `supabase/seed_training_modules.sql` dans Supabase SQL Editor.

@@ -206,6 +206,74 @@
       gap: .52rem;
     }
 
+    .module-builder {
+      border: 1px solid #e8d7ca;
+      border-radius: 16px;
+      background: linear-gradient(160deg, #fffdf8 0%, #fff5ec 100%);
+      padding: .82rem;
+      margin: .72rem 0 1rem;
+      display: grid;
+      gap: .82rem;
+    }
+
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(260px, 1fr));
+      gap: .62rem;
+    }
+
+    .module-card {
+      width: 100%;
+      text-align: left;
+      border: 1px solid #e4d2c4;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.92);
+      color: #332631;
+      box-shadow: none;
+      padding: .74rem;
+      transform: none;
+      display: grid;
+      gap: .34rem;
+    }
+
+    .module-card.active {
+      border-color: #cc7b52;
+      background: #fff1e7;
+      box-shadow: 0 10px 22px rgba(108, 58, 35, 0.12);
+    }
+
+    .module-card strong {
+      display: block;
+      font-size: .94rem;
+      color: #1f2b3c;
+    }
+
+    .module-card small {
+      color: #6a5a63;
+      font-size: .77rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .module-card p {
+      margin: 0;
+      font-size: .84rem;
+      color: #5c5060;
+      line-height: 1.4;
+    }
+
+    .module-preview {
+      border: 1px dashed #dfc8b8;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.86);
+      padding: .72rem;
+      color: #4e434f;
+      font-size: .84rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
     .scenario-title {
       margin: 0;
       font-size: .92rem;
@@ -504,6 +572,33 @@
       overflow: auto;
     }
 
+    .ratings-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: .6rem;
+      margin-bottom: .82rem;
+    }
+
+    .rating-pill {
+      border: 1px solid #e7d6ca;
+      border-radius: 12px;
+      background: #fff;
+      padding: .55rem .62rem;
+    }
+
+    .rating-pill strong {
+      display: block;
+      font-size: .82rem;
+      color: #5f5263;
+      margin-bottom: .18rem;
+    }
+
+    .rating-pill span {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: #1e2f47;
+    }
+
     .chat-log {
       overflow: auto;
       padding: 1rem;
@@ -744,7 +839,8 @@
       background: #fff;
     }
 
-    #historyModal .modal {
+    #historyModal .modal,
+    #modulesModal .modal {
       width: min(1120px, 100%);
       height: min(88vh, 860px);
       overflow: hidden;
@@ -752,7 +848,8 @@
       flex-direction: column;
     }
 
-    #historyModal .grid-2 {
+    #historyModal .grid-2,
+    #modulesModal .grid-2 {
       flex: 1;
       min-height: 0;
       overflow: hidden;
@@ -760,7 +857,8 @@
       align-items: stretch;
     }
 
-    #historyModal .card {
+    #historyModal .card,
+    #modulesModal .card {
       min-height: 0;
       overflow: hidden;
     }
@@ -805,7 +903,39 @@
       background: #756876;
     }
 
+    #modulesDetailsScroll {
+      height: 100%;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      scrollbar-gutter: stable both-edges;
+      scrollbar-width: auto;
+      scrollbar-color: #8c7f88 #f0e6dc;
+      padding-right: .2rem;
+    }
+
+    #modulesDetailsScroll::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    #modulesDetailsScroll::-webkit-scrollbar-track {
+      background: #f0e6dc;
+      border-radius: 10px;
+    }
+
+    #modulesDetailsScroll::-webkit-scrollbar-thumb {
+      background: #8c7f88;
+      border-radius: 10px;
+      border: 2px solid #f0e6dc;
+    }
+
     #historyList {
+      flex: 1;
+      min-height: 0;
+      max-height: none;
+      overflow-y: auto;
+    }
+
+    #modulesList {
       flex: 1;
       min-height: 0;
       max-height: none;
@@ -829,6 +959,13 @@
     }
 
     #reevaluateHistoryBtn {
+      border-color: #d49b79;
+      background: linear-gradient(180deg, #fff6ee, #fff1e7);
+      color: #7f2418;
+      font-weight: 800;
+    }
+
+    #reevaluateModulesBtn {
       border-color: #d49b79;
       background: linear-gradient(180deg, #fff6ee, #fff1e7);
       color: #7f2418;
@@ -1087,9 +1224,12 @@
       .mode-options { grid-template-columns: 1fr; }
       .grid-2 { grid-template-columns: 1fr; }
       .track-grid { grid-template-columns: 1fr; }
+      .ratings-grid { grid-template-columns: 1fr 1fr; }
+      .module-grid { grid-template-columns: 1fr; }
       .chat-view { height: calc(100vh - 1rem); min-height: 560px; }
       .session-user { max-width: 78vw; }
-      #historyModal .modal {
+      #historyModal .modal,
+      #modulesModal .modal {
         height: min(92vh, 860px);
       }
       .history-top-row {
@@ -1274,22 +1414,26 @@
         padding: .8rem;
       }
 
-      #historyModal .modal {
+      #historyModal .modal,
+      #modulesModal .modal {
         width: 100vw;
         height: 100dvh;
       }
 
-      #historyModal .history-top-actions {
+      #historyModal .history-top-actions,
+      #modulesModal .history-top-actions {
         width: 100%;
         justify-content: flex-start;
       }
 
-      #historyModal .history-top-actions button {
+      #historyModal .history-top-actions button,
+      #modulesModal .history-top-actions button {
         flex: 1 1 auto;
         min-height: 42px;
       }
 
-      #historyModal .grid-2 {
+      #historyModal .grid-2,
+      #modulesModal .grid-2 {
         display: grid;
         grid-template-columns: 1fr;
         grid-template-rows: minmax(170px, 42dvh) minmax(0, 1fr);
@@ -1324,6 +1468,7 @@
         </div>
         <div>
           <button id="historyBtn" class="alt">Mes simulations</button>
+          <button id="modulesBtn" class="alt">Mes modules</button>
           <button id="manageUsersBtn" class="alt hidden">Gestion utilisateurs</button>
           <button id="reloadClientsBtn" class="alt">Recharger clients</button>
         </div>
@@ -1362,6 +1507,21 @@
           </select>
         </div>
       </div>
+
+      <section id="moduleBuilder" class="module-builder hidden">
+        <div class="controls" style="margin:0">
+          <div class="field">
+            <label for="moduleLevelSelect">Niveau du module</label>
+            <select id="moduleLevelSelect">
+              <option value="Debutant">Debutant</option>
+              <option value="Intermediaire" selected>Intermediaire</option>
+              <option value="Avance">Avance</option>
+            </select>
+          </div>
+        </div>
+        <div id="moduleContextPreview" class="module-preview">Choisis un sujet pour voir le contexte du module.</div>
+        <div id="moduleTopicsGrid" class="module-grid"></div>
+      </section>
 
       <section id="frequentScenarios" class="frequent-scenarios">
         <h3 class="scenario-title">Scenarios frequents</h3>
@@ -1406,6 +1566,8 @@
         </div>
       </header>
 
+      <div id="sessionContextStrip" class="client-strip hidden"></div>
+
       <div id="chatLog" class="chat-log"></div>
 
       <div class="composer">
@@ -1421,55 +1583,101 @@
 
   <div id="resultModal" class="modal-backdrop hidden">
     <div class="modal">
-      <h3>Resultat de simulation</h3>
+      <h3 id="resultModalTitle">Resultat de simulation</h3>
       <div class="score-row">
         <span class="score-pill" id="scorePill">0 / 100</span>
         <strong id="verdictText">-</strong>
       </div>
-      <div class="track-grid">
-        <div class="track-pill">
-          <strong>Qualification</strong>
-          <span id="trackQualification">0 / 100</span>
+      <div id="simulationResultContent">
+        <div class="track-grid">
+          <div class="track-pill">
+            <strong>Qualification</strong>
+            <span id="trackQualification">0 / 100</span>
+          </div>
+          <div class="track-pill">
+            <strong>Presentation produit</strong>
+            <span id="trackPresentationProduit">0 / 100</span>
+            <span id="trackPresentationProduitAutoFailBadge" class="auto-fail-badge hidden">Echec auto</span>
+          </div>
+          <div class="track-pill">
+            <strong>Presentation prix</strong>
+            <span id="trackPresentationPrix">0 / 100</span>
+          </div>
         </div>
-        <div class="track-pill">
-          <strong>Presentation produit</strong>
-          <span id="trackPresentationProduit">0 / 100</span>
-          <span id="trackPresentationProduitAutoFailBadge" class="auto-fail-badge hidden">Echec auto</span>
-        </div>
-        <div class="track-pill">
-          <strong>Presentation prix</strong>
-          <span id="trackPresentationPrix">0 / 100</span>
-        </div>
-      </div>
-      <section class="qualification-checklist">
-        <h5>Checklist Qualification (Apercu)</h5>
-        <div id="resultQualificationChecklist" class="check-grid"></div>
-      </section>
-      <p id="resumeText" class="sub" style="margin-top:0"></p>
+        <section class="qualification-checklist">
+          <h5>Checklist Qualification (Apercu)</h5>
+          <div id="resultQualificationChecklist" class="check-grid"></div>
+        </section>
+        <p id="resumeText" class="sub" style="margin-top:0"></p>
 
-      <div class="grid-2">
-        <section class="card">
-          <h4>Bons coups</h4>
-          <ul id="bonsCoups" class="list"></ul>
-        </section>
-        <section class="card">
-          <h4>Mauvais coups</h4>
-          <ul id="mauvaisCoups" class="list"></ul>
-        </section>
-        <section class="card">
-          <h4>Pistes de solution</h4>
-          <ul id="pistesSolution" class="list"></ul>
-        </section>
-        <section class="card">
-          <h4>Vision directeur des ventes</h4>
-          <ul id="actionsManager" class="list"></ul>
+        <div class="grid-2">
+          <section class="card">
+            <h4>Bons coups</h4>
+            <ul id="bonsCoups" class="list"></ul>
+          </section>
+          <section class="card">
+            <h4>Mauvais coups</h4>
+            <ul id="mauvaisCoups" class="list"></ul>
+          </section>
+          <section class="card">
+            <h4>Pistes de solution</h4>
+            <ul id="pistesSolution" class="list"></ul>
+          </section>
+          <section class="card">
+            <h4>Vision directeur des ventes</h4>
+            <ul id="actionsManager" class="list"></ul>
+          </section>
+        </div>
+
+        <section class="card" style="margin-top:.8rem">
+          <h4>Objectif concret prochaine simulation</h4>
+          <p id="nextObjective" class="small" style="margin:0"></p>
         </section>
       </div>
 
-      <section class="card" style="margin-top:.8rem">
-        <h4>Objectif concret prochaine simulation</h4>
-        <p id="nextObjective" class="small" style="margin:0"></p>
-      </section>
+      <div id="moduleResultContent" class="hidden">
+        <p id="moduleSummaryText" class="sub" style="margin-top:0"></p>
+        <div class="ratings-grid">
+          <div class="rating-pill">
+            <strong>Clarte</strong>
+            <span id="moduleRatingClarte">0 / 100</span>
+          </div>
+          <div class="rating-pill">
+            <strong>Precision</strong>
+            <span id="moduleRatingPrecision">0 / 100</span>
+          </div>
+          <div class="rating-pill">
+            <strong>Credibilite</strong>
+            <span id="moduleRatingCredibilite">0 / 100</span>
+          </div>
+          <div class="rating-pill">
+            <strong>Vente / conseil</strong>
+            <span id="moduleRatingVenteConseil">0 / 100</span>
+          </div>
+        </div>
+        <div class="grid-2">
+          <section class="card">
+            <h4>Points forts</h4>
+            <ul id="moduleStrengths" class="list"></ul>
+          </section>
+          <section class="card">
+            <h4>Points a ameliorer</h4>
+            <ul id="moduleImprovements" class="list"></ul>
+          </section>
+          <section class="card">
+            <h4>Erreurs ou infos inexactes</h4>
+            <ul id="moduleInaccuracies" class="list"></ul>
+          </section>
+          <section class="card">
+            <h4>Corrections a apporter</h4>
+            <ul id="moduleCorrections" class="list"></ul>
+          </section>
+        </div>
+        <section class="card" style="margin-top:.8rem">
+          <h4>Objectif concret prochain module</h4>
+          <p id="moduleNextObjective" class="small" style="margin:0"></p>
+        </section>
+      </div>
 
       <div class="footer-actions">
         <button id="closeModalBtn">Fermer</button>
@@ -1583,6 +1791,51 @@
 
       <div class="footer-actions">
         <button id="closeHistoryModalBtn" class="alt" type="button">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modulesModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <h3>Mes modules</h3>
+      <div class="history-top-row">
+        <div>
+          <p id="modulesMessage" class="auth-msg" style="margin:0"></p>
+          <div id="modulesOwnerFilterWrap" class="history-owner-filter hidden">
+            <label for="modulesOwnerFilter">Representant:</label>
+            <select id="modulesOwnerFilter">
+              <option value="all">Tous</option>
+            </select>
+          </div>
+        </div>
+        <div class="history-top-actions">
+          <button id="reevaluateModulesBtn" class="alt tiny-btn" type="button">Reevaluer</button>
+          <button id="downloadModuleTranscriptBtn" class="alt tiny-btn" type="button">Telecharger le script PDF</button>
+          <button id="refreshModulesBtn" class="alt tiny-btn" type="button">Rafraichir</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <section id="modulesListCard" class="card">
+          <h4>Liste</h4>
+          <div id="modulesList" class="history-list"></div>
+        </section>
+
+        <section id="modulesDetailsCard" class="card">
+          <div id="modulesDetailsScroll">
+            <h4 class="details-title">Details <span id="modulesDateLine" class="history-inline-meta"></span></h4>
+            <div id="modulesGlobalScore" class="history-global-score"></div>
+            <div id="modulesRatings" class="ratings-grid"></div>
+            <div id="modulesTrackDetails" class="track-detail-list"></div>
+            <div class="footer-actions" style="margin-top:.65rem">
+              <button id="resumeModuleBtn" class="alt tiny-btn hidden" type="button">Reprendre ce module</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer-actions">
+        <button id="closeModulesModalBtn" class="alt" type="button">Fermer</button>
       </div>
     </div>
   </div>
@@ -1737,6 +1990,8 @@
 
     const state = {
       clients: [],
+      trainingTopics: [],
+      selectedModuleTopic: null,
       selectedClient: null,
       simulationMode: "custom",
       clientType: "",
@@ -1748,9 +2003,16 @@
       users: [],
       simulations: [],
       allSimulations: [],
+      modules: [],
+      allModules: [],
       selectedSimulationId: null,
+      selectedModuleId: null,
       historyOwnerFilter: "all",
+      modulesOwnerFilter: "all",
       currentSimulationId: null,
+      currentModuleId: null,
+      sessionKind: "simulation",
+      sessionContextSummary: "",
       active: false,
       busy: false,
       conversation: [],
@@ -1794,12 +2056,14 @@
     const carouselLeftBtn = document.getElementById("carouselLeftBtn");
     const carouselRightBtn = document.getElementById("carouselRightBtn");
     const historyBtn = document.getElementById("historyBtn");
+    const modulesBtn = document.getElementById("modulesBtn");
     const manageUsersBtn = document.getElementById("manageUsersBtn");
     const cards = document.getElementById("cards");
     const galleryView = document.getElementById("galleryView");
     const chatView = document.getElementById("chatView");
     const chatTitle = document.getElementById("chatTitle");
     const statusPill = document.getElementById("statusPill");
+    const sessionContextStrip = document.getElementById("sessionContextStrip");
     const chatLog = document.getElementById("chatLog");
     const inputBox = document.getElementById("inputBox");
     const micBtn = document.getElementById("micBtn");
@@ -1811,8 +2075,15 @@
     const stopVoiceBtn = document.getElementById("stopVoiceBtn");
     const levelSelect = document.getElementById("level");
     const goalSelect = document.getElementById("goal");
+    const moduleBuilder = document.getElementById("moduleBuilder");
+    const moduleLevelSelect = document.getElementById("moduleLevelSelect");
+    const moduleContextPreview = document.getElementById("moduleContextPreview");
+    const moduleTopicsGrid = document.getElementById("moduleTopicsGrid");
 
     const resultModal = document.getElementById("resultModal");
+    const resultModalTitle = document.getElementById("resultModalTitle");
+    const simulationResultContent = document.getElementById("simulationResultContent");
+    const moduleResultContent = document.getElementById("moduleResultContent");
     const scorePill = document.getElementById("scorePill");
     const verdictText = document.getElementById("verdictText");
     const trackQualification = document.getElementById("trackQualification");
@@ -1826,6 +2097,16 @@
     const pistesSolution = document.getElementById("pistesSolution");
     const actionsManager = document.getElementById("actionsManager");
     const nextObjective = document.getElementById("nextObjective");
+    const moduleSummaryText = document.getElementById("moduleSummaryText");
+    const moduleRatingClarte = document.getElementById("moduleRatingClarte");
+    const moduleRatingPrecision = document.getElementById("moduleRatingPrecision");
+    const moduleRatingCredibilite = document.getElementById("moduleRatingCredibilite");
+    const moduleRatingVenteConseil = document.getElementById("moduleRatingVenteConseil");
+    const moduleStrengths = document.getElementById("moduleStrengths");
+    const moduleImprovements = document.getElementById("moduleImprovements");
+    const moduleInaccuracies = document.getElementById("moduleInaccuracies");
+    const moduleCorrections = document.getElementById("moduleCorrections");
+    const moduleNextObjective = document.getElementById("moduleNextObjective");
     const usersModal = document.getElementById("usersModal");
     const refreshUsersBtn = document.getElementById("refreshUsersBtn");
     const usersTableBody = document.getElementById("usersTableBody");
@@ -1850,6 +2131,19 @@
     const historyTrackDetails = document.getElementById("historyTrackDetails");
     const downloadTranscriptBtn = document.getElementById("downloadTranscriptBtn");
     const resumeSimulationBtn = document.getElementById("resumeSimulationBtn");
+    const modulesModal = document.getElementById("modulesModal");
+    const modulesMessage = document.getElementById("modulesMessage");
+    const modulesOwnerFilterWrap = document.getElementById("modulesOwnerFilterWrap");
+    const modulesOwnerFilter = document.getElementById("modulesOwnerFilter");
+    const refreshModulesBtn = document.getElementById("refreshModulesBtn");
+    const reevaluateModulesBtn = document.getElementById("reevaluateModulesBtn");
+    const modulesList = document.getElementById("modulesList");
+    const modulesDateLine = document.getElementById("modulesDateLine");
+    const modulesGlobalScore = document.getElementById("modulesGlobalScore");
+    const modulesRatings = document.getElementById("modulesRatings");
+    const modulesTrackDetails = document.getElementById("modulesTrackDetails");
+    const downloadModuleTranscriptBtn = document.getElementById("downloadModuleTranscriptBtn");
+    const resumeModuleBtn = document.getElementById("resumeModuleBtn");
 
     function setHistoryChecklistExpanded(expanded) {
       const isExpanded = Boolean(expanded);
@@ -1901,6 +2195,11 @@
       historyMessage.classList.toggle("bad", Boolean(isError));
     }
 
+    function setModulesMessage(message, isError = false) {
+      modulesMessage.textContent = message || "";
+      modulesMessage.classList.toggle("bad", Boolean(isError));
+    }
+
     function isAdminUser() {
       return String(state.user?.role || "").toLowerCase() === "admin";
     }
@@ -1936,13 +2235,22 @@
       state.authToken = "";
       state.user = null;
       state.clients = [];
+      state.trainingTopics = [];
+      state.selectedModuleTopic = null;
       state.users = [];
       state.simulations = [];
       state.allSimulations = [];
+      state.modules = [];
+      state.allModules = [];
       state.selectedSimulationId = null;
+      state.selectedModuleId = null;
       state.historyOwnerFilter = "all";
+      state.modulesOwnerFilter = "all";
       state.currentSimulationId = null;
+      state.currentModuleId = null;
       state.selectedClient = null;
+      state.sessionKind = "simulation";
+      state.sessionContextSummary = "";
       state.active = false;
       state.voiceConversationMode = false;
       state.conversationProcessing = false;
@@ -1955,10 +2263,18 @@
       chatView.classList.add("hidden");
       usersModal.classList.add("hidden");
       historyModal.classList.add("hidden");
+      modulesModal.classList.add("hidden");
       setUsersMessage("");
       setHistoryMessage("");
+      setModulesMessage("");
       updateSessionUi();
       setAuthMessage(message, Boolean(message));
+    }
+
+    function updateSessionContextStrip(text) {
+      const content = String(text || "").trim();
+      sessionContextStrip.textContent = content;
+      sessionContextStrip.classList.toggle("hidden", !content);
     }
 
     function setSession(token, user) {
@@ -1984,6 +2300,7 @@
       stopVoiceConversationListening();
       stopSpeaking();
       chatView.classList.add("hidden");
+      updateSessionContextStrip("");
       galleryView.classList.remove("hidden");
     }
 
@@ -2142,6 +2459,77 @@
       return expanded;
     }
 
+    function getSelectedModuleLevel() {
+      return moduleLevelSelect.value || "Intermediaire";
+    }
+
+    function buildModuleContextSummary(topic, level) {
+      if (!topic) return "Choisis un sujet pour voir le contexte du module.";
+      const criteria = Array.isArray(topic.successCriteria) ? topic.successCriteria : [];
+      const coachingFocus = Array.isArray(topic.coachingFocus) ? topic.coachingFocus : [];
+      const roleplayNotes = Array.isArray(topic.roleplayNotes) ? topic.roleplayNotes : [];
+      const bulletLines = criteria.slice(0, 3).map((item) => `- ${item}`).join("\n");
+      const focusLines = coachingFocus.slice(0, 3).map((item) => `- ${item}`).join("\n");
+      const roleplayLines = roleplayNotes.slice(0, 2).map((item) => `- ${item}`).join("\n");
+      return [
+        `Sujet: ${topic.title}`,
+        `Niveau: ${level}`,
+        `Categorie: ${topic.category || "Module"}`,
+        `Client simule: ${topic.customerProfile || "Client realiste"}`,
+        "",
+        `Contexte: ${topic.summary || "Module de formation."}`,
+        "",
+        "A reussir dans ce module:",
+        bulletLines || "- Maitriser le sujet avec une posture de conseil.",
+        "",
+        "Focus du representant:",
+        focusLines || "- Structurer sa reponse avec clarte et credibilite.",
+        "",
+        "Etat d esprit du client simule:",
+        roleplayLines || "- Client realiste avec objections plausibles."
+      ].join("\n");
+    }
+
+    function renderModulePreview() {
+      moduleContextPreview.textContent = buildModuleContextSummary(state.selectedModuleTopic, getSelectedModuleLevel());
+    }
+
+    function renderModuleTopics() {
+      moduleTopicsGrid.innerHTML = "";
+      const topics = Array.isArray(state.trainingTopics) ? state.trainingTopics : [];
+      if (!topics.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "Aucun sujet de module disponible pour le moment.";
+        moduleTopicsGrid.appendChild(empty);
+        renderModulePreview();
+        return;
+      }
+
+      if (!state.selectedModuleTopic) {
+        state.selectedModuleTopic = topics[0];
+      }
+
+      topics.forEach((topic) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `module-card ${state.selectedModuleTopic?.slug === topic.slug ? "active" : ""}`;
+        btn.innerHTML = `
+          <small>${topic.category || "Module"}</small>
+          <strong>${topic.title}</strong>
+          <p>${topic.summary || ""}</p>
+        `;
+        btn.addEventListener("click", () => {
+          state.selectedModuleTopic = topic;
+          renderModuleTopics();
+          renderModulePreview();
+        });
+        moduleTopicsGrid.appendChild(btn);
+      });
+
+      renderModulePreview();
+    }
+
     function setSimulationMode(mode) {
       state.simulationMode = mode;
       modeRandomBtn.classList.toggle("active", mode === "random");
@@ -2150,7 +2538,9 @@
 
       const custom = mode === "custom";
       const random = mode === "random";
+      const improve = mode === "improve";
       customControls.classList.toggle("hidden", !custom);
+      moduleBuilder.classList.toggle("hidden", !improve);
       frequentScenarios.classList.toggle("hidden", !random);
       modeActionBtn.classList.remove("hidden");
       profilesRegion.classList.toggle("hidden", !custom);
@@ -2159,8 +2549,9 @@
         modeHint.textContent = "Generation auto: niveau, objectif et type de client sont choisis aleatoirement.";
         modeActionBtn.textContent = "Generer et lancer";
       } else if (mode === "improve") {
-        modeHint.textContent = "Amelioration: selection adaptee selon les difficultes des simulations precedentes.";
-        modeActionBtn.textContent = "Analyser et lancer";
+        modeHint.textContent = "Axe sur l amelioration: choisis un sujet de formation et un niveau pour lancer un module interactif.";
+        modeActionBtn.textContent = "Lancer le module";
+        renderModulePreview();
       } else {
         modeHint.textContent = "Mode personnalise: choisis niveau, objectif et type de client.";
         modeActionBtn.textContent = "Lancer simulation";
@@ -2357,19 +2748,15 @@
     }
 
     async function runImprovementSimulation() {
-      if (!state.clients.length || state.busy) return;
-      if (!state.simulations.length) await loadSimulations();
-
-      const plan = buildImprovementPlan();
-      const validTypes = new Set(state.clients.map((c) => normalizeTypeLabel(c.segment)));
-      const chosenType = validTypes.has(plan.type) ? plan.type : Array.from(validTypes)[0] || "";
-
-      state.clientType = chosenType;
-      setLevelAndGoal(plan.level, plan.goal);
-      renderCards();
-
-      const client = chooseClientByTypeAndLevel(chosenType, plan.level) || pickRandom(state.clients);
-      if (client) await selectClient(client, "amelioration");
+      if (state.busy) return;
+      const topic = state.selectedModuleTopic;
+      if (!topic) {
+        modeHint.textContent = "Choisis d abord un sujet de module.";
+        return;
+      }
+      state.level = getSelectedModuleLevel();
+      state.goal = topic.title;
+      await startModuleSession("axe sur amelioration");
     }
 
     function renderClientTypeOptions() {
@@ -2510,6 +2897,7 @@
 
         setSession(data.token, data.user);
         await loadClients();
+        await loadTrainingTopics();
       } catch (err) {
         clearSession(err.message || "Connexion Google impossible");
       }
@@ -2525,6 +2913,7 @@
         if (hasSession) {
           setAuthMessage("");
           await loadClients();
+          await loadTrainingTopics();
           return;
         }
 
@@ -2558,6 +2947,29 @@
       renderCards();
     }
 
+    async function loadTrainingTopics() {
+      try {
+        const response = await fetch("/api/modules?view=topics", {
+          method: "GET",
+          headers: getAuthHeaders()
+        });
+        if (response.status === 401) {
+          clearSession("Session expiree. Reconnecte-toi.");
+          return;
+        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json().catch(() => ({}));
+        state.trainingTopics = Array.isArray(data.topics) ? data.topics : [];
+      } catch {
+        state.trainingTopics = [];
+      }
+
+      if (!state.trainingTopics.some((topic) => topic.slug === state.selectedModuleTopic?.slug)) {
+        state.selectedModuleTopic = state.trainingTopics[0] || null;
+      }
+      renderModuleTopics();
+    }
+
     async function callSimulationsApi(method = "GET", body = null) {
       const options = {
         method,
@@ -2568,6 +2980,29 @@
       }
 
       const response = await fetch("/api/simulations", options);
+      if (response.status === 401) {
+        clearSession("Session expiree. Reconnecte-toi.");
+        throw new Error("Session invalide");
+      }
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.details || data?.error || `Erreur ${response.status}`);
+      }
+
+      return data;
+    }
+
+    async function callModulesApi(method = "GET", body = null) {
+      const options = {
+        method,
+        headers: getAuthHeaders(method === "GET" ? {} : { "Content-Type": "application/json" })
+      };
+      if (body && method !== "GET") {
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch("/api/modules", options);
       if (response.status === 401) {
         clearSession("Session expiree. Reconnecte-toi.");
         throw new Error("Session invalide");
@@ -3001,11 +3436,20 @@
       state.selectedClient = resolveClientFromSimulation(selected);
       state.level = selected.level || state.level;
       state.goal = selected.goal || state.goal;
+      state.sessionKind = "simulation";
       levelSelect.value = state.level;
       goalSelect.value = state.goal;
       state.currentSimulationId = selected.id;
+      state.currentModuleId = null;
       state.active = true;
       state.outcome = String(selected.outcome || "in_progress");
+      state.sessionContextSummary = [
+        "Mode: Simulation reprise",
+        `Client: ${state.selectedClient.name}`,
+        `Type: ${state.selectedClient.segment || "-"}`,
+        `Niveau: ${state.level}`,
+        `Objectif: ${state.goal}`
+      ].join("\n");
       state.clientVoice = pickSimulationVoice(state.selectedClient);
       state.conversation = Array.isArray(selected.transcript) ? selected.transcript : [];
       state.positiveHits = 0;
@@ -3014,6 +3458,7 @@
       statusPill.textContent = "Simulation reprise";
       chatLog.innerHTML = "";
       chatTitle.textContent = `Session - ${state.selectedClient.name}`;
+      updateSessionContextStrip(state.sessionContextSummary);
       openChatView();
 
       for (const m of state.conversation) {
@@ -3072,6 +3517,349 @@
     async function openHistoryModal() {
       historyModal.classList.remove("hidden");
       await loadSimulations();
+    }
+
+    function getModuleStatusLabel(moduleRun) {
+      const raw = String(moduleRun?.status || moduleRun?.evaluation?.status || "").toLowerCase();
+      if (raw === "in_progress") return "En cours";
+      return "Complete";
+    }
+
+    function getModuleStatusClass(moduleRun) {
+      return getModuleStatusLabel(moduleRun) === "En cours" ? "in-progress" : "completed";
+    }
+
+    function getLocalModuleTopic(slug) {
+      return (state.trainingTopics || []).find((topic) => topic.slug === slug) || null;
+    }
+
+    function populateModulesOwnerFilter() {
+      if (!isManagerOrAdminUser()) {
+        modulesOwnerFilterWrap.classList.add("hidden");
+        return;
+      }
+
+      modulesOwnerFilterWrap.classList.remove("hidden");
+      const current = state.modulesOwnerFilter || "all";
+      const owners = Array.from(
+        new Map(
+          (state.allModules || [])
+            .map((row) => {
+              const email = String(row?.user_email || "").trim().toLowerCase();
+              const name = String(row?.user_name || "").trim();
+              return [email, { email, name }];
+            })
+            .filter((entry) => entry[0])
+        ).values()
+      ).sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email, "fr-CA"));
+
+      modulesOwnerFilter.innerHTML = "";
+      const allOpt = document.createElement("option");
+      allOpt.value = "all";
+      allOpt.textContent = "Tous";
+      modulesOwnerFilter.appendChild(allOpt);
+
+      owners.forEach((owner) => {
+        const opt = document.createElement("option");
+        opt.value = owner.email;
+        opt.textContent = owner.name ? `${owner.name} (${owner.email})` : owner.email;
+        modulesOwnerFilter.appendChild(opt);
+      });
+
+      const validValues = new Set(["all", ...owners.map((owner) => owner.email)]);
+      state.modulesOwnerFilter = validValues.has(current) ? current : "all";
+      modulesOwnerFilter.value = state.modulesOwnerFilter;
+    }
+
+    function applyModulesOwnerFilter() {
+      const all = Array.isArray(state.allModules) ? state.allModules : [];
+      if (!isManagerOrAdminUser() || state.modulesOwnerFilter === "all") {
+        state.modules = all.slice();
+      } else {
+        const target = String(state.modulesOwnerFilter || "").toLowerCase();
+        state.modules = all.filter((row) => String(row?.user_email || "").toLowerCase() === target);
+      }
+    }
+
+    function renderModulesRatingsGrid(evaluation) {
+      const moduleEval = normalizeModuleEvaluation(evaluation);
+      modulesRatings.innerHTML = `
+        <div class="rating-pill"><strong>Clarte</strong><span>${moduleEval.qualityRatings.clarte} / 100</span></div>
+        <div class="rating-pill"><strong>Precision</strong><span>${moduleEval.qualityRatings.precision} / 100</span></div>
+        <div class="rating-pill"><strong>Credibilite</strong><span>${moduleEval.qualityRatings.credibilite} / 100</span></div>
+        <div class="rating-pill"><strong>Vente / conseil</strong><span>${moduleEval.qualityRatings.venteConseil} / 100</span></div>
+      `;
+    }
+
+    function renderModulesDetails(evaluation) {
+      const moduleEval = normalizeModuleEvaluation(evaluation);
+      const sections = [
+        { title: "Points forts", items: moduleEval.strengths },
+        { title: "Points a ameliorer", items: moduleEval.improvements },
+        { title: "Erreurs ou infos inexactes", items: moduleEval.inaccuracies },
+        { title: "Corrections a apporter", items: moduleEval.corrections }
+      ];
+
+      modulesTrackDetails.innerHTML = "";
+      sections.forEach((section) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "track-detail-item";
+        const list = document.createElement("ul");
+        list.className = "list";
+        (section.items || []).forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = item;
+          list.appendChild(li);
+        });
+        if (!list.children.length) {
+          const li = document.createElement("li");
+          li.textContent = "Aucun element disponible.";
+          list.appendChild(li);
+        }
+        wrapper.innerHTML = `<h5>${section.title}</h5>`;
+        wrapper.appendChild(list);
+        modulesTrackDetails.appendChild(wrapper);
+      });
+
+      const objective = document.createElement("div");
+      objective.className = "track-detail-item";
+      objective.innerHTML = `
+        <h5>Objectif concret prochain module</h5>
+        <p>${moduleEval.nextObjective}</p>
+        <p><strong>Resume:</strong> ${moduleEval.summary}</p>
+      `;
+      modulesTrackDetails.appendChild(objective);
+    }
+
+    function renderSelectedModule() {
+      const selected = state.modules.find((row) => String(row.id) === String(state.selectedModuleId));
+      if (!selected) {
+        modulesDateLine.textContent = "Selectionne un module pour voir les details.";
+        modulesGlobalScore.innerHTML = "";
+        modulesRatings.innerHTML = "";
+        modulesTrackDetails.innerHTML = "";
+        downloadModuleTranscriptBtn.disabled = true;
+        resumeModuleBtn.classList.add("hidden");
+        return;
+      }
+
+      const score = Number.isFinite(selected?.evaluation?.score) ? selected.evaluation.score : "N/A";
+      const verdict = selected?.evaluation?.verdict || "Sans verdict";
+      const ownerLabel = selected.user_name || selected.user_email || "-";
+      modulesDateLine.textContent = `${formatLongDate(selected.created_at)} | ${selected.topic_title || "Module"} | Rep: ${ownerLabel} | Niveau: ${selected.level || "-"}`;
+      modulesGlobalScore.innerHTML = `
+        <span class="label">Note globale</span>
+        <span class="value">${score === "N/A" ? "N/A" : `${score}/100`}</span>
+        <div class="meta">${verdict}</div>
+      `;
+      renderModulesRatingsGrid(selected.evaluation);
+      renderModulesDetails(selected.evaluation);
+      downloadModuleTranscriptBtn.disabled = false;
+      const canResume = getModuleStatusLabel(selected) === "En cours"
+        && String(selected.user_email || "").toLowerCase() === String(state.user?.email || "").toLowerCase();
+      resumeModuleBtn.classList.toggle("hidden", !canResume);
+    }
+
+    function renderModulesList() {
+      modulesList.innerHTML = "";
+      if (!state.modules.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.style.padding = ".65rem";
+        empty.textContent = "Aucun module enregistre.";
+        modulesList.appendChild(empty);
+        renderSelectedModule();
+        return;
+      }
+
+      state.modules.forEach((row) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `history-item ${String(row.id) === String(state.selectedModuleId) ? "active" : ""}`;
+        const score = Number.isFinite(row?.evaluation?.score) ? row.evaluation.score : "N/A";
+        const statusLabel = getModuleStatusLabel(row);
+        const statusClass = getModuleStatusClass(row);
+        const ownerLabel = row.user_name || row.user_email || "-";
+        btn.innerHTML = `
+          <div class="history-row">
+            <strong>${row.topic_title || "Module"}</strong>
+            <span class="status-badge ${statusClass}">${statusLabel}</span>
+          </div>
+          <small>${ownerLabel} | ${formatElapsedHoursMinutes(row.created_at)} | Score: ${score}</small>
+        `;
+        btn.addEventListener("click", () => {
+          state.selectedModuleId = row.id;
+          renderModulesList();
+          renderSelectedModule();
+        });
+        modulesList.appendChild(btn);
+      });
+
+      renderSelectedModule();
+    }
+
+    async function loadModules() {
+      setModulesMessage("Chargement...");
+      try {
+        const data = await callModulesApi("GET");
+        state.allModules = Array.isArray(data.modules) ? data.modules : [];
+        populateModulesOwnerFilter();
+        applyModulesOwnerFilter();
+        if (!state.modules.some((row) => String(row.id) === String(state.selectedModuleId))) {
+          state.selectedModuleId = state.modules[0]?.id || null;
+        }
+        renderModulesList();
+        setModulesMessage("");
+      } catch (err) {
+        setModulesMessage(err.message || "Impossible de charger les modules", true);
+      }
+    }
+
+    async function saveModule(evaluation, status = "completed") {
+      const normalizedStatus = status === "in_progress" ? "in_progress" : "completed";
+      const mergedEvaluation = {
+        ...(evaluation && typeof evaluation === "object" ? evaluation : {}),
+        status: normalizedStatus
+      };
+      try {
+        const method = state.currentModuleId ? "PATCH" : "POST";
+        const payload = {
+          ...(state.currentModuleId ? { id: state.currentModuleId } : {}),
+          conversation: state.conversation,
+          context: {
+            mode: "module",
+            level: state.level,
+            topicSlug: state.selectedModuleTopic?.slug || "",
+            topicTitle: state.selectedModuleTopic?.title || "",
+            contextSummary: state.sessionContextSummary || "",
+            status: normalizedStatus
+          },
+          evaluation: mergedEvaluation
+        };
+        const data = await callModulesApi(method, payload);
+        if (data?.moduleRun?.id) state.currentModuleId = data.moduleRun.id;
+      } catch (err) {
+        addMessage("client", `Note: sauvegarde du module echouee (${err.message}).`);
+      }
+    }
+
+    async function reevaluateVisibleModules() {
+      const ids = (state.modules || [])
+        .map((row) => Number(row?.id))
+        .filter((id) => Number.isFinite(id) && id > 0);
+
+      if (!ids.length) {
+        setModulesMessage("Aucun module a reevaluer.", true);
+        return;
+      }
+
+      setModulesMessage("Reevaluation en cours...");
+      reevaluateModulesBtn.disabled = true;
+      refreshModulesBtn.disabled = true;
+
+      try {
+        const data = await callModulesApi("POST", { action: "reevaluate", ids });
+        const count = Number(data?.reevaluated || 0);
+        await loadModules();
+        setModulesMessage(`${count} module(s) reevalue(s) avec les nouveaux criteres.`);
+      } catch (err) {
+        setModulesMessage(err.message || "Impossible de reevaluer les modules", true);
+      } finally {
+        reevaluateModulesBtn.disabled = false;
+        refreshModulesBtn.disabled = false;
+      }
+    }
+
+    async function resumeSelectedModule() {
+      const selected = state.modules.find((row) => String(row.id) === String(state.selectedModuleId));
+      if (!selected) return;
+      if (getModuleStatusLabel(selected) !== "En cours") return;
+
+      state.selectedModuleTopic = getLocalModuleTopic(selected.topic_slug) || {
+        slug: selected.topic_slug,
+        title: selected.topic_title,
+        category: "Module",
+        summary: selected.context_summary || "Module de formation.",
+        customerProfile: "Client realiste",
+        successCriteria: []
+      };
+      state.level = selected.level || "Intermediaire";
+      moduleLevelSelect.value = state.level;
+      state.currentModuleId = selected.id;
+      state.currentSimulationId = null;
+      state.sessionKind = "module";
+      state.sessionContextSummary = selected.context_summary || buildModuleContextSummary(state.selectedModuleTopic, state.level);
+      state.selectedClient = null;
+      state.active = true;
+      state.outcome = "manual";
+      state.clientVoice = "alloy";
+      state.conversation = Array.isArray(selected.transcript) ? selected.transcript : [];
+      state.positiveHits = 0;
+      state.negativeHits = 0;
+
+      statusPill.textContent = "Module repris";
+      chatLog.innerHTML = "";
+      chatTitle.textContent = `Module - ${state.selectedModuleTopic.title}`;
+      updateSessionContextStrip(state.sessionContextSummary);
+      openChatView();
+
+      for (const message of state.conversation) {
+        if (!message || typeof message.content !== "string") continue;
+        addMessage(message.role === "assistant" ? "client" : "rep", message.content);
+      }
+
+      modulesModal.classList.add("hidden");
+      inputBox.focus();
+    }
+
+    function buildModuleTranscriptText(moduleRun) {
+      const transcript = Array.isArray(moduleRun?.transcript) ? moduleRun.transcript : [];
+      if (!transcript.length) return "Aucun script disponible.";
+      return transcript
+        .map((message) => `${message.role === "assistant" ? "Coach/Client" : "Representant"}: ${message.content || ""}`)
+        .join("\n\n");
+    }
+
+    function downloadSelectedModuleTranscriptPdf() {
+      const selected = state.modules.find((row) => String(row.id) === String(state.selectedModuleId));
+      if (!selected) return;
+      const pdfApi = window.jspdf?.jsPDF;
+      if (!pdfApi) {
+        setModulesMessage("Bibliotheque PDF non chargee. Recharge la page.", true);
+        return;
+      }
+
+      const doc = new pdfApi({ unit: "pt", format: "a4" });
+      const title = `Module - ${selected.topic_title || "Formation"}`;
+      const header = [
+        title,
+        `Date: ${formatLongDate(selected.created_at)}`,
+        `Niveau: ${selected.level || "-"}`,
+        `Contexte: ${selected.context_summary || "-"}`,
+        ""
+      ];
+      const body = buildModuleTranscriptText(selected);
+      const lines = doc.splitTextToSize(`${header.join("\n")}${body}`, 520);
+      let y = 44;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      for (const line of lines) {
+        if (y > 790) {
+          doc.addPage();
+          y = 44;
+        }
+        doc.text(line, 36, y);
+        y += 15;
+      }
+
+      const safeDate = (selected.created_at || "").slice(0, 10) || "module";
+      doc.save(`module-${safeDate}-${selected.id}.pdf`);
+      setModulesMessage("");
+    }
+
+    async function openModulesModal() {
+      modulesModal.classList.remove("hidden");
+      await loadModules();
     }
 
     function renderUsersTable() {
@@ -3190,13 +3978,17 @@
     }
 
     async function callChatApi() {
+      const moduleTopic = state.selectedModuleTopic;
       const payload = {
         conversation: state.conversation,
         context: {
-          mode: "simulation",
+          mode: state.sessionKind === "module" ? "module" : "simulation",
           level: state.level,
           goal: state.goal,
-          client: state.selectedClient
+          client: state.selectedClient,
+          topicSlug: moduleTopic?.slug || "",
+          topicTitle: moduleTopic?.title || "",
+          contextSummary: state.sessionContextSummary || ""
         }
       };
 
@@ -3221,13 +4013,18 @@
     }
 
     async function callEvaluationApi() {
+      const moduleTopic = state.selectedModuleTopic;
       const payload = {
         conversation: state.conversation,
         context: {
+          mode: state.sessionKind === "module" ? "module" : "simulation",
           level: state.level,
           goal: state.goal,
           client: state.selectedClient,
-          outcome: state.outcome
+          outcome: state.outcome,
+          topicSlug: moduleTopic?.slug || "",
+          topicTitle: moduleTopic?.title || "",
+          contextSummary: state.sessionContextSummary || ""
         }
       };
 
@@ -3265,7 +4062,60 @@
       }
     }
 
+    function normalizeModuleEvaluation(evaluation) {
+      const src = evaluation && typeof evaluation === "object" ? evaluation : {};
+      const toScore = (value) => {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return 60;
+        return Math.max(0, Math.min(100, Math.round(n)));
+      };
+      const listOrFallback = (items, fallback) => {
+        const values = Array.isArray(items) ? items.filter(Boolean).slice(0, 6) : [];
+        return values.length ? values : fallback;
+      };
+      return {
+        score: toScore(src.score),
+        verdict: src.verdict || "Evaluation de module",
+        summary: src.summary || "Evaluation disponible.",
+        strengths: listOrFallback(src.strengths, ["Bonne base observee pendant le module."]),
+        improvements: listOrFallback(src.improvements, ["Preciser davantage la structure de reponse et la valeur client."]),
+        inaccuracies: listOrFallback(src.inaccuracies, ["Aucune inexactitude majeure relevee."]),
+        corrections: listOrFallback(src.corrections, ["Aucune correction critique requise."]),
+        nextObjective: src.nextObjective || "Refaire un module en corrigeant les points d amelioration.",
+        qualityRatings: {
+          clarte: toScore(src?.qualityRatings?.clarte),
+          precision: toScore(src?.qualityRatings?.precision),
+          credibilite: toScore(src?.qualityRatings?.credibilite),
+          venteConseil: toScore(src?.qualityRatings?.venteConseil)
+        }
+      };
+    }
+
     function showResultModal(evaluation) {
+      if (state.sessionKind === "module") {
+        const moduleEval = normalizeModuleEvaluation(evaluation);
+        resultModalTitle.textContent = "Resultat de module";
+        simulationResultContent.classList.add("hidden");
+        moduleResultContent.classList.remove("hidden");
+        scorePill.textContent = `${moduleEval.score} / 100`;
+        verdictText.textContent = moduleEval.verdict;
+        moduleSummaryText.textContent = moduleEval.summary;
+        moduleRatingClarte.textContent = `${moduleEval.qualityRatings.clarte} / 100`;
+        moduleRatingPrecision.textContent = `${moduleEval.qualityRatings.precision} / 100`;
+        moduleRatingCredibilite.textContent = `${moduleEval.qualityRatings.credibilite} / 100`;
+        moduleRatingVenteConseil.textContent = `${moduleEval.qualityRatings.venteConseil} / 100`;
+        fillList(moduleStrengths, moduleEval.strengths);
+        fillList(moduleImprovements, moduleEval.improvements);
+        fillList(moduleInaccuracies, moduleEval.inaccuracies);
+        fillList(moduleCorrections, moduleEval.corrections);
+        moduleNextObjective.textContent = moduleEval.nextObjective;
+        resultModal.classList.remove("hidden");
+        return;
+      }
+
+      resultModalTitle.textContent = "Resultat de simulation";
+      simulationResultContent.classList.remove("hidden");
+      moduleResultContent.classList.add("hidden");
       const score = Number.isFinite(evaluation?.score) ? Math.max(0, Math.min(100, Math.round(evaluation.score))) : 60;
       const track = normalizeTrackScores(evaluation?.trackScores);
       const trackFeedback = normalizeTrackFeedback(evaluation?.trackFeedback);
@@ -3634,55 +4484,74 @@
       try {
         const evaluation = await callEvaluationApi();
         showResultModal(evaluation);
-        await saveSimulation(evaluation);
+        if (state.sessionKind === "module") await saveModule(evaluation);
+        else await saveSimulation(evaluation);
       } catch (err) {
-        const fallbackEvaluation = {
-          score: outcome === "very_unsatisfied" ? 45 : outcome === "very_satisfied" ? 82 : 60,
-          trackScores: {
-            qualification: outcome === "very_unsatisfied" ? 42 : 64,
-            presentationProduit: outcome === "very_unsatisfied" ? 46 : 66,
-            presentationPrix: outcome === "very_unsatisfied" ? 40 : 62
-          },
-          trackFeedback: {
-            qualification: {
-              pointMarquant: "Des questions de base ont ete posees sur le contexte du client.",
-              pisteAmelioration: "Aller plus en profondeur sur le besoin reel, le budget et le delai."
-            },
-            presentationProduit: {
-              pointMarquant: "Le representant a tente de relier le vehicule au contexte client.",
-              pisteAmelioration: "Ajouter des elements de walk around et d essai routier avec benefices concrets."
-            },
-            presentationPrix: {
-              pointMarquant: "Le volet prix a ete aborde avec un premier scenario.",
-              pisteAmelioration: "Renforcer la valeur derriere le prix et mieux traiter les objections."
+        const fallbackEvaluation = state.sessionKind === "module"
+          ? {
+              score: 60,
+              verdict: "Bilan rapide de module",
+              summary: `Evaluation detaillee indisponible (${err.message}).`,
+              strengths: ["Session completee", "Posture de conseil maintenue", "Base de discussion presente"],
+              improvements: ["Revoir la structure de reponse", "Verifier les elements techniques du sujet", "Refaire le module avec plus de precision"],
+              inaccuracies: ["Bilan IA indisponible, verification manuelle recommandee."],
+              corrections: ["Relancer l evaluation lorsque l endpoint /api/evaluate sera disponible."],
+              qualityRatings: {
+                clarte: 60,
+                precision: 58,
+                credibilite: 60,
+                venteConseil: 62
+              },
+              nextObjective: "Obtenir une evaluation IA complete a la prochaine tentative."
             }
-          },
-          qualificationChecklist: {
-            infosGenerales: {
-              motivationAchat: "partiel",
-              raisonVisite: "partiel",
-              optionsClientDifferenciation: "faible",
-              pourquoiNous: "faible"
-            },
-            infosTechniques: {
-              vehiculeActuelEtContexte: "partiel",
-              vehiculeRechercheEtUsage: "partiel",
-              budgetFinancementDelais: "partiel",
-              criteresEtEquipements: "faible"
-            },
-            profondeurQualification: outcome === "very_unsatisfied" ? 38 : 58,
-            clarteBesoinsFinaux: outcome === "very_unsatisfied" ? "faible" : "partiel"
-          },
-          verdict: "Bilan rapide",
-          resume: `Evaluation detaillee indisponible (${err.message}).`,
-          bonsCoups: ["Session completee", "Maintien du dialogue", "Structure de base presente"],
-          mauvaisCoups: ["Bilan IA indisponible", "A valider manuellement", "Verifier la variable OPENAI_API_KEY"],
-          pistesSolution: ["Relancer l evaluation", "Verifier l endpoint /api/evaluate", "Faire une nouvelle simulation"],
-          actionsManager: ["Suivre conversion simulation->engagement", "Suivre objection prix", "Suivre qualite de closing"],
-          nextObjective: "Obtenir une evaluation IA complete a la prochaine tentative."
-        };
+          : {
+              score: outcome === "very_unsatisfied" ? 45 : outcome === "very_satisfied" ? 82 : 60,
+              trackScores: {
+                qualification: outcome === "very_unsatisfied" ? 42 : 64,
+                presentationProduit: outcome === "very_unsatisfied" ? 46 : 66,
+                presentationPrix: outcome === "very_unsatisfied" ? 40 : 62
+              },
+              trackFeedback: {
+                qualification: {
+                  pointMarquant: "Des questions de base ont ete posees sur le contexte du client.",
+                  pisteAmelioration: "Aller plus en profondeur sur le besoin reel, le budget et le delai."
+                },
+                presentationProduit: {
+                  pointMarquant: "Le representant a tente de relier le vehicule au contexte client.",
+                  pisteAmelioration: "Ajouter des elements de walk around et d essai routier avec benefices concrets."
+                },
+                presentationPrix: {
+                  pointMarquant: "Le volet prix a ete aborde avec un premier scenario.",
+                  pisteAmelioration: "Renforcer la valeur derriere le prix et mieux traiter les objections."
+                }
+              },
+              qualificationChecklist: {
+                infosGenerales: {
+                  motivationAchat: "partiel",
+                  raisonVisite: "partiel",
+                  optionsClientDifferenciation: "faible",
+                  pourquoiNous: "faible"
+                },
+                infosTechniques: {
+                  vehiculeActuelEtContexte: "partiel",
+                  vehiculeRechercheEtUsage: "partiel",
+                  budgetFinancementDelais: "partiel",
+                  criteresEtEquipements: "faible"
+                },
+                profondeurQualification: outcome === "very_unsatisfied" ? 38 : 58,
+                clarteBesoinsFinaux: outcome === "very_unsatisfied" ? "faible" : "partiel"
+              },
+              verdict: "Bilan rapide",
+              resume: `Evaluation detaillee indisponible (${err.message}).`,
+              bonsCoups: ["Session completee", "Maintien du dialogue", "Structure de base presente"],
+              mauvaisCoups: ["Bilan IA indisponible", "A valider manuellement", "Verifier la variable OPENAI_API_KEY"],
+              pistesSolution: ["Relancer l evaluation", "Verifier l endpoint /api/evaluate", "Faire une nouvelle simulation"],
+              actionsManager: ["Suivre conversion simulation->engagement", "Suivre objection prix", "Suivre qualite de closing"],
+              nextObjective: "Obtenir une evaluation IA complete a la prochaine tentative."
+            };
         showResultModal(fallbackEvaluation);
-        await saveSimulation(fallbackEvaluation);
+        if (state.sessionKind === "module") await saveModule(fallbackEvaluation);
+        else await saveSimulation(fallbackEvaluation);
       } finally {
         setBusy(false);
       }
@@ -3698,7 +4567,7 @@
           await speakingPromise;
         }
 
-        const autoOutcome = updateOutcomeFromClientReply(reply);
+        const autoOutcome = state.sessionKind === "simulation" ? updateOutcomeFromClientReply(reply) : null;
         if (autoOutcome === "very_unsatisfied") {
           await endSimulation("Client tres insatisfait", "very_unsatisfied");
         }
@@ -3710,20 +4579,33 @@
     }
 
     async function startSimulation(originLabel) {
+      state.sessionKind = "simulation";
       state.level = levelSelect.value;
       state.goal = goalSelect.value;
       state.active = true;
       state.conversation = [];
       state.currentSimulationId = null;
+      state.currentModuleId = null;
       state.positiveHits = 0;
       state.negativeHits = 0;
       state.outcome = "manual";
+      state.sessionContextSummary = [
+        `Mode: Simulation ${originLabel || ""}`.trim(),
+        `Client: ${state.selectedClient.name}`,
+        `Type: ${state.selectedClient.segment || "-"}`,
+        `Niveau: ${state.level}`,
+        `Objectif: ${state.goal}`,
+        `Contexte client: ${state.selectedClient.persona || "A preciser"}`,
+        `Besoins: ${state.selectedClient.needs || "A preciser"}`,
+        `Objections: ${state.selectedClient.objections || "A preciser"}`
+      ].join("\n");
       state.clientVoice = pickSimulationVoice(state.selectedClient);
       stopSpeaking();
 
       statusPill.textContent = "Simulation active";
       chatLog.innerHTML = "";
       chatTitle.textContent = `Session - ${state.selectedClient.name}`;
+      updateSessionContextStrip(state.sessionContextSummary);
       openChatView();
 
       state.conversation.push({
@@ -3752,6 +4634,64 @@
       }
     }
 
+    async function startModuleSession(originLabel) {
+      const topic = state.selectedModuleTopic;
+      if (!topic) return;
+
+      state.sessionKind = "module";
+      state.selectedClient = null;
+      state.active = true;
+      state.conversation = [];
+      state.currentSimulationId = null;
+      state.currentModuleId = null;
+      state.positiveHits = 0;
+      state.negativeHits = 0;
+      state.outcome = "manual";
+      state.level = getSelectedModuleLevel();
+      state.goal = topic.title;
+      state.sessionContextSummary = [
+        `Mode: Module de formation ${originLabel || ""}`.trim(),
+        `Sujet: ${topic.title}`,
+        `Niveau: ${state.level}`,
+        `Categorie: ${topic.category || "Module"}`,
+        `Client simule: ${topic.customerProfile || "Client realiste"}`,
+        `Objectif: ${topic.summary || "Maitriser ce sujet en situation client."}`
+      ].join("\n");
+      state.clientVoice = "alloy";
+      stopSpeaking();
+
+      statusPill.textContent = "Module actif";
+      chatLog.innerHTML = "";
+      chatTitle.textContent = `Module - ${topic.title}`;
+      updateSessionContextStrip(state.sessionContextSummary);
+      openChatView();
+
+      state.conversation.push({
+        role: "user",
+        content: [
+          "Demarre le module de formation maintenant.",
+          `Sujet: ${topic.title}.`,
+          `Niveau: ${state.level}.`,
+          "Donne le contexte, les informations utiles, une breve explication du sujet selon le niveau puis lance l echange interactif."
+        ].join(" ")
+      });
+
+      setBusy(true);
+      try {
+        const firstReply = await callChatApi();
+        pushClient(firstReply);
+      } catch (err) {
+        pushClient(`Impossible de demarrer le module: ${err.message}`);
+      } finally {
+        setBusy(false);
+      }
+
+      inputBox.focus();
+      if (state.voiceConversationMode) {
+        setTimeout(() => startVoiceConversationListening(), 220);
+      }
+    }
+
     async function selectClient(client, origin = "galerie") {
       if (!state.authToken) return;
       if (state.busy) return;
@@ -3766,7 +4706,14 @@
       await sendRepMessage(text);
     }
 
-    document.getElementById("reloadClientsBtn").addEventListener("click", loadClients);
+    document.getElementById("reloadClientsBtn").addEventListener("click", async () => {
+      await loadClients();
+      await loadTrainingTopics();
+    });
+    moduleLevelSelect.addEventListener("change", () => {
+      state.level = moduleLevelSelect.value || "Intermediaire";
+      renderModulePreview();
+    });
     modeRandomBtn.addEventListener("click", () => setSimulationMode("random"));
     modeImproveBtn.addEventListener("click", () => setSimulationMode("improve"));
     modeCustomBtn.addEventListener("click", () => setSimulationMode("custom"));
@@ -3788,6 +4735,7 @@
       cards.scrollBy({ left: 330, behavior: "smooth" });
     });
     historyBtn.addEventListener("click", openHistoryModal);
+    modulesBtn.addEventListener("click", openModulesModal);
     refreshHistoryBtn.addEventListener("click", loadSimulations);
     reevaluateHistoryBtn.addEventListener("click", reevaluateVisibleSimulations);
     historyOwnerFilter.addEventListener("change", () => {
@@ -3806,6 +4754,26 @@
       if (event.target === historyModal) {
         historyModal.classList.add("hidden");
         setHistoryMessage("");
+      }
+    });
+    refreshModulesBtn.addEventListener("click", loadModules);
+    reevaluateModulesBtn.addEventListener("click", reevaluateVisibleModules);
+    modulesOwnerFilter.addEventListener("change", () => {
+      state.modulesOwnerFilter = modulesOwnerFilter.value || "all";
+      applyModulesOwnerFilter();
+      if (!state.modules.some((row) => String(row.id) === String(state.selectedModuleId))) {
+        state.selectedModuleId = state.modules[0]?.id || null;
+      }
+      renderModulesList();
+    });
+    document.getElementById("closeModulesModalBtn").addEventListener("click", () => {
+      modulesModal.classList.add("hidden");
+      setModulesMessage("");
+    });
+    modulesModal.addEventListener("click", (event) => {
+      if (event.target === modulesModal) {
+        modulesModal.classList.add("hidden");
+        setModulesMessage("");
       }
     });
     manageUsersBtn.addEventListener("click", openUsersModal);
@@ -3883,19 +4851,22 @@
       if (!state.active || state.busy) return;
       state.active = false;
       state.outcome = "in_progress";
-      statusPill.textContent = "En pause";
+      statusPill.textContent = state.sessionKind === "module" ? "Module en pause" : "En pause";
       stopDictation();
       stopSpeaking();
-      await saveSimulation({}, "in_progress");
+      if (state.sessionKind === "module") await saveModule({}, "in_progress");
+      else await saveSimulation({}, "in_progress");
       openGalleryView();
     });
 
     downloadTranscriptBtn.addEventListener("click", downloadSelectedTranscriptPdf);
+    downloadModuleTranscriptBtn.addEventListener("click", downloadSelectedModuleTranscriptPdf);
     historyChecklistToggleBtn.addEventListener("click", () => {
       const expanded = historyChecklistToggleBtn.getAttribute("aria-expanded") === "true";
       setHistoryChecklistExpanded(!expanded);
     });
     resumeSimulationBtn.addEventListener("click", resumeSelectedSimulation);
+    resumeModuleBtn.addEventListener("click", resumeSelectedModule);
 
     inputBox.addEventListener("keydown", (event) => {
       if (event.key === "Enter" && !event.shiftKey) {
@@ -3924,6 +4895,8 @@
       }
     }
     updateVoiceControls();
+    moduleLevelSelect.value = state.level;
+    renderModuleTopics();
     setSimulationMode("random");
     initAuth();
   </script>
