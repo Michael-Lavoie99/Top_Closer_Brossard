@@ -9,6 +9,7 @@
     { "src": "api/tts.js", "use": "@vercel/node" },
     { "src": "api/auth/config.js", "use": "@vercel/node" },
     { "src": "api/auth/google.js", "use": "@vercel/node" },
+    { "src": "api/auth/signin.js", "use": "@vercel/node" },
     { "src": "api/auth/me.js", "use": "@vercel/node" },
     { "src": "api/admin/users.js", "use": "@vercel/node" },
     {

@@ -2884,7 +2884,7 @@
       setAuthMessage("Connexion en cours...");
 
       try {
-        const authResponse = await fetch("/api/auth/google", {
+        const authResponse = await fetch("/api/auth/signin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ credential: response?.credential || "" })
@@ -2902,7 +2902,7 @@
         const rawMessage = err?.message || "Connexion Google impossible";
         const friendlyMessage =
           rawMessage.toLowerCase() === "fetch failed"
-            ? "Connexion Google impossible. Verifie GOOGLE_CLIENT_ID sur Vercel et que la route /api/auth/google repond."
+            ? "Connexion Google impossible. Verifie GOOGLE_CLIENT_ID sur Vercel et que la route /api/auth/signin repond."
             : rawMessage;
         clearSession(friendlyMessage);
       }
