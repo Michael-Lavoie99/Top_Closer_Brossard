@@ -2899,7 +2899,12 @@
         await loadClients();
         await loadTrainingTopics();
       } catch (err) {
-        clearSession(err.message || "Connexion Google impossible");
+        const rawMessage = err?.message || "Connexion Google impossible";
+        const friendlyMessage =
+          rawMessage.toLowerCase() === "fetch failed"
+            ? "Connexion Google impossible. Verifie GOOGLE_CLIENT_ID sur Vercel et que la route /api/auth/google repond."
+            : rawMessage;
+        clearSession(friendlyMessage);
       }
     }
 

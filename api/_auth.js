@@ -29,6 +29,10 @@ function normalizeRole(value) {
   return "representant";
 }
 
+function getSessionSecret() {
+  return process.env.AUTH_SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+}
+
 function signPayload(payload, secret) {
   const header = { alg: "HS256", typ: "JWT" };
   const encodedHeader = encodeBase64Url(JSON.stringify(header));
@@ -140,51 +144,45 @@ async function validateGoogleCredential(credential) {
       }
     });
 
-    if (!userLookupResponse.ok) {
-      throw new Error("Lecture des permissions utilisateur impossible");
-    }
+    if (userLookupResponse.ok) {
+      const rows = await userLookupResponse.json();
+      let row = Array.isArray(rows) ? rows[0] : null;
 
-    const rows = await userLookupResponse.json();
-    let row = Array.isArray(rows) ? rows[0] : null;
+      if (!row) {
+        const createEndpoint = `${supabaseUrl}/rest/v1/app_users`;
+        const createResponse = await fetch(createEndpoint, {
+          method: "POST",
+          headers: {
+            apikey: supabaseServiceRoleKey,
+            Authorization: `Bearer ${supabaseServiceRoleKey}`,
+            "Content-Type": "application/json",
+            Prefer: "resolution=merge-duplicates,return=representation"
+          },
+          body: JSON.stringify([
+            {
+              email,
+              full_name: fullName || null,
+              role: "representant",
+              is_active: true
+            }
+          ])
+        });
 
-    if (!row) {
-      const createEndpoint = `${supabaseUrl}/rest/v1/app_users`;
-      const createResponse = await fetch(createEndpoint, {
-        method: "POST",
-        headers: {
-          apikey: supabaseServiceRoleKey,
-          Authorization: `Bearer ${supabaseServiceRoleKey}`,
-          "Content-Type": "application/json",
-          Prefer: "resolution=merge-duplicates,return=representation"
-        },
-        body: JSON.stringify([
-          {
-            email,
-            full_name: fullName || null,
-            role: "representant",
-            is_active: true
-          }
-        ])
-      });
-
-      if (!createResponse.ok) {
-        throw new Error("Creation automatique utilisateur impossible");
+        if (createResponse.ok) {
+          const createdRows = await createResponse.json();
+          row = Array.isArray(createdRows) ? createdRows[0] : null;
+        }
       }
 
-      const createdRows = await createResponse.json();
-      row = Array.isArray(createdRows) ? createdRows[0] : null;
-    }
+      if (row) {
+        if (row.is_active === false) {
+          throw new Error("Compte desactive. Contacte un administrateur.");
+        }
 
-    if (!row) {
-      throw new Error("Utilisateur introuvable apres creation");
+        role = normalizeRole(row.role);
+        fullName = String(row.full_name || fullName);
+      }
     }
-
-    if (row.is_active === false) {
-      throw new Error("Compte desactive. Contacte un administrateur.");
-    }
-
-    role = normalizeRole(row.role);
-    fullName = String(row.full_name || fullName);
   }
 
   return {
@@ -198,7 +196,7 @@ async function validateGoogleCredential(credential) {
 }
 
 function createSessionToken(user) {
-  const secret = process.env.AUTH_SESSION_SECRET;
+  const secret = getSessionSecret();
   if (!secret) {
     throw new Error("AUTH_SESSION_SECRET manquant");
   }
@@ -218,7 +216,7 @@ function createSessionToken(user) {
 }
 
 function verifySessionToken(token) {
-  const secret = process.env.AUTH_SESSION_SECRET;
+  const secret = getSessionSecret();
   if (!secret) return null;
   return verifySignedPayload(token, secret);
 }
