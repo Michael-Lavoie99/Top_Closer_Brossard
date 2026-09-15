@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
       }
     });
   } catch (error) {
-    return res.status(401).json({
+    return res.status(error?.statusCode || 401).json({
       error: "Connexion Google refusee",
       details: error instanceof Error ? error.message : "Unknown error"
     });

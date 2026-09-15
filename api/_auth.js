@@ -90,10 +90,24 @@ async function validateGoogleCredential(credential) {
     throw new Error("GOOGLE_CLIENT_ID manquant");
   }
 
-  const response = await fetch(
-    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
-    { method: "GET" }
-  );
+  const tokenInfoUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`;
+  let response;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      response = await fetch(tokenInfoUrl, {
+        method: "GET",
+        signal: AbortSignal.timeout(5000)
+      });
+      break;
+    } catch (error) {
+      if (attempt === 1) {
+        const upstreamError = new Error("Verification Google temporairement indisponible. Reessaie dans quelques instants.");
+        upstreamError.statusCode = 503;
+        upstreamError.cause = error;
+        throw upstreamError;
+      }
+    }
+  }
 
   if (!response.ok) {
     throw new Error("Token Google invalide");
