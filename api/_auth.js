@@ -149,14 +149,29 @@ async function validateGoogleCredential(credential) {
   if (supabaseUrl && supabaseServiceRoleKey) {
     const lookupEndpoint = `${supabaseUrl}/rest/v1/app_users?select=email,full_name,role,is_active&email=eq.${encodeURIComponent(email)}&limit=1`;
 
-    const userLookupResponse = await fetch(lookupEndpoint, {
-      method: "GET",
-      headers: {
-        apikey: supabaseServiceRoleKey,
-        Authorization: `Bearer ${supabaseServiceRoleKey}`,
-        Accept: "application/json"
-      }
-    });
+    let userLookupResponse;
+    try {
+      userLookupResponse = await fetch(lookupEndpoint, {
+        method: "GET",
+        headers: {
+          apikey: supabaseServiceRoleKey,
+          Authorization: `Bearer ${supabaseServiceRoleKey}`,
+          Accept: "application/json"
+        },
+        signal: AbortSignal.timeout(5000)
+      });
+    } catch (error) {
+      const upstreamError = new Error("Base de comptes indisponible. Verifie le projet et SUPABASE_URL dans Vercel.");
+      upstreamError.statusCode = 503;
+      upstreamError.cause = error;
+      throw upstreamError;
+    }
+
+    if (!userLookupResponse.ok) {
+      const upstreamError = new Error("Base de comptes indisponible. Verifie le projet Supabase et la table app_users.");
+      upstreamError.statusCode = 503;
+      throw upstreamError;
+    }
 
     if (userLookupResponse.ok) {
       const rows = await userLookupResponse.json();
