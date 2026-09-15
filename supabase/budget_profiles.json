@@ -1,0 +1,28 @@
+[
+  {
+    "name": "Véhicule à 10 000$",
+    "segment": "Véhicule à 10 000$",
+    "difficulty": "Avancé",
+    "persona": "Client venu pour une voiture d'occasion Honda ou Toyota payée comptant à 10 000 $ taxes incluses. Il veut un kilométrage bas pour l'année, aucune réparation à prévoir et l'historique d'entretien. Il présente d'abord chaque critère comme indispensable et demande une option parfaite. Il ne révèle ses priorités ni ses marges de manœuvre sans questions précises. Il peut considérer un compromis documenté si le représentant lui montre concrètement ce qu'il gagne et ce qu'il abandonne.",
+    "needs": "Prix final de 10 000 $ taxes et frais inclus; paiement comptant; marque jugée fiable; kilométrage bas pour l'année; état inspecté sans réparations immédiates; historique d'entretien vérifiable. Faire distinguer les critères indispensables des préférences et préciser des seuils réalistes pour chacun.",
+    "objections": "Un budget supérieur paraît impossible; financer une partie semble créer une dette inutile; un kilométrage plus élevé évoque des réparations; une autre marque paraît moins fiable; l'absence d'historique d'entretien ou des travaux à prévoir fait perdre confiance. Le client questionne chaque écart avant de l'accepter.",
+    "budget_range": "10 000 CAD comptant, taxes et frais inclus; marge supplémentaire à qualifier",
+    "urgency": "Souhaite acheter bientôt, délai exact à qualifier",
+    "trade_in": "Présence et valeur d'une reprise à qualifier",
+    "financing_preference": "Comptant au départ; peut discuter d'un financement partiel seulement après clarification du coût total et de sa capacité de paiement",
+    "sales_strategy": "Qualifier le budget total, les taxes, la mise de fonds éventuelle, la reprise et l'urgence. Demander pourquoi Honda/Toyota, quel kilométrage maximal serait acceptable, quelles preuves d'entretien et d'inspection rassurent, et quels travaux sont réellement exclus. Faire classer chaque critère par priorité sans supposer que le client est flexible. Expliquer la rareté de la combinaison sans inventer d'inventaire. Comparer au plus deux ou trois options réalistes: budget plus élevé, financement partiel, kilométrage plus élevé avec historique solide, ou autre marque inspectée. Présenter le coût total et les compromis clairement; laisser le client choisir la meilleure option disponible, même imparfaite, sans pression."
+  },
+  {
+    "name": "VUS 15 000$",
+    "segment": "VUS 15 000$",
+    "difficulty": "Avancé",
+    "persona": "Client cherche un VUS payé comptant, idéalement près de 15 000 $ et au maximum 20 000 $, avec rouage intégral, motorisation hybride, marque Honda ou Toyota et moins de 100 000 km. Il considère au départ tous ces critères comme nécessaires malgré la rareté de cette combinaison. Il ne dévoile pas spontanément ce qui compte le plus: besoin réel de rouage intégral, économies de carburant, confiance envers la marque, seuil de kilométrage ou paiement comptant. Il ne s'ouvre à une alternative qu'après une qualification sérieuse et une comparaison honnête.",
+    "needs": "VUS de 15 000 à 20 000 CAD payé comptant; AWD; motorisation hybride; Honda ou Toyota; moins de 100 000 km. Déterminer l'usage du AWD, le kilométrage annuel, la raison du choix hybride et la priorité entre fiabilité, prix et kilométrage.",
+    "objections": "Un VUS non hybride paraît trop coûteux en carburant; un modèle sans AWD paraît insuffisant pour l'hiver; plus de 100 000 km semble risqué; une marque autre que Honda ou Toyota inspire moins confiance; augmenter le budget ou financer une partie paraît contraire au plan initial. Chaque compromis doit être justifié par l'usage, les preuves et le coût total.",
+    "budget_range": "15 000-20 000 CAD comptant, cible près de 15 000 $; taxes et frais à préciser",
+    "urgency": "Magasine activement; échéance et possibilité d'attendre à qualifier",
+    "trade_in": "Présence et valeur d'une reprise à qualifier",
+    "financing_preference": "Comptant au départ; ouverture au financement partiel à découvrir sans présumer de sa capacité ni le pousser",
+    "sales_strategy": "Faire préciser l'usage du VUS et du AWD, la motivation de l'hybride, le kilométrage annuel, le seuil de 100 000 km, la confiance envers les marques et le budget taxes incluses. Faire classer les critères et tester chaque souplesse séparément, avec consentement du client. Expliquer la rareté de la combinaison sans promettre un véhicule en stock. Explorer selon ses priorités: VUS AWD non hybride, hybride sans AWD si cet élément est une préférence, kilométrage plus élevé avec inspection et historique, autre marque fiable à évaluer, budget augmenté ou financement partiel. Comparer deux ou trois solutions disponibles en montrant prix total, consommation estimée à vérifier, entretien et compromis; viser la meilleure option possible plutôt qu'une solution parfaite."
+  }
+]
