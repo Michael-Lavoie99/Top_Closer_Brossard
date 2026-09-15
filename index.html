@@ -2822,8 +2822,8 @@
 
     async function loadAuthConfig() {
       const response = await fetch("/api/auth/config", { method: "GET" });
-      if (!response.ok) throw new Error("Configuration Google indisponible");
       const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || "Configuration Google indisponible");
       if (!data?.googleClientId) throw new Error("GOOGLE_CLIENT_ID manquant cote serveur");
       state.googleClientId = data.googleClientId;
     }

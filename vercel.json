@@ -17,6 +17,12 @@
       "use": "@vercel/static"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/auth/config",
+      "schedule": "23 11 * * *"
+    }
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
